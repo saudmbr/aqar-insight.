@@ -1,8 +1,8 @@
-# Workspace
+# Aqar Monitor — عقار مونيتور
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+Saudi real estate intelligence platform — a full-stack analytics MVP with Arabic RTL interface, market data dashboards, and price monitoring.
 
 ## Stack
 
@@ -10,87 +10,97 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **API framework**: Express 5 (`artifacts/api-server`)
+- **Frontend**: React + Vite + Tailwind CSS (`artifacts/aqar-monitor`)
 - **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
+- **Charts**: Recharts
+- **Forms**: React Hook Form + Zod
 - **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Validation**: Zod (`zod/v4`), `drizzle-zod`
+- **Build**: esbuild (API), Vite (frontend)
 
 ## Structure
 
 ```text
 artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
+├── artifacts/
+│   ├── api-server/         # Express API server (port from $PORT)
+│   │   └── src/routes/
+│   │       ├── health.ts
+│   │       ├── properties.ts   # CRUD + CSV export
+│   │       ├── analytics.ts    # KPIs, trends, yearly comparison
+│   │       └── districts.ts    # District comparison, cities, types
+│   └── aqar-monitor/       # React + Vite frontend (RTL Arabic)
+│       └── src/pages/
+│           ├── home.tsx           # Dashboard — KPI cards + charts
+│           ├── analytics.tsx      # Market analytics + filters
+│           ├── districts.tsx      # District comparison chart
+│           ├── records.tsx        # Data table + search + CSV export
+│           ├── admin-add.tsx      # Add property record form
+│           └── future.tsx         # Upcoming AI modules showcase
+├── lib/
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+│   └── db/
+│       └── src/schema/
+│           └── properties.ts   # Drizzle properties table
+├── scripts/
+│   └── src/seed.ts         # Seed 3,300 Saudi property records
+└── ...
 ```
 
-## TypeScript & Composite Projects
+## Pages (6)
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+1. **/** — لوحة التحكم (Home Dashboard): KPI cards, price trends, property type chart
+2. **/analytics** — تحليل السوق (Market Analytics): Line/bar charts, filters, yearly comparison
+3. **/districts** — مقارنة الأحياء (District Comparison): Horizontal bar chart by district
+4. **/records** — سجل البيانات (Data Records): Table, search, filters, CSV export
+5. **/admin/add** — إضافة سجل (Add Record): Property form with validation
+6. **/future** — الوحدات المستقبلية (Future Modules): Coming-soon AI features
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+## API Endpoints
 
-## Root Scripts
+- `GET /api/healthz`
+- `GET /api/properties` — list with filters + pagination
+- `POST /api/properties` — add record
+- `GET /api/properties/export` — CSV download
+- `GET /api/analytics/kpis` — KPI metrics
+- `GET /api/analytics/price-trends` — monthly trend data
+- `GET /api/analytics/property-types` — type breakdown
+- `GET /api/analytics/yearly-comparison` — year-over-year
+- `GET /api/districts/comparison?city=` — district stats
+- `GET /api/districts/cities` — city list
+- `GET /api/districts/types` — property type list
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
+## Sample Data
 
-## Packages
+3,300 property records seeded across:
+- **5 cities**: الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة
+- **6 property types**: شقة، فيلا، أرض، مكتب، محل تجاري، دوبلكس
+- **2 listing types**: بيع (sale) / إيجار (rent)
+- **5 years**: 2021–2025 with realistic price trends
 
-### `artifacts/api-server` (`@workspace/api-server`)
+## Future Modules (planned)
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
+- تنبيهات ذكية — Smart price alerts
+- تقدير القيمة العادلة — AI fair value estimation
+- المساعد الذكي — AI chat assistant
+- خريطة حرارية — Geographic heatmap
+- نقاط الاستثمار — Investment scoring
 
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+## Development Commands
 
-### `lib/db` (`@workspace/db`)
+```bash
+# Run codegen (after OpenAPI spec changes)
+pnpm --filter @workspace/api-spec run codegen
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
+# Push DB schema
+pnpm --filter @workspace/db run push
 
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
+# Seed data
+pnpm --filter @workspace/scripts run seed
 
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+# Type check
+pnpm run typecheck
+```

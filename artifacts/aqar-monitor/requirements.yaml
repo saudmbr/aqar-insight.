@@ -1,0 +1,20 @@
+packages:
+  "recharts": "For premium data visualization and analytics charts"
+  "framer-motion": "For smooth micro-interactions and entry animations"
+  "date-fns": "For date formatting and manipulation"
+  "@hookform/resolvers": "Zod validation resolver for React Hook Form"
+  "react-hook-form": "For form state management"
+  "zod": "For client-side form validation schema"
+
+images:
+  - path: "artifacts/aqar-monitor/public/images/auth-bg.png"
+    description: "Abstract minimal luxury architectural forms with soft natural lighting and deep teal shadows, suitable for a premium real estate intelligence platform background"
+    aspect_ratio: "16:9"
+  - path: "artifacts/aqar-monitor/public/images/logo.png"
+    description: "Premium minimal geometric logo mark in deep teal, representing real estate data and growth, transparent background"
+    aspect_ratio: "1:1"
+
+notes:
+  - App is entirely RTL (Arabic). We apply dir='rtl' on the body.
+  - Recharts might need special handling for RTL, typically handled via layout or explicit LTR wrappers for the SVG itself if text gets scrambled.
+  - Using generated hooks from @workspace/api-client-react.
