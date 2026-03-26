@@ -1,0 +1,92 @@
+Redesign the entire platform UI to look modern, premium, calm, and visually elegant.
+
+Design direction:
+- Arabic-first RTL interface
+- Very modern SaaS startup style
+- Clean, calm, eye-friendly design
+- Premium real estate intelligence brand feel
+- Minimal but rich visual quality
+- Soft backgrounds, elegant cards, subtle gradients, refined icons
+- No harsh colors, no clutter, no heavy borders
+
+Visual style requirements:
+1. Color palette:
+- Use a calm premium palette based on:
+  - deep navy
+  - soft teal
+  - muted blue-gray
+  - off-white / warm white
+  - very light background sections
+- Add subtle premium accent colors only where needed
+- Make everything visually balanced and soft on the eyes
+
+2. Background design:
+- Add elegant background treatment across the app
+- Use subtle gradients, soft glow effects, light abstract patterns, or blurred shapes
+- Keep backgrounds premium and professional, not flashy
+- Different sections can have slightly different soft background treatments
+- Hero section should feel strong and impressive but still calm
+
+3. Cards and containers:
+- Redesign all cards to look more premium
+- Use soft shadows, large border radius, balanced padding, and better spacing
+- Add hover states where appropriate
+- Improve KPI cards, charts containers, tables, forms, and account sections
+
+4. Typography:
+- Improve Arabic typography significantly
+- Use a modern Arabic-friendly font
+- Create strong visual hierarchy:
+  - elegant large headlines
+  - readable section headings
+  - calm body text
+  - improved number styling for prices and metrics
+
+5. Icons and illustrations:
+- Upgrade all icons to feel more modern and consistent
+- Use beautiful, refined icons suitable for a premium analytics and real estate platform
+- Add subtle icons in CTA cards, benefits, dashboards, account areas, and forms
+- If useful, add light abstract illustration elements or decorative shapes in hero/empty states
+
+6. Navbar and sidebar:
+- Make navbar and sidebar more elegant and polished
+- Improve spacing, active states, hover states, and icon styling
+- Make the experience feel smooth and high-end
+
+7. Buttons and inputs:
+- Redesign buttons to feel premium and modern
+- Improve input fields, dropdowns, forms, and auth pages
+- Make login, signup, account, and admin forms cleaner and more beautiful
+
+8. Homepage improvements:
+- Make the homepage visually impressive
+- Create a premium hero section
+- Improve the guest CTA section
+- Add benefit cards with strong visual design
+- Add better section separation and layout rhythm
+
+9. Dashboard improvements:
+- Make the analytics dashboard feel like a world-class startup product
+- Upgrade KPI cards, charts, filters, stats, tables, and empty states
+- Keep it elegant and readable, not overly colorful
+
+10. Consistency:
+- Apply one unified design system across the entire app
+- Ensure all pages feel like one premium product:
+  - homepage
+  - dashboard
+  - property pages
+  - login/signup
+  - account pages
+  - admin pages
+  - service provider pages
+
+11. Motion and interaction:
+- Add subtle smooth transitions and hover animations
+- Keep motion calm, premium, and not distracting
+
+12. Important:
+- Do not break any current functionality
+- Focus on UI/UX enhancement only
+- Keep everything production-ready
+- Make the final result look like a polished startup platform ready for launch

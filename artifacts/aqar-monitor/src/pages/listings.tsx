@@ -96,121 +96,122 @@ export default function Listings() {
 
   return (
     <Layout>
-      <div className="space-y-6 pb-8">
+      <div className="space-y-8 pb-12">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card p-6 md:p-8 rounded-3xl premium-shadow border border-border">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">العقارات</h1>
-            <p className="text-muted-foreground mt-1">
-              {data ? `${data.total.toLocaleString("ar-SA")} إعلان متاح` : "جارٍ التحميل…"}
+            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">تصفح العقارات</h1>
+            <p className="text-muted-foreground mt-2 text-lg font-medium">
+              {data ? `${data.total.toLocaleString("ar-SA")} عقار متاح حالياً` : "جارٍ تحميل العقارات…"}
             </p>
           </div>
           {isAuthenticated && (
-            <Button asChild className="gap-2 rounded-xl">
+            <Button asChild size="lg" className="gap-2 rounded-xl shadow-lg shadow-primary/20 shrink-0 whitespace-nowrap px-8">
               <Link href="/listings/new">
-                <PlusCircle className="w-4 h-4" />
-                نشر إعلان
+                <PlusCircle className="w-5 h-5" />
+                نشر إعلان عقاري
               </Link>
             </Button>
           )}
         </div>
 
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <Input
-              placeholder="ابحث بالحي أو المنطقة…"
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              className="pr-9 h-11 rounded-xl"
-            />
-          </div>
-          <Button type="button" variant="outline" onClick={() => setShowFilters(!showFilters)} className={`gap-2 rounded-xl h-11 ${activeFiltersCount > 0 ? "border-primary text-primary" : ""}`}>
-            <SlidersHorizontal className="w-4 h-4" />
-            فلاتر{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
-          </Button>
-          {activeFiltersCount > 0 && (
-            <Button type="button" variant="ghost" onClick={resetFilters} className="rounded-xl h-11 px-3">
-              <X className="w-4 h-4" />
+        {/* Search & Filters */}
+        <div className="space-y-4">
+          <form onSubmit={handleSearch} className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="ابحث بالحي أو المنطقة أو اسم الشارع…"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className="pr-12 h-14 rounded-2xl text-lg font-medium border-border/80 shadow-sm focus:border-primary focus:ring-primary/20"
+              />
+            </div>
+            <Button type="button" variant="outline" size="lg" onClick={() => setShowFilters(!showFilters)} className={`gap-2 rounded-2xl h-14 px-6 font-bold ${activeFiltersCount > 0 ? "border-primary text-primary bg-primary/5" : "border-border shadow-sm"}`}>
+              <SlidersHorizontal className="w-5 h-5" />
+              فلاتر متقدمة {activeFiltersCount > 0 && <span className="bg-primary text-white text-xs w-5 h-5 flex items-center justify-center rounded-full mr-1">{activeFiltersCount}</span>}
             </Button>
-          )}
-        </form>
+            {activeFiltersCount > 0 && (
+              <Button type="button" variant="ghost" size="icon" onClick={resetFilters} className="rounded-2xl h-14 w-14 hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0" title="مسح الفلاتر">
+                <X className="w-6 h-6" />
+              </Button>
+            )}
+          </form>
 
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 p-4 bg-muted/30 border border-border/50 rounded-2xl">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">المدينة</label>
-              <select value={city} onChange={(e) => setCity(e.target.value)} className="h-9 rounded-lg border border-input bg-background px-2 text-sm">
-                <option value="">الكل</option>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+          {/* Expanded Filters Panel */}
+          {showFilters && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 bg-card border border-border shadow-sm rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">المدينة</label>
+                <select value={city} onChange={(e) => setCity(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                  <option value="">جميع المدن</option>
+                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">النوع</label>
+                <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                  <option value="">جميع الأنواع</option>
+                  {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">الغرض</label>
+                <select value={listingType} onChange={(e) => setListingType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                  <option value="">الكل</option>
+                  {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">السعر (من)</label>
+                <Input type="number" placeholder="مثال: 500,000" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-11 rounded-xl font-medium" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">السعر (إلى)</label>
+                <Input type="number" placeholder="مثال: 2,000,000" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="h-11 rounded-xl font-medium" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-foreground">غرف النوم</label>
+                <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                  <option value="">الكل</option>
+                  {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>+{n}</option>)}
+                </select>
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">نوع العقار</label>
-              <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="h-9 rounded-lg border border-input bg-background px-2 text-sm">
-                <option value="">الكل</option>
-                {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">الغرض</label>
-              <select value={listingType} onChange={(e) => setListingType(e.target.value)} className="h-9 rounded-lg border border-input bg-background px-2 text-sm">
-                <option value="">الكل</option>
-                {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">السعر من</label>
-              <Input type="number" placeholder="0" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-9 rounded-lg" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">السعر إلى</label>
-              <Input type="number" placeholder="∞" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="h-9 rounded-lg" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">غرف النوم</label>
-              <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="h-9 rounded-lg border border-input bg-background px-2 text-sm">
-                <option value="">الكل</option>
-                {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n}+</option>)}
-              </select>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Listing Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border border-border/50">
-                <Skeleton className="h-44 w-full rounded-none" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-6 w-1/2 mt-2" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="rounded-3xl overflow-hidden border border-border shadow-sm bg-card h-[380px] flex flex-col">
+                <Skeleton className="h-48 w-full rounded-none shrink-0" />
+                <div className="p-5 space-y-4 flex-1 flex flex-col">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="mt-auto">
+                    <Skeleton className="h-8 w-1/2" />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : data?.data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Building2 className="w-16 h-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">لا توجد إعلانات</h3>
-            <p className="text-muted-foreground mb-6">لم يتم العثور على عقارات بهذه المعايير</p>
+          <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed">
+            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
+              <Building2 className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-2xl font-bold text-foreground mb-3">لا توجد عقارات مطابقة</h3>
+            <p className="text-lg text-muted-foreground mb-8 max-w-md">لم يتم العثور على عقارات تتطابق مع معايير البحث الخاصة بك. جرب تغيير الفلاتر.</p>
             {activeFiltersCount > 0 && (
-              <Button variant="outline" onClick={resetFilters} className="rounded-xl">إزالة الفلاتر</Button>
-            )}
-            {isAuthenticated && (
-              <Button asChild className="mt-3 rounded-xl">
-                <Link href="/listings/new">نشر أول إعلان</Link>
-              </Button>
+              <Button variant="outline" size="lg" onClick={resetFilters} className="rounded-xl px-8 font-bold border-border">مسح جميع الفلاتر</Button>
             )}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {data?.data.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}
@@ -218,17 +219,31 @@ export default function Listings() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage(p => p - 1); void fetchListings(page - 1); }} className="rounded-xl gap-1">
-                  <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center justify-center gap-3 pt-6 border-t border-border">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  disabled={page >= totalPages} 
+                  onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                  className="rounded-xl w-12 h-12 p-0 shadow-sm border-border hover:bg-muted"
+                >
+                  <ChevronRight className="w-5 h-5" />
                 </Button>
-                <span className="text-sm text-muted-foreground">صفحة {page} من {totalPages}</span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage(p => p + 1); void fetchListings(page + 1); }} className="rounded-xl gap-1">
-                  <ChevronLeft className="w-4 h-4" />
+                <div className="px-6 py-2 rounded-xl bg-card border border-border shadow-sm font-semibold text-foreground">
+                  صفحة {page} من {totalPages}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  disabled={page <= 1} 
+                  onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                  className="rounded-xl w-12 h-12 p-0 shadow-sm border-border hover:bg-muted"
+                >
+                  <ChevronLeft className="w-5 h-5" />
                 </Button>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </Layout>

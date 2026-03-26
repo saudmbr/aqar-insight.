@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { MapPin, BedDouble, Bath, Maximize2, Verified, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
 export interface ListingCardData {
@@ -32,12 +31,12 @@ const LISTING_TYPE_LABELS: Record<string, string> = {
 };
 
 const LISTING_TYPE_COLORS: Record<string, string> = {
-  sale: "bg-blue-500/10 text-blue-600 border-blue-200",
-  rent: "bg-green-500/10 text-green-600 border-green-200",
-  daily_rent: "bg-orange-500/10 text-orange-600 border-orange-200",
-  monthly_rent: "bg-teal-500/10 text-teal-600 border-teal-200",
-  investment: "bg-purple-500/10 text-purple-600 border-purple-200",
-  auction: "bg-red-500/10 text-red-600 border-red-200",
+  sale: "bg-primary text-white border-primary",
+  rent: "bg-accent text-white border-accent",
+  daily_rent: "bg-orange-500 text-white border-orange-500",
+  monthly_rent: "bg-teal-600 text-white border-teal-600",
+  investment: "bg-purple-600 text-white border-purple-600",
+  auction: "bg-destructive text-white border-destructive",
 };
 
 function getFirstImage(images?: string | null): string | null {
@@ -49,88 +48,101 @@ function getFirstImage(images?: string | null): string | null {
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   const firstImage = getFirstImage(listing.images);
   const typeLabel = LISTING_TYPE_LABELS[listing.listingType] ?? listing.listingType;
-  const typeColor = LISTING_TYPE_COLORS[listing.listingType] ?? "bg-muted text-muted-foreground";
+  const typeColor = LISTING_TYPE_COLORS[listing.listingType] ?? "bg-muted text-muted-foreground border-border";
 
   return (
     <Link href={`/listings/${listing.id}`}>
-      <div className="group bg-card border border-border/50 rounded-2xl overflow-hidden hover:shadow-lg hover:border-border/80 transition-all duration-200 cursor-pointer h-full flex flex-col">
-        {/* Image */}
-        <div className="relative h-44 bg-muted/50 shrink-0">
+      <div className="group bg-card border border-border rounded-[20px] overflow-hidden hover-premium-shadow cursor-pointer h-full flex flex-col relative">
+        {/* Image Area */}
+        <div className="relative h-56 bg-muted shrink-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 z-10 pointer-events-none" />
           {firstImage ? (
             <img
               src={firstImage}
               alt={listing.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-4xl opacity-20">🏠</div>
+            <div className="w-full h-full flex items-center justify-center bg-secondary">
+              <span className="text-5xl opacity-20">🏠</span>
             </div>
           )}
-          {/* Badges */}
-          <div className="absolute top-3 right-3 flex gap-1.5">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${typeColor}`}>
+          
+          {/* Top Badges */}
+          <div className="absolute top-4 right-4 z-20 flex gap-2">
+            <span className={`text-xs font-bold px-3 py-1.5 rounded-full border shadow-sm ${typeColor}`}>
               {typeLabel}
             </span>
             {listing.featured && (
-              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-yellow-500/15 text-yellow-700 border border-yellow-300">
-                <Star className="w-3 h-3 inline-block -mt-0.5 ml-0.5" />مميز
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-yellow-400 text-yellow-900 border border-yellow-400 shadow-sm flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 fill-yellow-900" />مميز
               </span>
             )}
           </div>
+          
           {listing.verified && (
-            <div className="absolute top-3 left-3">
-              <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 flex items-center gap-1">
-                <Verified className="w-3 h-3" /> موثّق
+            <div className="absolute top-4 left-4 z-20">
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-white text-primary border border-white shadow-sm flex items-center gap-1.5">
+                <Verified className="w-3.5 h-3.5 fill-primary text-white" />موثّق
               </span>
             </div>
           )}
+
+          {/* Bottom gradient info */}
+          <div className="absolute bottom-4 right-4 left-4 z-20 flex justify-between items-end">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-white/20 backdrop-blur-md text-white rounded-lg border border-white/30">
+              {listing.propertyType}
+            </span>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 flex flex-col flex-1">
-          <p className="text-xs text-muted-foreground mb-1">{listing.propertyType}</p>
-          <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+        {/* Content Area */}
+        <div className="p-5 flex flex-col flex-1 bg-card">
+          <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 mb-3 group-hover:text-primary transition-colors">
             {listing.title}
           </h3>
 
           {/* Location */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">{listing.city}{listing.district ? ` · ${listing.district}` : ""}</span>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium mb-4">
+            <MapPin className="w-4 h-4 text-primary shrink-0" />
+            <span className="truncate">{listing.city}{listing.district ? ` ، ${listing.district}` : ""}</span>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+          {/* Features Row */}
+          <div className="flex items-center gap-4 text-sm text-foreground font-semibold mb-5 pb-5 border-b border-border/60">
             {listing.areaSqm && (
-              <span className="flex items-center gap-1">
-                <Maximize2 className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <Maximize2 className="w-4 h-4 text-muted-foreground" />
                 {listing.areaSqm.toLocaleString("ar-SA")} م²
               </span>
             )}
             {listing.bedrooms && (
-              <span className="flex items-center gap-1">
-                <BedDouble className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <BedDouble className="w-4 h-4 text-muted-foreground" />
                 {listing.bedrooms}
               </span>
             )}
             {listing.bathrooms && (
-              <span className="flex items-center gap-1">
-                <Bath className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <Bath className="w-4 h-4 text-muted-foreground" />
                 {listing.bathrooms}
               </span>
-            )}
-            {listing.furnishingStatus && (
-              <span className="px-1.5 py-0.5 bg-muted rounded text-[10px]">{listing.furnishingStatus}</span>
             )}
           </div>
 
           {/* Price */}
-          <div className="mt-auto">
-            <p className="text-lg font-bold text-foreground">{formatCurrency(listing.price)}</p>
-            {listing.pricePerSqm && listing.areaSqm && (
-              <p className="text-xs text-muted-foreground">{formatCurrency(listing.pricePerSqm)} / م²</p>
+          <div className="mt-auto flex items-end justify-between">
+            <div>
+              <p className="text-2xl font-extrabold text-primary">{formatCurrency(listing.price)}</p>
+              {listing.pricePerSqm && listing.areaSqm && (
+                <p className="text-xs text-muted-foreground font-medium mt-1">المتر بـ {formatCurrency(listing.pricePerSqm)}</p>
+              )}
+            </div>
+            {listing.furnishingStatus && (
+              <span className="text-xs font-semibold px-2 py-1 bg-secondary text-secondary-foreground rounded-md">
+                {listing.furnishingStatus}
+              </span>
             )}
           </div>
         </div>

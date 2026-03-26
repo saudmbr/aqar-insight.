@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
@@ -17,8 +17,11 @@ const CATEGORIES = [
 
 function FieldGroup({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label>{label}{required && <span className="text-destructive ml-1">*</span>}</Label>
+    <div className="space-y-2">
+      <Label className="text-sm font-semibold text-foreground flex items-center gap-1">
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </Label>
       {children}
     </div>
   );
@@ -51,7 +54,9 @@ export default function ServiceForm() {
     e.preventDefault();
     setError(null);
     if (!businessName || !category || !city) {
-      setError("يرجى ملء اسم النشاط، التصنيف، والمدينة"); return;
+      setError("يرجى ملء اسم النشاط، التصنيف، والمدينة"); 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
     setSaving(true);
     try {
@@ -66,6 +71,7 @@ export default function ServiceForm() {
       navigate("/services");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "حدث خطأ");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -73,79 +79,129 @@ export default function ServiceForm() {
 
   return (
     <Layout>
-      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-2xl mx-auto space-y-6 pb-10">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">إضافة خدمة</h1>
-          <p className="text-muted-foreground mt-1">أضف خدمتك لمنصة سوق الخدمات العقارية</p>
+      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-3xl mx-auto space-y-8 pb-16">
+        <div className="bg-card p-8 rounded-3xl border border-border shadow-sm">
+          <h1 className="text-3xl font-extrabold text-foreground mb-2">إضافة خدمة جديدة</h1>
+          <p className="text-lg text-muted-foreground">أضف نشاطك التجاري لمنصة الخدمات العقارية لتصل إلى مئات العملاء يومياً.</p>
         </div>
 
         {error && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">⚠ {error}</div>
+          <div className="rounded-2xl border border-destructive bg-destructive/10 p-5 text-destructive font-semibold flex items-center gap-3 shadow-sm">
+            <span className="text-2xl">⚠️</span> {error}
+          </div>
         )}
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3"><CardTitle className="text-base">معلومات النشاط</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <FieldGroup label="اسم النشاط" required>
-              <Input placeholder="مثال: شركة الإتقان للتشطيبات" value={businessName} onChange={e => setBusinessName(e.target.value)} className="h-10 rounded-xl" />
+        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-primary" />
+              معلومات النشاط الأساسية
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <FieldGroup label="اسم النشاط / الشركة" required>
+              <Input placeholder="مثال: شركة الإتقان للمقاولات العامة" value={businessName} onChange={e => setBusinessName(e.target.value)} className="h-12 rounded-xl text-base font-bold text-foreground" />
             </FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FieldGroup label="التصنيف" required>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <FieldGroup label="التصنيف الرئيسي" required>
+                <select value={category} onChange={e => setCategory(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
                   <option value="">اختر التصنيف</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </FieldGroup>
-              <FieldGroup label="المدينة" required>
-                <select value={city} onChange={e => setCity(e.target.value)} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm">
+              <FieldGroup label="المدينة الرئيسية" required>
+                <select value={city} onChange={e => setCity(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
                   <option value="">اختر المدينة</option>
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </FieldGroup>
             </div>
-            <FieldGroup label="المناطق المغطاة">
-              <Input placeholder="مثال: الرياض - جدة - الدمام" value={coveredAreas} onChange={e => setCoveredAreas(e.target.value)} className="h-10 rounded-xl" />
+            
+            <FieldGroup label="المناطق والأحياء المغطاة">
+              <div className="relative">
+                <Map className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                <Input placeholder="مثال: جميع أحياء شمال الرياض" value={coveredAreas} onChange={e => setCoveredAreas(e.target.value)} className="h-12 pr-12 rounded-xl text-base" />
+              </div>
             </FieldGroup>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3"><CardTitle className="text-base">تفاصيل الخدمة</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <FieldGroup label="وصف الخدمة">
-              <textarea rows={4} placeholder="اكتب وصفاً تفصيلياً لخدمتك…" value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30" />
+        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              تفاصيل الخدمات المقدمة
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <FieldGroup label="وصف الخدمات">
+              <textarea 
+                rows={5} 
+                placeholder="اشرح بالتفصيل طبيعة الخدمات التي تقدمها، خبراتك، وأي ميزات تنافسية تمتلكها..." 
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+                className="w-full rounded-2xl border border-input bg-background p-4 text-base leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20" 
+              />
             </FieldGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FieldGroup label="السعر يبدأ من (ر.س)">
-                <Input type="number" min="0" placeholder="0" value={startingPrice} onChange={e => setStartingPrice(e.target.value)} className="h-10 rounded-xl" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4 border-t border-border">
+              <FieldGroup label="الأسعار تبدأ من (ر.س)">
+                <Input type="number" min="0" placeholder="مثال: 500" value={startingPrice} onChange={e => setStartingPrice(e.target.value)} className="h-12 rounded-xl text-base font-bold text-primary" />
               </FieldGroup>
-              <FieldGroup label="ساعات العمل">
-                <Input placeholder="مثال: 8 صباحاً – 10 مساءً" value={workingHours} onChange={e => setWorkingHours(e.target.value)} className="h-10 rounded-xl" />
+              <FieldGroup label="أوقات العمل">
+                <Input placeholder="مثال: من 8 صباحاً حتى 6 مساءً" value={workingHours} onChange={e => setWorkingHours(e.target.value)} className="h-12 rounded-xl text-base" />
               </FieldGroup>
             </div>
-            <FieldGroup label="صور أعمالنا (رابط واحد في كل سطر)">
-              <textarea rows={3} placeholder={"https://example.com/image1.jpg\nhttps://example.com/image2.jpg"} value={portfolioImages} onChange={e => setPortfolioImages(e.target.value)} className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30" dir="ltr" />
-            </FieldGroup>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3"><CardTitle className="text-base">التواصل</CardTitle></CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FieldGroup label="رقم الهاتف">
-              <Input type="tel" placeholder="05XXXXXXXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="h-10 rounded-xl" dir="ltr" />
-            </FieldGroup>
-            <FieldGroup label="رقم واتساب">
-              <Input type="tel" placeholder="966XXXXXXXXX" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className="h-10 rounded-xl" dir="ltr" />
-            </FieldGroup>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Contact className="w-5 h-5 text-primary" />
+                معلومات التواصل
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-5">
+              <FieldGroup label="رقم الهاتف الأساسي">
+                <Input type="tel" placeholder="05XXXXXXXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} className="h-12 rounded-xl text-left font-mono text-lg tracking-wider" dir="ltr" />
+              </FieldGroup>
+              <FieldGroup label="رقم الواتساب">
+                <Input type="tel" placeholder="9665XXXXXXXX" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className="h-12 rounded-xl text-left font-mono text-lg tracking-wider" dir="ltr" />
+              </FieldGroup>
+            </CardContent>
+          </Card>
 
-        <div className="flex gap-3">
-          <Button type="submit" disabled={saving} className="flex-1 h-11 rounded-xl text-base gap-2">
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />جارٍ الحفظ…</> : <><Save className="w-4 h-4" />نشر الخدمة</>}
+          <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-primary" />
+                معرض الأعمال (الصور)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <FieldGroup label="روابط صور من أعمالك السابقة (رابط في كل سطر)">
+                <textarea 
+                  rows={6} 
+                  placeholder={"https://example.com/work1.jpg\nhttps://example.com/work2.jpg"} 
+                  value={portfolioImages} 
+                  onChange={e => setPortfolioImages(e.target.value)} 
+                  className="w-full rounded-2xl border border-input bg-background p-4 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 text-left" 
+                  dir="ltr" 
+                />
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 sticky bottom-6 z-10 bg-card/90 backdrop-blur-md p-4 rounded-3xl border border-border shadow-2xl">
+          <Button type="submit" disabled={saving} size="lg" className="flex-1 h-14 rounded-2xl text-lg font-bold gap-2 shadow-lg shadow-primary/30">
+            {saving ? <><Loader2 className="w-5 h-5 animate-spin" />جارٍ التسجيل…</> : <><Save className="w-5 h-5" />تأكيد ونشر الخدمة</>}
           </Button>
-          <Button type="button" variant="outline" className="rounded-xl h-11" onClick={() => navigate("/services")}>إلغاء</Button>
+          <Button type="button" variant="outline" size="lg" className="rounded-2xl h-14 sm:w-48 font-bold border-border bg-white" onClick={() => navigate("/services")}>
+            إلغاء والعودة
+          </Button>
         </div>
       </form>
     </Layout>

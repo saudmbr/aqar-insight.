@@ -18,11 +18,11 @@ const STATUS_LABELS: Record<string, string> = {
   active: "نشط", sold: "مُباع", rented: "مُؤجّر", cancelled: "ملغي", pending: "قيد المراجعة",
 };
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-500/10 text-green-600 border-green-200",
-  sold: "bg-blue-500/10 text-blue-600 border-blue-200",
-  rented: "bg-purple-500/10 text-purple-600 border-purple-200",
-  cancelled: "bg-red-500/10 text-red-600 border-red-200",
-  pending: "bg-yellow-500/10 text-yellow-700 border-yellow-300",
+  active: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  sold: "bg-blue-500/10 text-blue-700 border-blue-200",
+  rented: "bg-purple-500/10 text-purple-700 border-purple-200",
+  cancelled: "bg-rose-500/10 text-rose-700 border-rose-200",
+  pending: "bg-amber-500/10 text-amber-700 border-amber-200",
 };
 
 type Tab = "overview" | "listings" | "favorites" | "requests";
@@ -72,76 +72,73 @@ export default function Dashboard() {
   };
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
-    { key: "overview", label: "نظرة عامة", icon: <LayoutDashboard className="w-4 h-4" />, count: 0 },
-    { key: "listings", label: "إعلاناتي", icon: <Building2 className="w-4 h-4" />, count: myListings.length },
-    { key: "favorites", label: "المفضلة", icon: <Heart className="w-4 h-4" />, count: favorites.length },
-    { key: "requests", label: "طلباتي", icon: <FileText className="w-4 h-4" />, count: myRequests.length },
+    { key: "overview", label: "نظرة عامة", icon: <LayoutDashboard className="w-5 h-5" />, count: 0 },
+    { key: "listings", label: "إعلاناتي", icon: <Building2 className="w-5 h-5" />, count: myListings.length },
+    { key: "favorites", label: "المفضلة", icon: <Heart className="w-5 h-5" />, count: favorites.length },
+    { key: "requests", label: "طلباتي", icon: <FileText className="w-5 h-5" />, count: myRequests.length },
   ];
 
   return (
     <Layout>
-      <div className="space-y-6 pb-10">
+      <div className="space-y-8 pb-12">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">لوحتي</h1>
-            <p className="text-muted-foreground mt-1">مرحباً، {user?.fullName ?? user?.username}</p>
+            <h1 className="text-4xl font-extrabold text-foreground tracking-tight">لوحتي العقارية</h1>
+            <p className="text-lg text-muted-foreground mt-2">مرحباً بك، {user?.fullName ?? user?.username}</p>
           </div>
-          <Button asChild className="gap-2 rounded-xl">
-            <Link href="/listings/new"><PlusCircle className="w-4 h-4" />نشر إعلان</Link>
+          <Button asChild className="gap-2 rounded-xl h-12 px-6 shadow-lg shadow-primary/20">
+            <Link href="/listings/new"><PlusCircle className="w-5 h-5" />نشر إعلان جديد</Link>
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-muted/50 rounded-2xl w-fit">
+        {/* Premium Tab Bar */}
+        <div className="flex gap-2 p-1.5 bg-muted/60 rounded-2xl w-fit border border-border">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                tab === t.key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                tab === t.key 
+                  ? "bg-white text-primary shadow-sm border border-border/50" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-black/5"
               }`}
             >
               {t.icon}
               <span>{t.label}</span>
               {t.count > 0 && (
-                <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5 py-0.5">{t.count}</span>
+                <span className={`text-xs rounded-full px-2 py-0.5 ${tab === t.key ? "bg-primary/10 text-primary" : "bg-black/10 text-muted-foreground"}`}>
+                  {t.count}
+                </span>
               )}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
           </div>
         ) : (
           <>
             {/* Overview Tab */}
             {tab === "overview" && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <StatCard icon={<Building2 className="w-5 h-5" />} label="إجمالي إعلاناتي" value={String(myListings.length)} color="text-primary" />
-                  <StatCard icon={<Eye className="w-5 h-5" />} label="إجمالي المشاهدات" value={myListings.reduce((s, l) => s + (l.views ?? 0), 0).toLocaleString("ar-SA")} color="text-blue-600" />
-                  <StatCard icon={<Heart className="w-5 h-5" />} label="العقارات المفضّلة" value={String(favorites.length)} color="text-red-500" />
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <StatCard icon={<Building2 className="w-7 h-7" />} label="إجمالي إعلاناتي" value={String(myListings.length)} color="text-primary" bg="bg-primary/10" border="border-primary/20" />
+                  <StatCard icon={<Eye className="w-7 h-7" />} label="إجمالي المشاهدات" value={myListings.reduce((s, l) => s + (l.views ?? 0), 0).toLocaleString("ar-SA")} color="text-accent" bg="bg-accent/10" border="border-accent/20" />
+                  <StatCard icon={<Heart className="w-7 h-7" />} label="العقارات المفضّلة" value={String(favorites.length)} color="text-destructive" bg="bg-destructive/10" border="border-destructive/20" />
                 </div>
 
                 {myListings.length === 0 && favorites.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Building2 className="w-14 h-14 text-muted-foreground/30 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">ابدأ بنشر أول إعلان</h3>
-                    <p className="text-muted-foreground mb-6">انشر إعلانك العقاري وابدأ في استقبال المهتمين</p>
-                    <Button asChild className="gap-2 rounded-xl">
-                      <Link href="/listings/new"><PlusCircle className="w-4 h-4" />نشر إعلان جديد</Link>
-                    </Button>
-                  </div>
+                  <EmptyState icon={<Building2 className="w-10 h-10" />} title="ابدأ بنشر أول إعلان" message="انشر إعلانك العقاري الأول وابدأ في استقبال المهتمين بسهولة" cta={{ label: "نشر إعلان جديد", href: "/listings/new" }} />
                 )}
 
                 {myListings.length > 0 && (
                   <div>
-                    <h3 className="font-semibold text-foreground mb-3">آخر إعلاناتي</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {myListings.slice(0, 3).map(l => <ListingCard key={l.id} listing={l as ListingCardData} />)}
+                    <h3 className="text-2xl font-bold text-foreground mb-6">آخر إعلاناتي</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {myListings.slice(0, 4).map(l => <ListingCard key={l.id} listing={l as ListingCardData} />)}
                     </div>
                   </div>
                 )}
@@ -150,55 +147,50 @@ export default function Dashboard() {
 
             {/* My Listings Tab */}
             {tab === "listings" && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">{myListings.length} إعلان</p>
-                  <Button asChild size="sm" className="gap-1 rounded-xl">
-                    <Link href="/listings/new"><PlusCircle className="w-3.5 h-3.5" />إضافة</Link>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
+                  <p className="font-semibold text-foreground">لديك {myListings.length} إعلان</p>
+                  <Button asChild size="sm" className="gap-2 rounded-xl">
+                    <Link href="/listings/new"><PlusCircle className="w-4 h-4" />إضافة</Link>
                   </Button>
                 </div>
                 {myListings.length === 0 ? (
-                  <EmptyState icon={<Building2 />} message="لا توجد إعلانات بعد" cta={{ label: "نشر إعلان", href: "/listings/new" }} />
+                  <EmptyState icon={<Building2 className="w-10 h-10"/>} title="لا توجد إعلانات" message="لم تقم بنشر أي إعلانات حتى الآن" cta={{ label: "نشر إعلان", href: "/listings/new" }} />
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-4">
                     {myListings.map(l => (
-                      <Card key={l.id} className="border-border/60">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 shrink-0 rounded-xl bg-muted/50 overflow-hidden">
+                      <Card key={l.id} className="border-border hover-premium-shadow rounded-2xl transition-all">
+                        <CardContent className="p-5">
+                          <div className="flex flex-col sm:flex-row items-start gap-6">
+                            <div className="w-full sm:w-32 sm:h-32 shrink-0 rounded-xl bg-muted/50 overflow-hidden relative border border-border/50">
                               {l.images ? (
                                 <img src={l.images.split("\n")[0].trim()} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">🏠</div>
+                                <div className="w-full h-full flex items-center justify-center text-3xl opacity-20">🏠</div>
                               )}
+                              <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[l.status] ?? "bg-white text-black"}`}>
+                                {STATUS_LABELS[l.status] ?? l.status}
+                              </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <Link href={`/listings/${l.id}`}>
-                                    <h4 className="font-semibold text-sm text-foreground hover:text-primary transition-colors truncate">{l.title}</h4>
-                                  </Link>
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                                    <MapPin className="w-3 h-3" />{l.city}{l.district ? ` · ${l.district}` : ""}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[l.status] ?? ""}`}>
-                                    {STATUS_LABELS[l.status] ?? l.status}
-                                  </span>
-                                </div>
+                            <div className="flex-1 min-w-0 w-full">
+                              <Link href={`/listings/${l.id}`}>
+                                <h4 className="text-xl font-bold text-foreground hover:text-primary transition-colors truncate mb-2">{l.title}</h4>
+                              </Link>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                                <MapPin className="w-4 h-4 text-primary" />
+                                {l.city}{l.district ? ` · ${l.district}` : ""}
                               </div>
-                              <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-end justify-between mt-auto">
                                 <div>
-                                  <p className="font-bold text-foreground text-sm">{formatCurrency(l.price)}</p>
-                                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><Eye className="w-3 h-3" />{l.views ?? 0} مشاهدة</p>
+                                  <p className="text-2xl font-extrabold text-foreground">{formatCurrency(l.price)}</p>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1 font-medium"><Eye className="w-4 h-4" />{l.views ?? 0} مشاهدة</p>
                                 </div>
-                                <div className="flex gap-1.5">
-                                  <Button asChild size="sm" variant="outline" className="rounded-lg h-8 px-2.5">
-                                    <Link href={`/listings/${l.id}/edit`}><Edit className="w-3.5 h-3.5" /></Link>
+                                <div className="flex gap-2">
+                                  <Button asChild variant="secondary" className="rounded-xl px-4 gap-2">
+                                    <Link href={`/listings/${l.id}/edit`}><Edit className="w-4 h-4" />تعديل</Link>
                                   </Button>
-                                  <Button size="sm" variant="outline" className="rounded-lg h-8 px-2.5 text-destructive border-destructive/30" onClick={() => void deleteMyListing(l.id)}>
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                  <Button variant="outline" className="rounded-xl px-3 text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive" onClick={() => void deleteMyListing(l.id)}>
+                                    <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
                               </div>
@@ -214,19 +206,20 @@ export default function Dashboard() {
 
             {/* Favorites Tab */}
             {tab === "favorites" && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {favorites.length === 0 ? (
-                  <EmptyState icon={<Heart />} message="لا توجد عقارات مفضّلة" cta={{ label: "تصفح العقارات", href: "/listings" }} />
+                  <EmptyState icon={<Heart className="w-10 h-10"/>} title="لا توجد عقارات مفضّلة" message="تصفح العقارات المتاحة واحفظ ما يثير اهتمامك" cta={{ label: "تصفح العقارات", href: "/listings" }} />
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {favorites.map(f => (
-                      <div key={f.favoriteId} className="relative group">
+                      <div key={f.favoriteId} className="relative group h-full">
                         <ListingCard listing={f.listing} />
                         <button
                           onClick={() => void removeFavorite(f.listing.id)}
-                          className="absolute top-3 left-3 z-10 w-7 h-7 rounded-full bg-background/90 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
+                          className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-destructive border border-border opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-white"
+                          title="إزالة من المفضلة"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
@@ -237,31 +230,34 @@ export default function Dashboard() {
 
             {/* My Requests Tab */}
             {tab === "requests" && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">{myRequests.length} طلب</p>
-                  <Button asChild size="sm" className="gap-1 rounded-xl">
-                    <Link href="/requests/new"><PlusCircle className="w-3.5 h-3.5" />طلب جديد</Link>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
+                  <p className="font-semibold text-foreground">لديك {myRequests.length} طلب</p>
+                  <Button asChild size="sm" className="gap-2 rounded-xl">
+                    <Link href="/requests/new"><PlusCircle className="w-4 h-4" />طلب جديد</Link>
                   </Button>
                 </div>
                 {myRequests.length === 0 ? (
-                  <EmptyState icon={<FileText />} message="لا توجد طلبات بعد" cta={{ label: "نشر طلب", href: "/requests/new" }} />
+                  <EmptyState icon={<FileText className="w-10 h-10"/>} title="لا توجد طلبات" message="لم تقم بتقديم أي طلبات عقارية أو خدمية" cta={{ label: "نشر طلب", href: "/requests/new" }} />
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid gap-4">
                     {myRequests.map(r => (
-                      <Card key={r.id} className="border-border/60">
-                        <CardContent className="p-4 flex items-center gap-3">
+                      <Card key={r.id} className="border-border hover-premium-shadow rounded-2xl transition-all">
+                        <CardContent className="p-5 flex items-center gap-5">
+                          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                            <FileText className="w-6 h-6 text-primary" />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <Link href={`/requests`}>
-                              <p className="font-semibold text-sm text-foreground hover:text-primary">{r.title}</p>
+                              <h4 className="text-lg font-bold text-foreground hover:text-primary transition-colors">{r.title}</h4>
                             </Link>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <Badge variant="outline" className="text-xs">{r.category}</Badge>
-                              <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{r.city}</span>
+                            <div className="flex items-center gap-3 mt-2 flex-wrap">
+                              <Badge className="bg-secondary text-secondary-foreground font-medium rounded-lg">{r.category}</Badge>
+                              <span className="text-sm text-muted-foreground flex items-center gap-1.5 font-medium"><MapPin className="w-4 h-4 text-primary" />{r.city}</span>
                             </div>
                           </div>
-                          <Button size="sm" variant="outline" className="rounded-lg h-8 px-2.5 text-destructive border-destructive/30 shrink-0" onClick={() => void deleteRequest(r.id)}>
-                            <Trash2 className="w-3.5 h-3.5" />
+                          <Button variant="outline" className="rounded-xl w-10 h-10 p-0 text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive shrink-0" onClick={() => void deleteRequest(r.id)}>
+                            <Trash2 className="w-5 h-5" />
                           </Button>
                         </CardContent>
                       </Card>
@@ -277,27 +273,28 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
+function StatCard({ icon, label, value, color, bg, border }: { icon: React.ReactNode; label: string; value: string; color: string; bg: string; border: string; }) {
   return (
-    <Card className="border-border/60">
-      <CardContent className="p-5 flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center ${color}`}>{icon}</div>
+    <Card className="border-border premium-shadow rounded-2xl overflow-hidden group">
+      <CardContent className="p-6 flex items-center gap-5">
+        <div className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center ${color} border ${border} transition-transform group-hover:scale-110`}>{icon}</div>
         <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-sm font-semibold text-muted-foreground mb-1">{label}</p>
+          <p className="text-3xl font-extrabold text-foreground">{value}</p>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function EmptyState({ icon, message, cta }: { icon: React.ReactNode; message: string; cta: { label: string; href: string } }) {
+function EmptyState({ icon, title, message, cta }: { icon: React.ReactNode; title: string; message: string; cta: { label: string; href: string } }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground/40 mb-4">{icon}</div>
-      <p className="text-muted-foreground mb-4">{message}</p>
-      <Button asChild variant="outline" className="rounded-xl gap-2">
-        <Link href={cta.href}>{cta.label}</Link>
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card rounded-3xl border border-border border-dashed">
+      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-6 shadow-inner">{icon}</div>
+      <h3 className="text-2xl font-bold mb-2 text-foreground">{title}</h3>
+      <p className="text-muted-foreground mb-8 max-w-sm text-lg">{message}</p>
+      <Button asChild size="lg" className="rounded-xl gap-2 h-12 px-8 shadow-lg shadow-primary/20 font-bold text-base">
+        <Link href={cta.href}><PlusCircle className="w-5 h-5" />{cta.label}</Link>
       </Button>
     </div>
   );
