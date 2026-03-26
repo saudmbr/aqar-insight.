@@ -41,8 +41,10 @@ import {
   Loader2,
   AlertTriangle,
   LayoutDashboard,
+  Upload,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { ImportDialog } from "@/components/import-dialog";
 
 const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة"];
 const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
@@ -66,6 +68,7 @@ export default function AdminPanel() {
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const LIMIT = 15;
 
   useEffect(() => {
@@ -146,13 +149,23 @@ export default function AdminPanel() {
               إدارة سجلات العقارات — إضافة وتعديل وحذف البيانات
             </p>
           </div>
-          <Button
-            onClick={() => navigate("/admin/add")}
-            className="gap-2 shadow-lg hover:shadow-xl transition-all font-bold"
-          >
-            <Plus className="w-4 h-4" />
-            إضافة سجل جديد
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setImportOpen(true)}
+              className="gap-2 border-primary/30 text-primary hover:bg-primary/5"
+            >
+              <Upload className="w-4 h-4" />
+              استيراد Excel / CSV
+            </Button>
+            <Button
+              onClick={() => navigate("/admin/add")}
+              className="gap-2 shadow-lg hover:shadow-xl transition-all font-bold"
+            >
+              <Plus className="w-4 h-4" />
+              إضافة سجل جديد
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -383,6 +396,9 @@ export default function AdminPanel() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Import Dialog */}
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
