@@ -41,8 +41,8 @@ export function AppSidebar() {
             <Building2 className="w-4 h-4 text-primary-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-lg leading-tight tracking-tight text-sidebar-foreground">عقار مونيتور</span>
-            <span className="text-[10px] text-sidebar-foreground/60 leading-tight">ذكاء السوق العقاري</span>
+            <span className="font-bold text-lg leading-tight tracking-tight text-sidebar-foreground">عقار إنسايت</span>
+            <span className="text-[10px] text-sidebar-foreground/60 leading-tight">منصة ذكية لتحليل سوق العقار</span>
           </div>
         </div>
       </SidebarHeader>

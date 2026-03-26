@@ -1,4 +1,4 @@
-# Aqar Monitor — عقار مونيتور
+# Aqar Insight — عقار إنسايت
 
 ## Overview
 

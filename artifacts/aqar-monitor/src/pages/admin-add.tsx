@@ -83,7 +83,7 @@ export default function AdminAdd() {
       <div className="max-w-4xl mx-auto space-y-8 pb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">إضافة سجل جديد</h1>
-          <p className="text-muted-foreground mt-1">أدخل بيانات العقار لإضافته إلى قاعدة بيانات مونيتور</p>
+          <p className="text-muted-foreground mt-1">أدخل بيانات العقار لإضافته إلى منصة عقار إنسايت</p>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>

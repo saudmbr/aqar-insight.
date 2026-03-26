@@ -24,7 +24,7 @@ export function Layout({ children }: LayoutProps) {
             <div className="flex items-center gap-4">
               {/* Optional: Add user profile or notifications here */}
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                <span className="text-sm font-bold text-primary">أ.م</span>
+                <span className="text-sm font-bold text-primary">أ.إ</span>
               </div>
             </div>
           </header>

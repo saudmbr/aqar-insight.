@@ -62,7 +62,7 @@ export default function Home() {
       >
         <div>
           <h1 className="text-3xl font-bold text-foreground">لوحة التحكم</h1>
-          <p className="text-muted-foreground mt-1">نظرة عامة على أداء السوق العقاري</p>
+          <p className="text-muted-foreground mt-1">رؤية أعمق لاتخاذ قرارات عقارية أفضل</p>
         </div>
 
         {/* KPIs */}

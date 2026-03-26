@@ -75,7 +75,7 @@ export default function Future() {
           <Badge variant="outline" className="mb-4 px-4 py-1 text-primary border-primary/30 bg-primary/5">خارطة الطريق</Badge>
           <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">الوحدات المستقبلية القادمة</h1>
           <p className="text-lg text-muted-foreground">
-            نعمل في "عقار مونيتور" على تطوير أدوات متقدمة مدعومة بالذكاء الاصطناعي لتمكين المستثمرين من اتخاذ قرارات مبنية على بيانات موثوقة.
+            نعمل في "عقار إنسايت" على تطوير أدوات متقدمة مدعومة بالذكاء الاصطناعي لتمكين المستثمرين من اتخاذ قرارات مبنية على بيانات موثوقة.
           </p>
         </div>
 
