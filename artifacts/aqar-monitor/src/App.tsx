@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ProtectedRoute } from "@/components/protected-route";
+import { AdminRoute } from "@/components/protected-route";
 import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
@@ -15,6 +15,7 @@ import AdminEdit from "@/pages/admin-edit";
 import AdminPanel from "@/pages/admin-panel";
 import Future from "@/pages/future";
 import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,21 +30,28 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
+      {/* Auth pages (standalone, no Layout wrapper) */}
       <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+
+      {/* Public pages */}
       <Route path="/" component={Home} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/districts" component={Districts} />
       <Route path="/records" component={Records} />
       <Route path="/future" component={Future} />
+
+      {/* Admin-only pages */}
       <Route path="/admin">
-        {() => <ProtectedRoute component={AdminPanel} />}
+        {() => <AdminRoute component={AdminPanel} />}
       </Route>
       <Route path="/admin/add">
-        {() => <ProtectedRoute component={AdminAdd} />}
+        {() => <AdminRoute component={AdminAdd} />}
       </Route>
       <Route path="/admin/edit/:id">
-        {() => <ProtectedRoute component={AdminEdit} />}
+        {() => <AdminRoute component={AdminEdit} />}
       </Route>
+
       <Route component={NotFound} />
     </Switch>
   );

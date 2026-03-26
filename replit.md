@@ -4,13 +4,24 @@
 
 Saudi real estate intelligence platform — a full-stack analytics MVP with Arabic RTL interface, market data dashboards, and price monitoring.
 
-## Authentication
+## Authentication & Users
 
 - Session-based auth via `express-session` (httpOnly cookie `aqar.sid`)
-- Default credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
+- Two auth paths: hardcoded admin + DB-backed regular users
+- Admin credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
 - Session secret: override via `SESSION_SECRET` env var
-- Protected frontend routes: `/admin`, `/admin/add`, `/admin/edit/*` → redirect to `/login`
-- Backend auth routes: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- Users table: `id, full_name, username, email, password_hash, role, created_at`
+- Passwords hashed with `bcryptjs` (cost factor 12)
+- Login accepts username OR email as identifier
+- Roles: `admin` (full access) / `user` (public pages only)
+- Public routes: `/`, `/analytics`, `/districts`, `/records`, `/future` — no auth required
+- Admin-only routes: `/admin`, `/admin/add`, `/admin/edit/*` → `AdminRoute` guard
+- Non-admin authenticated user hitting admin routes → redirected to `/`
+- Unauthenticated user hitting admin routes → redirected to `/login`
+- Signup at `/signup` → auto-login → redirect to `/`
+- Admin login → redirect to `/admin`
+- Regular user login → redirect to `/`
+- Backend auth routes: `POST /api/auth/login`, `POST /api/auth/signup`, `POST /api/auth/logout`, `GET /api/auth/me`
 
 ## Stack
 

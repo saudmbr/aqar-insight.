@@ -3,8 +3,8 @@ import { Redirect } from "wouter";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2 } from "lucide-react";
 
-export function ProtectedRoute({ component: Component }: { component: ComponentType }) {
-  const { isAuthenticated, isLoading } = useAuth();
+export function AdminRoute({ component: Component }: { component: ComponentType }) {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -14,9 +14,8 @@ export function ProtectedRoute({ component: Component }: { component: ComponentT
     );
   }
 
-  if (!isAuthenticated) {
-    return <Redirect to="/login" />;
-  }
+  if (!isAuthenticated) return <Redirect to="/login" />;
+  if (!isAdmin) return <Redirect to="/" />;
 
   return <Component />;
 }

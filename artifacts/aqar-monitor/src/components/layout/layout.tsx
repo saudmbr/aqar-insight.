@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { LogIn, LogOut, UserCircle2 } from "lucide-react";
+import { LogIn, LogOut, UserCircle2, UserPlus } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "./app-sidebar";
@@ -11,7 +11,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { isAuthenticated, isLoading, username, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [, navigate] = useLocation();
 
   const style = {
@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -34,15 +34,15 @@ export function Layout({ children }: LayoutProps) {
               <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {!isLoading && (
                 <>
-                  {isAuthenticated ? (
+                  {isAuthenticated && user ? (
                     <>
                       <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/8 border border-primary/15">
-                        <UserCircle2 className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium text-foreground">
-                          {username ?? "المدير"}
+                        <UserCircle2 className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium text-foreground max-w-[120px] truncate">
+                          {user.fullName || user.username}
                         </span>
                       </div>
                       <Button
@@ -56,16 +56,29 @@ export function Layout({ children }: LayoutProps) {
                       </Button>
                     </>
                   ) : (
-                    <Button
-                      asChild
-                      size="sm"
-                      className="gap-2 rounded-lg h-9 shadow-sm shadow-primary/15"
-                    >
-                      <Link href="/login">
-                        <LogIn className="w-4 h-4" />
-                        <span className="text-sm">تسجيل الدخول</span>
-                      </Link>
-                    </Button>
+                    <>
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 rounded-lg h-9 text-muted-foreground hover:text-foreground"
+                      >
+                        <Link href="/login">
+                          <LogIn className="w-4 h-4" />
+                          <span className="hidden sm:inline text-sm">تسجيل الدخول</span>
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="gap-2 rounded-lg h-9 shadow-sm shadow-primary/15"
+                      >
+                        <Link href="/signup">
+                          <UserPlus className="w-4 h-4" />
+                          <span className="text-sm">إنشاء حساب</span>
+                        </Link>
+                      </Button>
+                    </>
                   )}
                 </>
               )}

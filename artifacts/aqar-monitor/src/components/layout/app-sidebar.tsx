@@ -99,7 +99,7 @@ function NavGroup({
 
 export function AppSidebar() {
   const [location] = useLocation();
-  const { isAuthenticated, username, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
 
   return (
     <Sidebar side="right" variant="inset" className="border-l border-border bg-sidebar">
@@ -122,20 +122,25 @@ export function AppSidebar() {
       <SidebarContent className="pt-4">
         <NavGroup label="القائمة الرئيسية" items={mainNavItems} location={location} />
 
-        <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
-
-        <NavGroup label="الإدارة" items={adminNavItems} location={location} />
+        {isAdmin && (
+          <>
+            <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
+            <NavGroup label="الإدارة" items={adminNavItems} location={location} />
+          </>
+        )}
       </SidebarContent>
 
-      {isAuthenticated && (
+      {isAuthenticated && user && (
         <SidebarFooter className="border-t border-sidebar-border p-3">
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-sidebar-accent/40 mb-1">
             <UserCircle2 className="w-5 h-5 text-primary shrink-0" />
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-xs font-semibold text-sidebar-foreground truncate">
-                {username ?? "المدير"}
+                {user.fullName || user.username}
               </span>
-              <span className="text-[10px] text-sidebar-foreground/50">حساب المدير</span>
+              <span className="text-[10px] text-sidebar-foreground/50">
+                {user.role === "admin" ? "مدير" : "مستخدم"}
+              </span>
             </div>
           </div>
           <button
