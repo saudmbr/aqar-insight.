@@ -4,6 +4,14 @@
 
 Saudi real estate intelligence platform — a full-stack analytics MVP with Arabic RTL interface, market data dashboards, and price monitoring.
 
+## Authentication
+
+- Session-based auth via `express-session` (httpOnly cookie `aqar.sid`)
+- Default credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
+- Session secret: override via `SESSION_SECRET` env var
+- Protected frontend routes: `/admin`, `/admin/add`, `/admin/edit/*` → redirect to `/login`
+- Backend auth routes: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces

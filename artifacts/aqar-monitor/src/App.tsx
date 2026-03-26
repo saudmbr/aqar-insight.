@@ -2,6 +2,8 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
 import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
@@ -12,6 +14,7 @@ import AdminAdd from "@/pages/admin-add";
 import AdminEdit from "@/pages/admin-edit";
 import AdminPanel from "@/pages/admin-panel";
 import Future from "@/pages/future";
+import Login from "@/pages/login";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,14 +29,21 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
+      <Route path="/login" component={Login} />
       <Route path="/" component={Home} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/districts" component={Districts} />
       <Route path="/records" component={Records} />
-      <Route path="/admin" component={AdminPanel} />
-      <Route path="/admin/add" component={AdminAdd} />
-      <Route path="/admin/edit/:id" component={AdminEdit} />
       <Route path="/future" component={Future} />
+      <Route path="/admin">
+        {() => <ProtectedRoute component={AdminPanel} />}
+      </Route>
+      <Route path="/admin/add">
+        {() => <ProtectedRoute component={AdminAdd} />}
+      </Route>
+      <Route path="/admin/edit/:id">
+        {() => <ProtectedRoute component={AdminEdit} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -43,10 +53,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <AuthProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

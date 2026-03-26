@@ -2,17 +2,19 @@ import {
   BarChart3,
   Building2,
   Home,
+  LogOut,
   Map,
   PlusCircle,
   Sparkles,
   Table,
   LayoutDashboard,
-  Settings2,
+  UserCircle2,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -23,6 +25,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
 
 const mainNavItems = [
   { title: "لوحة التحكم", url: "/", icon: Home },
@@ -96,6 +99,7 @@ function NavGroup({
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { isAuthenticated, username, logout } = useAuth();
 
   return (
     <Sidebar side="right" variant="inset" className="border-l border-border bg-sidebar">
@@ -122,6 +126,27 @@ export function AppSidebar() {
 
         <NavGroup label="الإدارة" items={adminNavItems} location={location} />
       </SidebarContent>
+
+      {isAuthenticated && (
+        <SidebarFooter className="border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-sidebar-accent/40 mb-1">
+            <UserCircle2 className="w-5 h-5 text-primary shrink-0" />
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-semibold text-sidebar-foreground truncate">
+                {username ?? "المدير"}
+              </span>
+              <span className="text-[10px] text-sidebar-foreground/50">حساب المدير</span>
+            </div>
+          </div>
+          <button
+            onClick={() => void logout()}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group"
+          >
+            <LogOut className="w-4 h-4 group-hover:text-destructive transition-colors" />
+            <span>تسجيل الخروج</span>
+          </button>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }
