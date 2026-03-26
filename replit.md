@@ -7,6 +7,8 @@ Saudi real estate **marketplace platform** — full-stack with Arabic RTL interf
 ## Authentication & Users
 
 - Session-based auth via `express-session` (httpOnly cookie `aqar.sid`)
+- **Session store: PostgreSQL** via `connect-pg-simple` → sessions survive server restarts and are shared across all worker processes. `session` table auto-pruned every 15 min.
+- `app.set("trust proxy", 1)` so Express correctly handles Replit's TLS-terminating reverse proxy
 - Two auth paths: hardcoded admin + DB-backed regular users
 - Admin credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
 - Hardcoded admin has `userId=null` in session; personal endpoints handle this gracefully (return [] or filter by NULL userId)
