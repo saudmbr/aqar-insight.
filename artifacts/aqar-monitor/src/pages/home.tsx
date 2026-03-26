@@ -30,10 +30,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/auth-context";
+import { GuestCTA, UserWelcomeBanner } from "@/components/guest-cta";
 
 const COLORS = ['#0077b6', '#00b4d8', '#90e0ef', '#caf0f8', '#03045e'];
 
 export default function Home() {
+  const { isAuthenticated, user } = useAuth();
   const { data: kpis, isLoading: isLoadingKpis } = useGetKpis({});
   const { data: trends, isLoading: isLoadingTrends } = useGetPriceTrends({});
   const { data: types, isLoading: isLoadingTypes } = useGetPropertyTypeBreakdown({});
@@ -200,6 +203,15 @@ export default function Home() {
             </Card>
           </motion.div>
         </div>
+
+        {/* Welcome Banner (logged-in) or Guest CTA */}
+        <motion.div variants={itemVariants}>
+          {isAuthenticated && user ? (
+            <UserWelcomeBanner fullName={user.fullName ?? user.username} />
+          ) : (
+            <GuestCTA />
+          )}
+        </motion.div>
 
         {/* Recent Records */}
         <motion.div variants={itemVariants}>

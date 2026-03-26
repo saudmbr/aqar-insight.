@@ -73,16 +73,11 @@ function NavGroup({
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   )}
                 >
-                  <Link
-                    href={item.url}
-                    className="flex items-center gap-3 px-3"
-                  >
+                  <Link href={item.url} className="flex items-center gap-3 px-3">
                     <item.icon
                       className={cn(
                         "w-5 h-5",
-                        isActive
-                          ? "text-primary-foreground"
-                          : "text-sidebar-foreground/50"
+                        isActive ? "text-primary-foreground" : "text-sidebar-foreground/50"
                       )}
                     />
                     <span>{item.title}</span>
@@ -100,6 +95,8 @@ function NavGroup({
 export function AppSidebar() {
   const [location] = useLocation();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+
+  const isAccountActive = location === "/account";
 
   return (
     <Sidebar side="right" variant="inset" className="border-l border-border bg-sidebar">
@@ -122,10 +119,46 @@ export function AppSidebar() {
       <SidebarContent className="pt-4">
         <NavGroup label="القائمة الرئيسية" items={mainNavItems} location={location} />
 
+        {/* Admin-only section */}
         {isAdmin && (
           <>
             <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
             <NavGroup label="الإدارة" items={adminNavItems} location={location} />
+          </>
+        )}
+
+        {/* Authenticated user section */}
+        {isAuthenticated && (
+          <>
+            <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/50 px-6 font-medium text-xs mb-2">
+                حسابي
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="px-3">
+                  <SidebarMenuItem className="mb-1">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isAccountActive}
+                      className={cn(
+                        "h-11 rounded-xl transition-all duration-200",
+                        isAccountActive
+                          ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/10"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <Link href="/account" className="flex items-center gap-3 px-3">
+                        <UserCircle2
+                          className={cn("w-5 h-5", isAccountActive ? "text-primary-foreground" : "text-sidebar-foreground/50")}
+                        />
+                        <span>حسابي</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </>
         )}
       </SidebarContent>

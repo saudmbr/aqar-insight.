@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/auth-context";
-import { AdminRoute } from "@/components/protected-route";
+import { AdminRoute, UserRoute } from "@/components/protected-route";
 import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
@@ -16,6 +16,7 @@ import AdminPanel from "@/pages/admin-panel";
 import Future from "@/pages/future";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
+import Account from "@/pages/account";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +31,7 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
-      {/* Auth pages (standalone, no Layout wrapper) */}
+      {/* Auth pages */}
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
 
@@ -40,6 +41,11 @@ function Router() {
       <Route path="/districts" component={Districts} />
       <Route path="/records" component={Records} />
       <Route path="/future" component={Future} />
+
+      {/* Authenticated user pages */}
+      <Route path="/account">
+        {() => <UserRoute component={Account} />}
+      </Route>
 
       {/* Admin-only pages */}
       <Route path="/admin">

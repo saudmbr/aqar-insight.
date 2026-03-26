@@ -1,0 +1,87 @@
+Update the platform user access system and UI with the following behavior:
+
+1) Admin visibility and protection:
+- The admin panel must be visible and accessible ONLY to the admin account
+- Normal logged-in users must NOT see any admin links, admin sidebar items, or admin pages
+- Guests must also never see admin links
+- Protect all admin routes securely
+- If a non-admin tries to access an admin route directly, show an Arabic "غير مصرح لك" page or redirect to "/"
+
+2) User account management for registered users:
+- Create a dedicated user account page for logged-in users
+- Add a navbar item called "حسابي"
+- The account page should include:
+  - الاسم الكامل
+  - اسم المستخدم
+  - البريد الإلكتروني
+  - تاريخ إنشاء الحساب
+  - تعديل البيانات الشخصية
+  - تغيير كلمة المرور
+  - تسجيل الخروج
+- Keep the page in Arabic RTL and make it visually premium and modern
+
+3) Guest experience:
+- Visitors without an account should access the public home page normally
+- Do NOT force login when opening the website
+- Add a strong and creative CTA section for guests encouraging signup
+
+4) Creative signup CTA:
+- For guests only, show a premium section on the homepage with this main Arabic headline:
+  "ابدأ رحلتك نحو قرارات عقارية أذكى"
+
+- Add supporting subtext below it:
+  "احصل على تحليلات دقيقة، قارن بين الأحياء، واتخذ قراراتك بناءً على بيانات موثوقة"
+
+- Add two clear buttons:
+  - "سجّل الآن"
+  - "تسجيل الدخول"
+
+- Make this section visually impressive, modern, and suitable for a real estate intelligence platform
+- Add subtle premium design touches, icons, strong typography, better spacing, trust-building layout, and conversion-focused styling
+
+- Also add 3 to 4 benefit cards below the CTA for guests only, such as:
+  - حفظ العقارات والتحليلات
+  - تجربة مخصصة
+  - وصول أسرع للمؤشرات
+  - متابعة أفضل للفرص
+
+5) Logged-in user experience:
+- When a normal user is logged in:
+  - hide the signup CTA
+  - show their name in the navbar
+  - show "حسابي"
+  - show "تسجيل الخروج"
+
+6) Roles and permissions:
+- Keep two roles only for now:
+  - admin
+  - user
+- Admin:
+  - can access /admin and see admin controls
+- User:
+  - can access only normal user pages and their account page
+  - cannot access admin routes or admin UI
+
+7) UI requirements:
+- Keep everything Arabic RTL
+- Maintain the current branding and premium style
+- Improve the navbar logic and overall user flow
+- Make the experience feel like a professional Saudi real estate analytics platform
+
+8) Make it work end-to-end:
+- Ensure routing, permissions, navbar behavior, and conditional rendering all work correctly
+- Test guest, user, and admin flows completely
+
+بعده مباشرة، أرسل له هذا التحسين الإضافي إذا تبي الشكل يطلع أفخم:
+
+Improve the guest CTA section design to feel more premium and persuasive.
+
+Use:
+- larger headline
+- elegant spacing
+- premium card styling
+- subtle icons
+- better visual hierarchy
+- a luxury Saudi real estate intelligence tone
+
+Make the CTA section look like a top-tier startup landing page.
