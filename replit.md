@@ -2,124 +2,113 @@
 
 ## Overview
 
-Saudi real estate intelligence platform — a full-stack analytics MVP with Arabic RTL interface, market data dashboards, and price monitoring.
+Saudi real estate **marketplace platform** — full-stack with Arabic RTL interface, analytics dashboards, live property listings, service providers marketplace, customer requests, favorites, user dashboard, and admin user management.
 
 ## Authentication & Users
 
 - Session-based auth via `express-session` (httpOnly cookie `aqar.sid`)
 - Two auth paths: hardcoded admin + DB-backed regular users
 - Admin credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
+- Hardcoded admin has `userId=null` in session; personal endpoints handle this gracefully (return [] or filter by NULL userId)
 - Session secret: override via `SESSION_SECRET` env var
-- Users table: `id, full_name, username, email, password_hash, role, created_at`
 - Passwords hashed with `bcryptjs` (cost factor 12)
 - Login accepts username OR email as identifier
-- Roles: `admin` (full access) / `user` (public pages only)
-- Public routes: `/`, `/analytics`, `/districts`, `/records`, `/future` — no auth required
-- Admin-only routes: `/admin`, `/admin/add`, `/admin/edit/*` → `AdminRoute` guard
-- Non-admin authenticated user hitting admin routes → redirected to `/`
-- Unauthenticated user hitting admin routes → redirected to `/login`
-- Signup at `/signup` → auto-login → redirect to `/`
-- Admin login → redirect to `/admin`
-- Regular user login → redirect to `/`
-- Backend auth routes: `POST /api/auth/login`, `POST /api/auth/signup`, `POST /api/auth/logout`, `GET /api/auth/me`
+- Roles: `admin`, `user`, `property_owner`, `broker`, `real_estate_office`, `developer`, `service_provider`
+- `UserRoute` guard: redirects unauthenticated users to `/login`
+- `AdminRoute` guard: redirects non-admins to 403 page
 
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
+- **Node.js**: 24, **TypeScript**: 5.9
 - **API framework**: Express 5 (`artifacts/api-server`)
-- **Frontend**: React + Vite + Tailwind CSS (`artifacts/aqar-monitor`)
+- **Frontend**: React + Vite + Tailwind CSS + shadcn/ui (`artifacts/aqar-monitor`)
 - **Database**: PostgreSQL + Drizzle ORM
 - **Charts**: Recharts
-- **Forms**: React Hook Form + Zod
-- **API codegen**: Orval (from OpenAPI spec)
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **Build**: esbuild (API), Vite (frontend)
+
+## Database Tables
+
+### Legacy (Analytics)
+- `properties` — historical real estate analytics data (3,300 seeded records)
+
+### Marketplace (New)
+- `listings` — live marketplace property listings (status: active/sold/rented/cancelled)
+- `favorites` — user favorited listings (unique constraint on user_id + listing_id)
+- `service_providers` — service provider profiles (contractors, designers, etc.)
+- `customer_requests` — open customer requests for services or properties
+
+### Users
+- `users` — registered users with role column
 
 ## Structure
 
 ```text
-artifacts-monorepo/
-├── artifacts/
-│   ├── api-server/         # Express API server (port from $PORT)
-│   │   └── src/routes/
-│   │       ├── health.ts
-│   │       ├── properties.ts   # CRUD + CSV export
-│   │       ├── analytics.ts    # KPIs, trends, yearly comparison
-│   │       └── districts.ts    # District comparison, cities, types
-│   └── aqar-monitor/       # React + Vite frontend (RTL Arabic)
-│       └── src/pages/
-│           ├── home.tsx           # Dashboard — KPI cards + charts
-│           ├── analytics.tsx      # Market analytics + filters
-│           ├── districts.tsx      # District comparison chart
-│           ├── records.tsx        # Data table + search + CSV export
-│           ├── admin-add.tsx      # Add property record form
-│           └── future.tsx         # Upcoming AI modules showcase
-├── lib/
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/
-│       └── src/schema/
-│           └── properties.ts   # Drizzle properties table
-├── scripts/
-│   └── src/seed.ts         # Seed 3,300 Saudi property records
-└── ...
+artifacts/
+├── api-server/src/routes/
+│   ├── health.ts
+│   ├── auth.ts             # login, signup, logout, me
+│   ├── properties.ts       # analytics CRUD + CSV
+│   ├── analytics.ts        # KPIs, trends
+│   ├── districts.ts        # district comparison
+│   ├── listings.ts         # CRUD + search + my/similar/meta
+│   ├── favorites.ts        # toggle + status + list
+│   ├── service-providers.ts # CRUD + my/meta
+│   ├── customer-requests.ts # CRUD + my
+│   └── admin-users.ts      # list + role-update + delete (admin only)
+└── aqar-monitor/src/pages/
+    ├── home.tsx             # Analytics dashboard
+    ├── analytics.tsx        # Market analytics
+    ├── districts.tsx        # District comparison
+    ├── records.tsx          # Data table
+    ├── future.tsx           # Future modules
+    ├── login.tsx            # Login
+    ├── signup.tsx           # Signup
+    ├── account.tsx          # Profile + password change
+    ├── listings.tsx         # Browse/search listings
+    ├── listing-detail.tsx   # Single listing detail + favorites
+    ├── listing-form.tsx     # Create/edit listing
+    ├── dashboard.tsx        # User dashboard (listings, favorites, requests tabs)
+    ├── services.tsx         # Service providers marketplace
+    ├── service-form.tsx     # Create service provider
+    ├── requests.tsx         # Customer requests
+    ├── request-form.tsx     # Post a request
+    ├── admin-panel.tsx      # Admin panel (analytics data)
+    ├── admin-add.tsx        # Add analytics record
+    ├── admin-edit.tsx       # Edit analytics record
+    └── admin-users.tsx      # Admin user management
 ```
 
-## Pages (6)
+## Sidebar Navigation
 
-1. **/** — لوحة التحكم (Home Dashboard): KPI cards, price trends, property type chart
-2. **/analytics** — تحليل السوق (Market Analytics): Line/bar charts, filters, yearly comparison
-3. **/districts** — مقارنة الأحياء (District Comparison): Horizontal bar chart by district
-4. **/records** — سجل البيانات (Data Records): Table, search, filters, CSV export
-5. **/admin/add** — إضافة سجل (Add Record): Property form with validation
-6. **/future** — الوحدات المستقبلية (Future Modules): Coming-soon AI features
+1. **السوق**: العقارات (/listings), سوق الخدمات (/services), الطلبات (/requests)
+2. **التحليلات**: لوحة التحكم (/), تحليل السوق, مقارنة الأحياء, سجل البيانات, الوحدات المستقبلية
+3. **حسابي** (authenticated): لوحتي (/dashboard), حسابي (/account)
+4. **الإدارة** (admin only): لوحة الإدارة, إضافة سجل, المستخدمون (/admin/users)
 
-## API Endpoints
+## Key API Endpoints
 
-- `GET /api/healthz`
-- `GET /api/properties` — list with filters + pagination
-- `POST /api/properties` — add record
-- `GET /api/properties/export` — CSV download
-- `GET /api/analytics/kpis` — KPI metrics
-- `GET /api/analytics/price-trends` — monthly trend data
-- `GET /api/analytics/property-types` — type breakdown
-- `GET /api/analytics/yearly-comparison` — year-over-year
-- `GET /api/districts/comparison?city=` — district stats
-- `GET /api/districts/cities` — city list
-- `GET /api/districts/types` — property type list
-
-## Sample Data
-
-3,300 property records seeded across:
-- **5 cities**: الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة
-- **6 property types**: شقة، فيلا، أرض، مكتب، محل تجاري، دوبلكس
-- **2 listing types**: بيع (sale) / إيجار (rent)
-- **5 years**: 2021–2025 with realistic price trends
-
-## Future Modules (planned)
-
-- تنبيهات ذكية — Smart price alerts
-- تقدير القيمة العادلة — AI fair value estimation
-- المساعد الذكي — AI chat assistant
-- خريطة حرارية — Geographic heatmap
-- نقاط الاستثمار — Investment scoring
+```
+POST /api/auth/login|signup|logout   GET /api/auth/me
+GET  /api/listings                   POST /api/listings
+GET  /api/listings/my/listings       GET  /api/listings/meta/options
+GET  /api/listings/:id               PUT  /api/listings/:id
+DELETE /api/listings/:id             GET  /api/listings/:id/similar
+GET  /api/favorites                  POST /api/favorites/:id/toggle
+GET  /api/favorites/:id/status
+GET  /api/service-providers          POST /api/service-providers
+GET  /api/service-providers/my/profile
+GET  /api/service-providers/meta/categories
+GET  /api/customer-requests          POST /api/customer-requests
+GET  /api/customer-requests/my/requests
+DELETE /api/customer-requests/:id
+GET  /api/admin/users                PUT  /api/admin/users/:id/role
+DELETE /api/admin/users/:id
+```
 
 ## Development Commands
 
 ```bash
-# Run codegen (after OpenAPI spec changes)
-pnpm --filter @workspace/api-spec run codegen
-
-# Push DB schema
-pnpm --filter @workspace/db run push
-
-# Seed data
-pnpm --filter @workspace/scripts run seed
-
-# Type check
-pnpm run typecheck
+pnpm --filter @workspace/db run push-force  # Push DB schema
+pnpm --filter @workspace/scripts run seed    # Seed analytics data
+pnpm run typecheck                           # TypeScript check
 ```

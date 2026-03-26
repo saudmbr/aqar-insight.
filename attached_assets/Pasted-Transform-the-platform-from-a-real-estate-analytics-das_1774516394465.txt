@@ -1,0 +1,241 @@
+Transform the platform from a real estate analytics dashboard into a complete Saudi real estate marketplace and services platform.
+
+Build it as a scalable multi-role platform with these modules:
+
+1. User roles:
+- guest
+- user
+- property owner
+- broker
+- real estate office
+- developer
+- service provider
+- admin
+
+2. Real estate listings module:
+Allow users to create, edit, delete, and manage property listings.
+Support all major property types:
+- apartment
+- villa
+- floor
+- land
+- building
+- office
+- shop
+- warehouse
+- farm
+- chalet
+- room
+- labor housing
+- commercial property
+- industrial property
+- development project
+
+Support listing purposes:
+- sale
+- rent
+- daily rent
+- monthly rent
+- investment
+- auction
+
+Each property listing should support:
+- title
+- description
+- city
+- district
+- location
+- price
+- area_sqm
+- price_per_sqm
+- bedrooms
+- bathrooms
+- living_rooms
+- property_age
+- furnishing_status
+- street_width
+- facade
+- floor_number
+- total_floors
+- parking
+- elevator
+- garden
+- roof
+- pool
+- maid_room
+- driver_room
+- kitchen
+- air_conditioning
+- electricity_meter
+- water_meter
+- deed_status
+- license_status
+- media gallery
+- video
+- attachments
+- status
+
+3. Public property pages:
+- listing details page
+- similar properties
+- favorite/save
+- share
+- report listing
+- contact advertiser
+- request visit
+- WhatsApp button
+- show market insights for area
+
+4. Search and filters:
+- city
+- district
+- property type
+- listing type
+- price range
+- area range
+- bedrooms
+- bathrooms
+- furnished
+- verified only
+- owner only
+- agency only
+- map view
+- newest
+- featured
+
+5. User dashboard:
+- my account
+- my listings
+- favorites
+- saved searches
+- notifications
+- messages
+- visits requests
+- account settings
+
+6. Service providers marketplace:
+Create a full services marketplace related to real estate and construction.
+Allow providers to create service profiles for:
+- construction
+- finishing
+- renovation
+- insulation
+- plumbing
+- electricity
+- HVAC
+- painting
+- gypsum
+- flooring
+- kitchens
+- elevators
+- cleaning
+- pest control
+- interior design
+- architecture
+- engineering
+- valuation
+- property management
+- real estate marketing
+- photography
+- maintenance
+- contracting
+- building materials
+and other related services
+
+Each provider profile should support:
+- business name
+- service category
+- city
+- covered areas
+- description
+- portfolio images
+- pricing or starting price
+- contact info
+- WhatsApp
+- working hours
+- certifications
+- license documents
+- verification badge
+- ratings and reviews
+
+7. Customer requests module:
+Allow users to post requests such as:
+- looking for property
+- looking for contractor
+- looking for finishing services
+- looking for plumbing/electrical/etc.
+Each request should support:
+- title
+- category
+- city
+- district
+- budget
+- details
+- attachments
+- contact method
+
+8. Messaging and communication:
+- internal messaging
+- contact forms
+- visit requests
+- quote requests
+- WhatsApp integration
+- notifications
+
+9. Reviews and trust:
+- user reviews
+- provider reviews
+- listing reports
+- verification badges
+- company verification
+- phone/email verification
+
+10. Admin panel:
+Admin should manage:
+- users
+- listings
+- service providers
+- service requests
+- categories
+- reviews
+- reports
+- cities and districts
+- featured listings
+- subscriptions
+- site settings
+
+11. Analytics integration:
+Keep the current analytics strength and integrate it into the marketplace:
+- average price per sqm
+- district comparison
+- monthly trends
+- yearly trends
+- fair value estimation placeholder
+- investment indicators placeholder
+- neighborhood insights
+
+12. UX requirements:
+- Arabic RTL first
+- modern premium design
+- scalable architecture
+- role-based navigation
+- clear homepage sections
+- guests can browse publicly
+- only admin can see admin panel
+- logged-in users should have account dashboard
+- service providers should have their own dashboard
+- property owners should have listing management
+
+13. Important implementation strategy:
+Do NOT build everything as one giant page.
+Create a modular architecture and implement it in phases.
+Start by building the core modules first:
+- user roles
+- property listings CRUD
+- public listing pages
+- search/filter
+- user dashboard
+- service providers module basic version
+- admin management structure
+
+Make the codebase production-ready, modular, and ready for future payments/subscriptions.

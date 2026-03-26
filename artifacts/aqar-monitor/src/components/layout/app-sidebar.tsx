@@ -9,6 +9,10 @@ import {
   Table,
   LayoutDashboard,
   UserCircle2,
+  Wrench,
+  FileText,
+  Users,
+  ShoppingBag,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -27,8 +31,14 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
-const mainNavItems = [
-  { title: "لوحة التحكم", url: "/", icon: Home },
+const marketplaceNavItems = [
+  { title: "العقارات", url: "/listings", icon: Building2 },
+  { title: "سوق الخدمات", url: "/services", icon: Wrench },
+  { title: "الطلبات", url: "/requests", icon: FileText },
+];
+
+const analyticsNavItems = [
+  { title: "لوحة التحكم", url: "/", icon: Home, exact: true },
   { title: "تحليل السوق", url: "/analytics", icon: BarChart3 },
   { title: "مقارنة الأحياء", url: "/districts", icon: Map },
   { title: "سجل البيانات", url: "/records", icon: Table },
@@ -38,54 +48,41 @@ const mainNavItems = [
 const adminNavItems = [
   { title: "لوحة الإدارة", url: "/admin", icon: LayoutDashboard },
   { title: "إضافة سجل", url: "/admin/add", icon: PlusCircle },
+  { title: "المستخدمون", url: "/admin/users", icon: Users },
 ];
 
-function NavGroup({
-  label,
-  items,
-  location,
-}: {
-  label: string;
-  items: typeof mainNavItems;
-  location: string;
-}) {
+function NavItem({ item, location }: { item: { title: string; url: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean }; location: string }) {
+  const isActive = item.exact ? location === item.url : location.startsWith(item.url);
+  return (
+    <SidebarMenuItem className="mb-1">
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        className={cn(
+          "h-10 rounded-xl transition-all duration-200",
+          isActive
+            ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/10"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        )}
+      >
+        <Link href={item.url} className="flex items-center gap-3 px-3">
+          <item.icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "text-sidebar-foreground/50")} />
+          <span className="text-sm">{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function NavGroup({ label, items, location }: { label: string; items: Parameters<typeof NavItem>[0]["item"][]; location: string }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sidebar-foreground/50 px-6 font-medium text-xs mb-2">
+      <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[11px] uppercase tracking-wider mb-1">
         {label}
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu className="px-3">
-          {items.map((item) => {
-            const isActive =
-              item.url === "/"
-                ? location === "/"
-                : location.startsWith(item.url);
-            return (
-              <SidebarMenuItem key={item.title} className="mb-1">
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive}
-                  className={cn(
-                    "h-11 rounded-xl transition-all duration-200",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/10"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  )}
-                >
-                  <Link href={item.url} className="flex items-center gap-3 px-3">
-                    <item.icon
-                      className={cn(
-                        "w-5 h-5",
-                        isActive ? "text-primary-foreground" : "text-sidebar-foreground/50"
-                      )}
-                    />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
+          {items.map(item => <NavItem key={item.title} item={item} location={location} />)}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
@@ -96,6 +93,7 @@ export function AppSidebar() {
   const [location] = useLocation();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
 
+  const isDashboardActive = location === "/dashboard";
   const isAccountActive = location === "/account";
 
   return (
@@ -106,59 +104,44 @@ export function AppSidebar() {
             <Building2 className="w-4 h-4 text-primary-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-lg leading-tight tracking-tight text-sidebar-foreground">
-              عقار إنسايت
-            </span>
-            <span className="text-[10px] text-sidebar-foreground/60 leading-tight">
-              منصة ذكية لتحليل سوق العقار
-            </span>
+            <span className="font-bold text-lg leading-tight tracking-tight text-sidebar-foreground">عقار إنسايت</span>
+            <span className="text-[10px] text-sidebar-foreground/60 leading-tight">منصة ذكية للعقار</span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="pt-4">
-        <NavGroup label="القائمة الرئيسية" items={mainNavItems} location={location} />
+      <SidebarContent className="pt-4 space-y-1">
+        {/* Marketplace */}
+        <NavGroup label="السوق" items={marketplaceNavItems} location={location} />
 
-        {/* Admin-only section */}
-        {isAdmin && (
-          <>
-            <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
-            <NavGroup label="الإدارة" items={adminNavItems} location={location} />
-          </>
-        )}
+        <SidebarSeparator className="mx-4 bg-sidebar-border/50" />
 
-        {/* Authenticated user section */}
+        {/* Analytics */}
+        <NavGroup label="التحليلات" items={analyticsNavItems} location={location} />
+
+        {/* Authenticated User Nav */}
         {isAuthenticated && (
           <>
-            <SidebarSeparator className="mx-4 my-2 bg-sidebar-border/50" />
+            <SidebarSeparator className="mx-4 bg-sidebar-border/50" />
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/50 px-6 font-medium text-xs mb-2">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[11px] uppercase tracking-wider mb-1">
                 حسابي
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className="px-3">
-                  <SidebarMenuItem className="mb-1">
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isAccountActive}
-                      className={cn(
-                        "h-11 rounded-xl transition-all duration-200",
-                        isAccountActive
-                          ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/10"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                      )}
-                    >
-                      <Link href="/account" className="flex items-center gap-3 px-3">
-                        <UserCircle2
-                          className={cn("w-5 h-5", isAccountActive ? "text-primary-foreground" : "text-sidebar-foreground/50")}
-                        />
-                        <span>حسابي</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <NavItem item={{ title: "لوحتي", url: "/dashboard", icon: LayoutDashboard }} location={location} />
+                  <NavItem item={{ title: "حسابي", url: "/account", icon: UserCircle2 }} location={location} />
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+          </>
+        )}
+
+        {/* Admin Nav */}
+        {isAdmin && (
+          <>
+            <SidebarSeparator className="mx-4 bg-sidebar-border/50" />
+            <NavGroup label="الإدارة" items={adminNavItems} location={location} />
           </>
         )}
       </SidebarContent>
@@ -172,7 +155,8 @@ export function AppSidebar() {
                 {user.fullName || user.username}
               </span>
               <span className="text-[10px] text-sidebar-foreground/50">
-                {user.role === "admin" ? "مدير" : "مستخدم"}
+                {user.role === "admin" ? "مدير" : user.role === "property_owner" ? "مالك عقار" :
+                  user.role === "broker" ? "وسيط" : user.role === "service_provider" ? "مزوّد خدمة" : "مستخدم"}
               </span>
             </div>
           </div>

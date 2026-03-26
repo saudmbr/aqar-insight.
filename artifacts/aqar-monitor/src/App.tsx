@@ -10,13 +10,26 @@ import Home from "@/pages/home";
 import Analytics from "@/pages/analytics";
 import Districts from "@/pages/districts";
 import Records from "@/pages/records";
-import AdminAdd from "@/pages/admin-add";
-import AdminEdit from "@/pages/admin-edit";
-import AdminPanel from "@/pages/admin-panel";
 import Future from "@/pages/future";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import Account from "@/pages/account";
+import Dashboard from "@/pages/dashboard";
+
+import Listings from "@/pages/listings";
+import ListingDetail from "@/pages/listing-detail";
+import ListingForm from "@/pages/listing-form";
+
+import Services from "@/pages/services";
+import ServiceForm from "@/pages/service-form";
+
+import Requests from "@/pages/requests";
+import RequestForm from "@/pages/request-form";
+
+import AdminPanel from "@/pages/admin-panel";
+import AdminAdd from "@/pages/admin-add";
+import AdminEdit from "@/pages/admin-edit";
+import AdminUsers from "@/pages/admin-users";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +55,30 @@ function Router() {
       <Route path="/records" component={Records} />
       <Route path="/future" component={Future} />
 
-      {/* Authenticated user pages */}
+      {/* Marketplace — authenticated actions (MUST come before /:id wildcards) */}
+      <Route path="/listings/new">
+        {() => <UserRoute component={ListingForm} />}
+      </Route>
+      <Route path="/listings/:id/edit">
+        {() => <UserRoute component={ListingForm} />}
+      </Route>
+      <Route path="/services/new">
+        {() => <UserRoute component={ServiceForm} />}
+      </Route>
+      <Route path="/requests/new">
+        {() => <UserRoute component={RequestForm} />}
+      </Route>
+
+      {/* Marketplace — public browse (after specific paths) */}
+      <Route path="/listings" component={Listings} />
+      <Route path="/listings/:id" component={ListingDetail} />
+      <Route path="/services" component={Services} />
+      <Route path="/requests" component={Requests} />
+
+      {/* User dashboard & account */}
+      <Route path="/dashboard">
+        {() => <UserRoute component={Dashboard} />}
+      </Route>
       <Route path="/account">
         {() => <UserRoute component={Account} />}
       </Route>
@@ -56,6 +92,9 @@ function Router() {
       </Route>
       <Route path="/admin/edit/:id">
         {() => <AdminRoute component={AdminEdit} />}
+      </Route>
+      <Route path="/admin/users">
+        {() => <AdminRoute component={AdminUsers} />}
       </Route>
 
       <Route component={NotFound} />
