@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Aqar Monitor"
+version = "1.0.0"
+id = "artifacts/aqar-monitor"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21695
+
+[services.development]
+run = "pnpm --filter @workspace/aqar-monitor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/aqar-monitor", "run", "build" ]
+publicDir = "artifacts/aqar-monitor/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21695"
+BASE_PATH = "/"

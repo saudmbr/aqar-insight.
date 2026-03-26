@@ -1,22 +1,26 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Aqar Monitor - Saudi Real Estate Intelligence Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: properties
+    description: Property records
+  - name: analytics
+    description: Market analytics and insights
+  - name: districts
+    description: District comparison data
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +28,258 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List all property records
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+            enum: [sale, rent]
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertiesListResponse"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Add a new property record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePropertyInput"
+      responses:
+        "201":
+          description: Created property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+
+  /properties/export:
+    get:
+      operationId: exportProperties
+      tags: [properties]
+      summary: Export properties as CSV
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /analytics/kpis:
+    get:
+      operationId: getKpis
+      tags: [analytics]
+      summary: Get KPI summary metrics
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: KPI metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KpiResponse"
+
+  /analytics/price-trends:
+    get:
+      operationId: getPriceTrends
+      tags: [analytics]
+      summary: Get monthly price trends
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+        - name: year
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Price trends over time
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceTrendPoint"
+
+  /analytics/property-types:
+    get:
+      operationId: getPropertyTypeBreakdown
+      tags: [analytics]
+      summary: Get price breakdown by property type
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Property type breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PropertyTypeBreakdown"
+
+  /analytics/yearly-comparison:
+    get:
+      operationId: getYearlyComparison
+      tags: [analytics]
+      summary: Compare average prices year over year
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Yearly comparison data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/YearlyComparisonPoint"
+
+  /districts/comparison:
+    get:
+      operationId: getDistrictComparison
+      tags: [districts]
+      summary: Compare districts within a city
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+        - name: listingType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: District comparison data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DistrictComparison"
+
+  /districts/cities:
+    get:
+      operationId: getCities
+      tags: [districts]
+      summary: Get list of available cities
+      responses:
+        "200":
+          description: List of cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /districts/types:
+    get:
+      operationId: getPropertyTypes
+      tags: [districts]
+      summary: Get list of available property types
+      responses:
+        "200":
+          description: List of property types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +290,216 @@ components:
       required:
         - status
 
+    Property:
+      type: object
+      properties:
+        id:
+          type: number
+        city:
+          type: string
+        district:
+          type: string
+        propertyType:
+          type: string
+        listingType:
+          type: string
+        price:
+          type: number
+        area:
+          type: number
+        pricePerSqm:
+          type: number
+        bedrooms:
+          type: number
+          nullable: true
+        bathrooms:
+          type: number
+          nullable: true
+        year:
+          type: number
+        month:
+          type: number
+        recordedAt:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - city
+        - district
+        - propertyType
+        - listingType
+        - price
+        - area
+        - pricePerSqm
+        - year
+        - month
+        - recordedAt
+        - createdAt
+
+    CreatePropertyInput:
+      type: object
+      properties:
+        city:
+          type: string
+        district:
+          type: string
+        propertyType:
+          type: string
+        listingType:
+          type: string
+          enum: [sale, rent]
+        price:
+          type: number
+        area:
+          type: number
+        bedrooms:
+          type: number
+          nullable: true
+        bathrooms:
+          type: number
+          nullable: true
+        year:
+          type: number
+        month:
+          type: number
+        recordedAt:
+          type: string
+        notes:
+          type: string
+          nullable: true
+      required:
+        - city
+        - district
+        - propertyType
+        - listingType
+        - price
+        - area
+        - year
+        - month
+        - recordedAt
+
+    PropertiesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Property"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+        totalPages:
+          type: number
+      required:
+        - data
+        - total
+        - page
+        - limit
+        - totalPages
+
+    KpiResponse:
+      type: object
+      properties:
+        avgPrice:
+          type: number
+        avgPricePerSqm:
+          type: number
+        totalListings:
+          type: number
+        avgArea:
+          type: number
+        priceChangePercent:
+          type: number
+        saleCount:
+          type: number
+        rentCount:
+          type: number
+      required:
+        - avgPrice
+        - avgPricePerSqm
+        - totalListings
+        - avgArea
+        - priceChangePercent
+        - saleCount
+        - rentCount
+
+    PriceTrendPoint:
+      type: object
+      properties:
+        month:
+          type: string
+        avgPrice:
+          type: number
+        avgPricePerSqm:
+          type: number
+        count:
+          type: number
+      required:
+        - month
+        - avgPrice
+        - avgPricePerSqm
+        - count
+
+    PropertyTypeBreakdown:
+      type: object
+      properties:
+        propertyType:
+          type: string
+        avgPrice:
+          type: number
+        avgPricePerSqm:
+          type: number
+        count:
+          type: number
+      required:
+        - propertyType
+        - avgPrice
+        - avgPricePerSqm
+        - count
+
+    YearlyComparisonPoint:
+      type: object
+      properties:
+        year:
+          type: number
+        avgPrice:
+          type: number
+        avgPricePerSqm:
+          type: number
+        count:
+          type: number
+      required:
+        - year
+        - avgPrice
+        - avgPricePerSqm
+        - count
+
+    DistrictComparison:
+      type: object
+      properties:
+        district:
+          type: string
+        avgPrice:
+          type: number
+        avgPricePerSqm:
+          type: number
+        count:
+          type: number
+        minPrice:
+          type: number
+        maxPrice:
+          type: number
+      required:
+        - district
+        - avgPrice
+        - avgPricePerSqm
+        - count
+        - minPrice
+        - maxPrice
