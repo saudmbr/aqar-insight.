@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, propertiesTable, insertPropertySchema } from "@workspace/db";
-import { eq, and, ilike, sql, asc, desc } from "drizzle-orm";
+import { eq, and, ilike, sql, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -41,11 +41,11 @@ router.post("/", async (req, res) => {
   }
   const { price, area, ...rest } = parsed.data;
   const pricePerSqm = area > 0 ? price / area : 0;
-
   const [property] = await db.insert(propertiesTable).values({ ...rest, price, area, pricePerSqm }).returning();
   res.status(201).json(property);
 });
 
+// IMPORTANT: /export must be before /:id to avoid route conflict
 router.get("/export", async (req, res) => {
   const { city, district, propertyType, listingType } = req.query as Record<string, string>;
   const conditions = [];
@@ -68,8 +68,42 @@ router.get("/export", async (req, res) => {
 
   const csv = [headers.join(","), ...rows].join("\n");
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", `attachment; filename="aqar-monitor-export.csv"`);
+  res.setHeader("Content-Disposition", `attachment; filename="aqar-insight-export.csv"`);
   res.send(csv);
+});
+
+router.get("/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const [property] = await db.select().from(propertiesTable).where(eq(propertiesTable.id, id));
+  if (!property) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(property);
+});
+
+router.put("/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const parsed = insertPropertySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
+    return;
+  }
+  const { price, area, ...rest } = parsed.data;
+  const pricePerSqm = area > 0 ? price / area : 0;
+  const [updated] = await db.update(propertiesTable)
+    .set({ ...rest, price, area, pricePerSqm })
+    .where(eq(propertiesTable.id, id))
+    .returning();
+  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+  res.json(updated);
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  const [deleted] = await db.delete(propertiesTable).where(eq(propertiesTable.id, id)).returning();
+  if (!deleted) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ success: true, id: deleted.id });
 });
 
 export default router;

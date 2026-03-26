@@ -115,6 +115,11 @@ export const ListPropertiesListingType = {
   rent: "rent",
 } as const;
 
+export type DeleteProperty200 = {
+  success: boolean;
+  id: number;
+};
+
 export type ExportPropertiesParams = {
   city?: string;
   district?: string;

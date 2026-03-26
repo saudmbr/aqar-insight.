@@ -9,6 +9,8 @@ import Analytics from "@/pages/analytics";
 import Districts from "@/pages/districts";
 import Records from "@/pages/records";
 import AdminAdd from "@/pages/admin-add";
+import AdminEdit from "@/pages/admin-edit";
+import AdminPanel from "@/pages/admin-panel";
 import Future from "@/pages/future";
 
 const queryClient = new QueryClient({
@@ -28,7 +30,9 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/districts" component={Districts} />
       <Route path="/records" component={Records} />
+      <Route path="/admin" component={AdminPanel} />
       <Route path="/admin/add" component={AdminAdd} />
+      <Route path="/admin/edit/:id" component={AdminEdit} />
       <Route path="/future" component={Future} />
       <Route component={NotFound} />
     </Switch>

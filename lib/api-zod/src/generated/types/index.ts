@@ -8,6 +8,7 @@
 
 export * from "./createPropertyInput";
 export * from "./createPropertyInputListingType";
+export * from "./deleteProperty200";
 export * from "./districtComparison";
 export * from "./exportPropertiesParams";
 export * from "./getDistrictComparisonParams";

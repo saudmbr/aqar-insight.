@@ -71,6 +71,83 @@ export const CreatePropertyBody = zod.object({
 });
 
 /**
+ * @summary Get a single property by ID
+ */
+export const GetPropertyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetPropertyResponse = zod.object({
+  id: zod.number(),
+  city: zod.string(),
+  district: zod.string(),
+  propertyType: zod.string(),
+  listingType: zod.string(),
+  price: zod.number(),
+  area: zod.number(),
+  pricePerSqm: zod.number(),
+  bedrooms: zod.number().nullish(),
+  bathrooms: zod.number().nullish(),
+  year: zod.number(),
+  month: zod.number(),
+  recordedAt: zod.string(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update a property record
+ */
+export const UpdatePropertyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePropertyBody = zod.object({
+  city: zod.string(),
+  district: zod.string(),
+  propertyType: zod.string(),
+  listingType: zod.enum(["sale", "rent"]),
+  price: zod.number(),
+  area: zod.number(),
+  bedrooms: zod.number().nullish(),
+  bathrooms: zod.number().nullish(),
+  year: zod.number(),
+  month: zod.number(),
+  recordedAt: zod.string(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdatePropertyResponse = zod.object({
+  id: zod.number(),
+  city: zod.string(),
+  district: zod.string(),
+  propertyType: zod.string(),
+  listingType: zod.string(),
+  price: zod.number(),
+  area: zod.number(),
+  pricePerSqm: zod.number(),
+  bedrooms: zod.number().nullish(),
+  bathrooms: zod.number().nullish(),
+  year: zod.number(),
+  month: zod.number(),
+  recordedAt: zod.string(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete a property record
+ */
+export const DeletePropertyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeletePropertyResponse = zod.object({
+  success: zod.boolean(),
+  id: zod.number(),
+});
+
+/**
  * @summary Export properties as CSV
  */
 export const ExportPropertiesQueryParams = zod.object({
