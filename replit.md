@@ -117,6 +117,20 @@ PUT  /api/marketers/me/profile       PUT  /api/marketers/:id/verify (admin)
 DELETE /api/marketers/:id (admin)
 ```
 
+## Image Upload System
+
+- **Component**: `artifacts/aqar-monitor/src/components/image-uploader.tsx`
+- **Backend**: `artifacts/api-server/src/routes/storage.ts` (GCS presigned URLs)
+- **Storage**: Google Cloud Storage (Replit App Storage) via presigned URL flow
+- **Upload flow**: POST `/api/storage/uploads/request-url` → PUT presigned GCS URL → store objectPath
+- **Serving**: `GET /api/storage/objects/<path>` for uploaded files; direct URL for external links
+- **objectPath format**: `/objects/uploads/<uuid>` — prepend `/api/storage` to serve
+- **Integrated into**: listing-form (max 10), service-form (max 8), marketer-dashboard (max 1)
+- **Formats**: JPG/JPEG/PNG/WebP, 5MB per file limit
+- **Features**: drag-and-drop, file picker, image preview grid, reorder arrows, remove button, URL fallback, Arabic error messages
+- **Backward compat**: existing URL strings still display correctly (src is used as-is for http/https)
+- **Images stored**: newline-separated objectPaths or URLs in DB columns (e.g., `listings.images`)
+
 ## Marketer Module Notes
 
 - `GET /api/marketers/me/profile` and `PUT /api/marketers/me/profile` MUST be declared BEFORE `GET /api/marketers/:id` to avoid "me" being parsed as a numeric id

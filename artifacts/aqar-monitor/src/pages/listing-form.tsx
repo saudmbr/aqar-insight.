@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save, Building, Map, Info, Grid2X2, FileText, Image as ImageIcon, Contact, Zap } from "lucide-react";
+import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
 import type { Listing } from "@workspace/db";
 
@@ -447,19 +448,11 @@ export default function ListingForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <FieldGroup label="روابط الصور (رابط واحد في كل سطر)">
-              <textarea
-                rows={5}
-                placeholder={"https://example.com/image1.jpg\nhttps://example.com/image2.jpg"}
-                value={form.images ?? ""}
-                onChange={e => set("images", e.target.value)}
-                className="w-full rounded-2xl border border-input bg-background p-5 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
-                dir="ltr"
-              />
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Info className="w-4 h-4" />الصورة الأولى ستكون الصورة الرئيسية للإعلان.
-              </p>
-            </FieldGroup>
+            <ImageUploader
+              value={form.images ?? ""}
+              onChange={v => set("images", v)}
+              maxImages={10}
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-border">
               <FieldGroup label="رابط الفيديو (يوتيوب / Vimeo)">
                 <Input type="url" placeholder="https://youtube.com/..." value={form.videoUrl ?? ""} onChange={e => set("videoUrl", e.target.value)} className="h-12 rounded-xl font-mono text-sm" dir="ltr" />

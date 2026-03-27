@@ -24,4 +24,6 @@ export * from "./priceTrendPoint";
 export * from "./propertiesListResponse";
 export * from "./property";
 export * from "./propertyTypeBreakdown";
+export * from "./uploadUrlRequest";
+export * from "./uploadUrlResponse";
 export * from "./yearlyComparisonPoint";

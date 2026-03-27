@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText } from "lucide-react";
+import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
 
 const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
@@ -181,16 +182,12 @@ export default function ServiceForm() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <FieldGroup label="روابط صور من أعمالك السابقة (رابط في كل سطر)">
-                <textarea 
-                  rows={6} 
-                  placeholder={"https://example.com/work1.jpg\nhttps://example.com/work2.jpg"} 
-                  value={portfolioImages} 
-                  onChange={e => setPortfolioImages(e.target.value)} 
-                  className="w-full rounded-2xl border border-input bg-background p-4 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 text-left" 
-                  dir="ltr" 
-                />
-              </FieldGroup>
+              <ImageUploader
+                value={portfolioImages}
+                onChange={setPortfolioImages}
+                maxImages={8}
+                label="معرض الأعمال"
+              />
             </CardContent>
           </Card>
         </div>

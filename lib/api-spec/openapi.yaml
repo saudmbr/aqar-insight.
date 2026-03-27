@@ -15,6 +15,8 @@ tags:
     description: Market analytics and insights
   - name: districts
     description: District comparison data
+  - name: storage
+    description: Object storage upload and serving
 paths:
   /healthz:
     get:
@@ -338,6 +340,29 @@ paths:
                 items:
                   type: string
 
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields
+        '500':
+          description: Failed to generate upload URL
+
   /districts/types:
     get:
       operationId: getPropertyTypes
@@ -576,3 +601,29 @@ components:
         - count
         - minPrice
         - maxPrice
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/UploadUrlRequest'

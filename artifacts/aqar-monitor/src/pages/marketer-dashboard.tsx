@@ -13,6 +13,7 @@ import {
   Building2, Save, Loader2, Plus, User, MapPin, Phone, Globe, Star,
   BadgeCheck, Edit, Trash2, Eye,
 } from "lucide-react";
+import { ImageUploader } from "@/components/image-uploader";
 
 interface MarketerProfile {
   id?: number;
@@ -330,14 +331,12 @@ export default function MarketerDashboard() {
             </Section>
 
             <Section title="🖼️ الصورة الشخصية">
-              <Field label="رابط الصورة الشخصية">
-                <Input type="url" value={profile.photo ?? ""} onChange={e => set("photo", e.target.value)} placeholder="https://example.com/photo.jpg" className="h-10 rounded-xl font-mono" dir="ltr" />
-              </Field>
-              {profile.photo && (
-                <div className="w-20 h-20 rounded-2xl overflow-hidden border border-border shadow-sm">
-                  <img src={profile.photo} alt="صورتك" className="w-full h-full object-cover" />
-                </div>
-              )}
+              <ImageUploader
+                value={profile.photo ?? ""}
+                onChange={v => set("photo", v.split("\n")[0]?.trim() ?? "")}
+                maxImages={1}
+                label="الصورة الشخصية"
+              />
             </Section>
 
             {/* Save */}
