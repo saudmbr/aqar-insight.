@@ -39,6 +39,9 @@ import LegalTerms from "@/pages/legal-terms";
 import LegalPrivacy from "@/pages/legal-privacy";
 import LegalUsage from "@/pages/legal-usage";
 
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -116,6 +119,10 @@ function Router() {
       <Route path="/terms" component={LegalTerms} />
       <Route path="/privacy" component={LegalPrivacy} />
       <Route path="/usage" component={LegalUsage} />
+
+      {/* Password recovery */}
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
 
       <Route component={NotFound} />
     </Switch>

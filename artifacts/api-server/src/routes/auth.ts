@@ -1,8 +1,9 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import { eq, or } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import crypto from "crypto";
+import { eq, or, and, gt, isNull } from "drizzle-orm";
+import { db, usersTable, passwordResetTokensTable } from "@workspace/db";
 
 const authRouter = Router();
 
@@ -374,6 +375,152 @@ authRouter.put("/password", async (req: Request, res: Response) => {
 
     const newHash = await bcrypt.hash(newPassword, 12);
     await db.update(usersTable).set({ passwordHash: newHash }).where(eq(usersTable.id, req.session.userId));
+
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ message: "حدث خطأ في الخادم" });
+  }
+});
+
+// ─── Forgot Password ──────────────────────────────────────────────────────────
+// In-memory rate limiter: max 3 requests per identifier per 15-min window
+const _fpRateMap = new Map<string, { count: number; resetAt: number }>();
+const FP_MAX = 3;
+const FP_WINDOW = 15 * 60 * 1000;
+const TOKEN_TTL = 20 * 60 * 1000; // 20 minutes
+
+authRouter.post("/forgot-password", async (req: Request, res: Response) => {
+  const { identifier } = req.body as { identifier?: string };
+
+  if (!identifier?.trim()) {
+    res.status(400).json({ message: "يرجى إدخال البريد الإلكتروني" });
+    return;
+  }
+
+  const key = identifier.trim().toLowerCase();
+  const now = Date.now();
+  const rate = _fpRateMap.get(key);
+
+  if (rate) {
+    if (now < rate.resetAt) {
+      if (rate.count >= FP_MAX) {
+        // Rate-limited — return success silently for security
+        res.json({ success: true });
+        return;
+      }
+      rate.count++;
+    } else {
+      _fpRateMap.set(key, { count: 1, resetAt: now + FP_WINDOW });
+    }
+  } else {
+    _fpRateMap.set(key, { count: 1, resetAt: now + FP_WINDOW });
+  }
+
+  try {
+    const rows = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, key))
+      .limit(1);
+
+    if (!rows[0]) {
+      // Always respond with success — never reveal whether account exists
+      res.json({ success: true });
+      return;
+    }
+
+    const userId = rows[0].id;
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(now + TOKEN_TTL);
+
+    await db.insert(passwordResetTokensTable).values({ userId, tokenHash, expiresAt });
+
+    // No email service configured — return token directly so it can be used immediately.
+    // When an email service is integrated, remove `resetToken` from this response
+    // and send it via email instead.
+    res.json({ success: true, resetToken: rawToken });
+  } catch {
+    res.status(500).json({ message: "حدث خطأ في الخادم" });
+  }
+});
+
+// ─── Validate Reset Token ─────────────────────────────────────────────────────
+authRouter.get("/validate-reset-token", async (req: Request, res: Response) => {
+  const { token } = req.query as { token?: string };
+
+  if (!token) {
+    res.json({ valid: false });
+    return;
+  }
+
+  try {
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const rows = await db
+      .select({ id: passwordResetTokensTable.id })
+      .from(passwordResetTokensTable)
+      .where(
+        and(
+          eq(passwordResetTokensTable.tokenHash, tokenHash),
+          isNull(passwordResetTokensTable.usedAt),
+          gt(passwordResetTokensTable.expiresAt, new Date())
+        )
+      )
+      .limit(1);
+
+    res.json({ valid: !!rows[0] });
+  } catch {
+    res.status(500).json({ valid: false });
+  }
+});
+
+// ─── Reset Password ───────────────────────────────────────────────────────────
+authRouter.post("/reset-password", async (req: Request, res: Response) => {
+  const { token, password } = req.body as { token?: string; password?: string };
+
+  if (!token?.trim() || !password) {
+    res.status(400).json({ message: "بيانات غير مكتملة" });
+    return;
+  }
+
+  if (password.length < 8) {
+    res.status(400).json({ message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل" });
+    return;
+  }
+
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    res.status(400).json({ message: "كلمة المرور يجب أن تحتوي على أحرف وأرقام معاً" });
+    return;
+  }
+
+  try {
+    const tokenHash = crypto.createHash("sha256").update(token.trim()).digest("hex");
+
+    const rows = await db
+      .select()
+      .from(passwordResetTokensTable)
+      .where(
+        and(
+          eq(passwordResetTokensTable.tokenHash, tokenHash),
+          isNull(passwordResetTokensTable.usedAt),
+          gt(passwordResetTokensTable.expiresAt, new Date())
+        )
+      )
+      .limit(1);
+
+    const tokenRecord = rows[0];
+    if (!tokenRecord) {
+      res.status(400).json({ message: "الرابط غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد." });
+      return;
+    }
+
+    const newHash = await bcrypt.hash(password, 12);
+    await db.update(usersTable).set({ passwordHash: newHash }).where(eq(usersTable.id, tokenRecord.userId));
+    await db
+      .update(passwordResetTokensTable)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResetTokensTable.id, tokenRecord.id));
 
     res.json({ success: true });
   } catch {
