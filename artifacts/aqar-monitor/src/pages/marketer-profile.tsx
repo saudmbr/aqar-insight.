@@ -87,7 +87,9 @@ export default function MarketerProfilePage() {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed max-w-2xl mx-auto">
-          <Building2 className="w-16 h-16 text-muted-foreground/30 mb-4" />
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center mb-6">
+            <Building2 className="w-10 h-10 text-primary/60" />
+          </div>
           <h2 className="text-2xl font-bold mb-3">المسوّق غير موجود</h2>
           <Button asChild variant="outline" className="rounded-xl px-8">
             <Link href="/marketers"><ArrowRight className="w-4 h-4 ml-2" />العودة للدليل</Link>
@@ -124,30 +126,54 @@ export default function MarketerProfilePage() {
             )}
           </div>
 
-          <div className="px-6 pb-6 -mt-10">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div className="flex items-end gap-4">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center shadow-lg overflow-hidden shrink-0">
-                  {profile.photo ? (
-                    <img src={getImageSrc(profile.photo) ?? ""} alt={profile.fullName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-3xl font-bold text-primary">{profile.fullName.charAt(0)}</span>
-                  )}
-                </div>
-                <div className="pb-1">
-                  <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
-                  {profile.officeName && <p className="text-base text-muted-foreground font-medium">{profile.officeName}</p>}
-                  {profile.city && (
-                    <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />{profile.city}
-                    </div>
-                  )}
-                </div>
+          <div className="px-6 pb-6">
+            {/* Single flex row: avatar straddles banner, name+CTA pushed to card body level */}
+            <div className="flex items-start gap-4 -mt-10 flex-wrap">
+              {/* Avatar — sits at -mt-10, straddling the banner/card boundary */}
+              <div className="w-20 h-20 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center shadow-lg overflow-hidden shrink-0">
+                {profile.photo ? (
+                  <img
+                    src={getImageSrc(profile.photo) ?? ""}
+                    alt={profile.fullName}
+                    className="w-full h-full object-cover"
+                    onError={e => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      img.style.display = "none";
+                      const span = img.parentElement?.querySelector("span");
+                      if (span) span.style.display = "";
+                    }}
+                  />
+                ) : null}
+                <span
+                  className="text-3xl font-bold text-primary"
+                  style={profile.photo ? { display: "none" } : {}}
+                >
+                  {profile.fullName.charAt(0)}
+                </span>
               </div>
 
-              {/* CTA buttons */}
-              <div className="flex gap-3 flex-wrap">
+              {/* Name / office / city — mt-10 cancels parent -mt-10, placing text at card body */}
+              <div className="flex-1 min-w-0 mt-10 pt-1.5">
+                <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+                {profile.officeName && (
+                  <p className="text-base text-muted-foreground font-medium mt-0.5">{profile.officeName}</p>
+                )}
+                {profile.city && (
+                  <div className="flex items-center gap-1 mt-1.5 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 shrink-0" />{profile.city}
+                  </div>
+                )}
+                {specialties.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {specialties.slice(0, 3).map((s, i) => (
+                      <span key={i} className="text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/15 font-medium">{s}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* CTA buttons — mt-10 same as name div, appears at card body level */}
+              <div className="flex gap-3 flex-wrap shrink-0 mt-10">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
                     <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
@@ -292,7 +318,9 @@ export default function MarketerProfilePage() {
 
             {listings.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-2xl border border-border border-dashed">
-                <Building2 className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                <div className="w-14 h-14 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center mb-4">
+                  <Building2 className="w-7 h-7 text-primary/60" />
+                </div>
                 <p className="text-muted-foreground">لا توجد إعلانات نشطة حالياً</p>
               </div>
             ) : viewMode === "grid" ? (
