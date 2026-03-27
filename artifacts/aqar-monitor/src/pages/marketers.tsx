@@ -111,17 +111,21 @@ export default function Marketers() {
       <div className="space-y-8 pb-12">
         {/* Hero banner */}
         <div
-          className="rounded-3xl px-8 py-12 text-white relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 50%, #0F7BA0 100%)" }}
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 text-white"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
         >
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: "radial-gradient(ellipse at 20% 50%, white 0%, transparent 60%)" }} />
-          <div className="relative z-10 flex items-center gap-4 mb-2">
-            <Users className="w-8 h-8 text-white/80" />
-            <h1 className="text-3xl font-extrabold">دليل المسوّقين العقاريين</h1>
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.04 }} />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_top_left,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
+              <Users className="w-3.5 h-3.5" />
+              دليل المسوّقين المحترفين
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">دليل المسوّقين العقاريين</h1>
+            <p className="text-white/75 mt-2 text-base max-w-2xl">
+              تصفح كوكبة من أفضل المسوّقين العقاريين المحترفين، واطّلع على كتالوج عقاراتهم
+            </p>
           </div>
-          <p className="relative z-10 text-white/85 text-lg max-w-2xl">
-            تصفح كوكبة من أفضل المسوّقين العقاريين المحترفين، واطّلع على كتالوج عقاراتهم
-          </p>
         </div>
 
         {/* Search */}
@@ -149,7 +153,9 @@ export default function Marketers() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed">
-            <Users className="w-16 h-16 text-muted-foreground/30 mb-4" />
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/15">
+              <Users className="w-10 h-10 text-primary/60" />
+            </div>
             <h3 className="text-xl font-bold text-foreground mb-2">لا يوجد مسوّقون بعد</h3>
             <p className="text-muted-foreground">كن أول من ينضم كمسوّق عقاري محترف</p>
           </div>

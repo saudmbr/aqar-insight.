@@ -93,7 +93,7 @@ export default function Requests() {
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
             <button
               onClick={() => setCategory("")}
-              className={`shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all ${!category ? "bg-primary text-white shadow-md shadow-primary/20" : "bg-card border border-border text-muted-foreground hover:bg-muted"}`}
+              className={`shrink-0 h-11 px-5 rounded-xl text-sm font-bold transition-all ${!category ? "bg-primary text-white shadow-sm shadow-primary/25" : "bg-card border border-border text-muted-foreground hover:bg-muted hover:border-primary/30"}`}
             >
               جميع الطلبات
             </button>
@@ -101,15 +101,15 @@ export default function Requests() {
               <button
                 key={c}
                 onClick={() => setCategory(c === category ? "" : c)}
-                className={`shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all ${c === category ? "bg-primary text-white shadow-md shadow-primary/20" : "bg-card border border-border text-muted-foreground hover:bg-muted"}`}
+                className={`shrink-0 h-11 px-5 rounded-xl text-sm font-bold transition-all ${c === category ? "bg-primary text-white shadow-sm shadow-primary/25" : "bg-card border border-border text-muted-foreground hover:bg-muted hover:border-primary/30"}`}
               >
                 {c}
               </button>
             ))}
           </div>
 
-          <div className="shrink-0 w-full md:w-64">
-            <select value={city} onChange={e => setCity(e.target.value)} className="w-full h-12 rounded-2xl border border-border bg-card px-4 text-base font-semibold outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-sm">
+          <div className="shrink-0 w-full md:w-52">
+            <select value={city} onChange={e => setCity(e.target.value)} className="w-full h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary cursor-pointer hover:border-primary/40 transition-colors">
               <option value="">كل المدن</option>
               {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -123,8 +123,8 @@ export default function Requests() {
           </div>
         ) : requests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed">
-            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-              <FileText className="w-10 h-10 text-muted-foreground" />
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/15">
+              <FileText className="w-10 h-10 text-primary/60" />
             </div>
             <h3 className="text-2xl font-bold mb-3 text-foreground">لا توجد طلبات حالياً</h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-md">لم يتم العثور على طلبات مفتوحة في هذا القسم. كن أول من يضيف طلباً!</p>

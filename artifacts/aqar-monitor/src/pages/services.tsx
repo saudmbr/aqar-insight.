@@ -69,8 +69,12 @@ export default function Services() {
     <Layout>
       <div className="space-y-8 pb-12">
         {/* Header Hero */}
-        <div className="relative rounded-[2rem] overflow-hidden bg-sidebar text-sidebar-foreground shadow-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(201,168,76,0.1),transparent_50%)] pointer-events-none" />
+        <div
+          className="relative rounded-[2rem] overflow-hidden text-sidebar-foreground shadow-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.04 }} />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_top_left,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
           <div className="relative z-10 max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">دليل مزودي الخدمات <span className="text-accent">العقارية</span></h1>
             <p className="text-lg text-white/85 leading-relaxed">
@@ -145,8 +149,8 @@ export default function Services() {
           </div>
         ) : providers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed">
-            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-              <Wrench className="w-10 h-10 text-muted-foreground" />
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/15">
+              <Wrench className="w-10 h-10 text-primary/60" />
             </div>
             <h3 className="text-2xl font-bold mb-3 text-foreground">لا توجد خدمات متاحة</h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-md">لم نجد مزودي خدمة يطابقون بحثك. كن أنت الأول في المنطقة!</p>

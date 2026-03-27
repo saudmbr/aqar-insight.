@@ -129,8 +129,8 @@ export default function ListingDetail() {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center py-24 text-center bg-card rounded-3xl border border-border border-dashed max-w-2xl mx-auto">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-            <Building2 className="w-10 h-10 text-muted-foreground/30" />
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center mb-6">
+            <Building2 className="w-10 h-10 text-primary/60" />
           </div>
           <h2 className="text-2xl font-bold mb-3">الإعلان غير موجود</h2>
           <p className="text-muted-foreground mb-8">عذراً، لا يمكن العثور على هذا الإعلان.</p>
@@ -249,9 +249,11 @@ export default function ListingDetail() {
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-secondary">
-                <Building2 className="w-24 h-24 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground font-medium">لا توجد صور متاحة</p>
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-secondary/80 to-muted/50">
+                <div className="w-28 h-28 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center mb-4">
+                  <Building2 className="w-14 h-14 text-primary/50" />
+                </div>
+                <p className="text-muted-foreground font-medium text-sm">لا توجد صور متاحة</p>
               </div>
             )}
             {listing.featured && (

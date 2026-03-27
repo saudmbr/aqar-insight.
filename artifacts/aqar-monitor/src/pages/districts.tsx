@@ -19,6 +19,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
+import { Map } from "lucide-react";
 
 export default function Districts() {
   const { data: cities } = useGetCities();
@@ -45,15 +46,24 @@ export default function Districts() {
   return (
     <Layout>
       <div className="space-y-8 pb-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">مقارنة الأحياء</h1>
-            <p className="text-muted-foreground mt-1">قارن أداء وتوزيع الأسعار بين مختلف أحياء المدينة</p>
+        {/* Hero banner — consistent with all other pages */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.04 }} />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_80%_at_top_right,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
+              <Map className="w-3.5 h-3.5" />
+              خرائط وبيانات الأحياء
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">مقارنة الأحياء</h1>
+            <p className="text-white/75 mt-2 text-base">قارن أداء وتوزيع الأسعار بين مختلف أحياء المدينة</p>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="relative z-10 flex flex-wrap items-center gap-3">
             <Select value={listingType} onValueChange={setListingType}>
-              <SelectTrigger className="w-[120px] bg-card">
+              <SelectTrigger className="w-[120px] bg-white/10 border-white/20 text-white">
                 <SelectValue placeholder="العملية" />
               </SelectTrigger>
               <SelectContent>
@@ -62,9 +72,8 @@ export default function Districts() {
                 <SelectItem value="rent">إيجار</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={propertyType} onValueChange={setPropertyType}>
-              <SelectTrigger className="w-[140px] bg-card">
+              <SelectTrigger className="w-[140px] bg-white/10 border-white/20 text-white">
                 <SelectValue placeholder="نوع العقار" />
               </SelectTrigger>
               <SelectContent>
@@ -74,9 +83,8 @@ export default function Districts() {
                 ))}
               </SelectContent>
             </Select>
-
             <Select value={city} onValueChange={setCity}>
-              <SelectTrigger className="w-[160px] bg-card border-primary ring-1 ring-primary/20">
+              <SelectTrigger className="w-[160px] bg-white/15 border-white/30 text-white ring-1 ring-white/20">
                 <SelectValue placeholder="اختر المدينة" />
               </SelectTrigger>
               <SelectContent>

@@ -78,7 +78,7 @@ function NavItem({ item, location }: { item: NavItemDef; location: string }) {
 function NavGroup({ label, items, location }: { label: string; items: NavItemDef[]; location: string }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sidebar-foreground/60 px-6 font-semibold text-[10px] uppercase tracking-wider mb-2">
+      <SidebarGroupLabel className="text-sidebar-foreground/45 px-6 font-bold text-[11px] mb-1 tracking-normal">
         {label}
       </SidebarGroupLabel>
       <SidebarGroupContent>
@@ -138,7 +138,7 @@ export function AppSidebar() {
         {/* Marketer shortcut for non-marketers */}
         {isAuthenticated && !isMarketer && !isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/60 px-6 font-semibold text-[10px] uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-sidebar-foreground/45 px-6 font-bold text-[11px] mb-1 tracking-normal">
               انضم كمسوّق
             </SidebarGroupLabel>
             <SidebarGroupContent>

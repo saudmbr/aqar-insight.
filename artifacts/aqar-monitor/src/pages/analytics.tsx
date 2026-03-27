@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
+import { TrendingUp } from "lucide-react";
 import { 
   useGetPriceTrends,
   useGetYearlyComparison,
@@ -39,15 +40,24 @@ export default function Analytics() {
   return (
     <Layout>
       <div className="space-y-8 pb-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">تحليل السوق</h1>
-            <p className="text-muted-foreground mt-1">دراسة معمقة للمؤشرات العقارية والتاريخية</p>
+        {/* Hero banner — consistent with all other pages */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.04 }} />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_80%_at_top_right,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
+              <TrendingUp className="w-3.5 h-3.5" />
+              تحليلات وإحصاءات
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">تحليل السوق</h1>
+            <p className="text-white/75 mt-2 text-base">دراسة معمقة للمؤشرات العقارية والتاريخية</p>
           </div>
-          
-          <div className="flex items-center gap-3">
+          <div className="relative z-10 flex items-center gap-3 flex-wrap">
             <Select value={listingType} onValueChange={setListingType}>
-              <SelectTrigger className="w-[140px] bg-card">
+              <SelectTrigger className="w-[140px] bg-white/10 border-white/20 text-white">
                 <SelectValue placeholder="نوع العملية" />
               </SelectTrigger>
               <SelectContent>
@@ -56,9 +66,8 @@ export default function Analytics() {
                 <SelectItem value="rent">إيجار</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={city} onValueChange={setCity}>
-              <SelectTrigger className="w-[160px] bg-card">
+              <SelectTrigger className="w-[160px] bg-white/10 border-white/20 text-white">
                 <SelectValue placeholder="المدينة" />
               </SelectTrigger>
               <SelectContent>
