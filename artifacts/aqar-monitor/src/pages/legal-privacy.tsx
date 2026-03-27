@@ -36,10 +36,10 @@ export default function LegalPrivacy() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">سياسة الخصوصية</h1>
-              <p className="text-white/70 text-sm mt-1">منصة عقار إنسايت</p>
+              <p className="text-white/85 text-sm mt-1">منصة عقار إنسايت</p>
             </div>
           </div>
-          <p className="text-white/60 text-sm mt-4">آخر تحديث: مارس 2025 · تلتزم المنصة بحماية خصوصيتك وفق المعايير السعودية والدولية</p>
+          <p className="text-white/80 text-sm mt-4">آخر تحديث: مارس 2025 · تلتزم المنصة بحماية خصوصيتك وفق المعايير السعودية والدولية</p>
         </div>
 
         {/* Intro */}

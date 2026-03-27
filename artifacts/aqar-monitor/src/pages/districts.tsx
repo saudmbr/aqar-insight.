@@ -110,12 +110,12 @@ export default function Districts() {
                       layout="vertical" 
                       margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--border))" />
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border)" />
                       <XAxis 
                         type="number" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         tickFormatter={(value) => `${value/1000}k`}
                       />
                       <YAxis 
@@ -123,16 +123,16 @@ export default function Districts() {
                         dataKey="district" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--foreground))', fontWeight: 500 }}
+                        tick={{ fill: 'var(--foreground)', fontWeight: 500 }}
                       />
                       <RechartsTooltip 
-                        cursor={{ fill: 'hsl(var(--muted)/0.3)' }}
+                        cursor={{ fill: 'color-mix(in srgb, var(--muted) 30%, transparent)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         formatter={(value: number) => [formatCurrency(value), 'متوسط السعر']}
                       />
                       <Bar 
                         dataKey="avgPrice" 
-                        fill="hsl(var(--primary))" 
+                        fill="var(--primary)" 
                         radius={[0, 4, 4, 0]} 
                         barSize={24}
                       />

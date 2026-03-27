@@ -71,7 +71,7 @@ export function GuestCTA() {
         </h2>
 
         {/* Subtext */}
-        <p className="relative text-base text-white/65 max-w-md mx-auto leading-relaxed mb-8">
+        <p className="relative text-base text-white/85 max-w-md mx-auto leading-relaxed mb-8">
           احصل على تحليلات دقيقة، قارن بين الأحياء، واتخذ قراراتك بناءً على بيانات موثوقة
         </p>
 
@@ -98,7 +98,7 @@ export function GuestCTA() {
         </div>
 
         {/* Trust line */}
-        <p className="relative mt-6 text-xs text-white/35">
+        <p className="relative mt-6 text-xs text-white/70">
           أكثر من ٣٣٠٠ سجل عقاري حقيقي من المملكة العربية السعودية
         </p>
       </div>

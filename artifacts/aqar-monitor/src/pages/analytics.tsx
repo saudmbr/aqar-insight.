@@ -92,16 +92,16 @@ export default function Analytics() {
                     <AreaChart data={trends || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                       <XAxis 
                         dataKey="month" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         dy={10}
                       />
                       <YAxis 
@@ -109,7 +109,7 @@ export default function Analytics() {
                         orientation="right"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         tickFormatter={(value) => `${value/1000}k`}
                       />
                       <RechartsTooltip 
@@ -120,7 +120,7 @@ export default function Analytics() {
                         yAxisId="right"
                         type="monotone" 
                         dataKey="avgPrice" 
-                        stroke="hsl(var(--primary))" 
+                        stroke="var(--primary)" 
                         strokeWidth={3}
                         fillOpacity={1} 
                         fill="url(#colorPrice)" 
@@ -145,12 +145,12 @@ export default function Analytics() {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={yearly || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                       <XAxis 
                         dataKey="year" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         dy={10}
                       />
                       <YAxis 
@@ -158,18 +158,18 @@ export default function Analytics() {
                         orientation="right"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         tickFormatter={(value) => `${value/1000}k`}
                       />
                       <RechartsTooltip 
-                        cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
+                        cursor={{ fill: 'color-mix(in srgb, var(--muted) 50%, transparent)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         formatter={(value: number) => [formatCurrency(value), 'متوسط السعر']}
                       />
                       <Bar 
                         yAxisId="right"
                         dataKey="avgPrice" 
-                        fill="hsl(var(--primary))" 
+                        fill="var(--primary)" 
                         radius={[4, 4, 0, 0]} 
                         barSize={40}
                       />
@@ -193,12 +193,12 @@ export default function Analytics() {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={yearly || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                       <XAxis 
                         dataKey="year" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                         dy={10}
                       />
                       <YAxis 
@@ -206,17 +206,17 @@ export default function Analytics() {
                         orientation="right"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: 'var(--muted-foreground)' }}
                       />
                       <RechartsTooltip 
-                        cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
+                        cursor={{ fill: 'color-mix(in srgb, var(--muted) 50%, transparent)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                         formatter={(value: number) => [value, 'إجمالي الصفقات']}
                       />
                       <Bar 
                         yAxisId="right"
                         dataKey="count" 
-                        fill="hsl(var(--chart-2))" 
+                        fill="#C9A84C"
                         radius={[4, 4, 0, 0]} 
                         barSize={40}
                       />

@@ -80,7 +80,7 @@ export default function ResetPassword() {
       className="min-h-screen bg-background flex items-center justify-center p-4"
       style={{
         background:
-          "radial-gradient(ellipse at 70% 20%, hsl(191 80% 28% / 0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, hsl(218 55% 10% / 0.05) 0%, transparent 60%), hsl(var(--background))",
+          "radial-gradient(ellipse at 70% 20%, hsl(191 80% 28% / 0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, hsl(218 55% 10% / 0.05) 0%, transparent 60%), var(--background)",
       }}
     >
       <div className="w-full max-w-sm space-y-8">

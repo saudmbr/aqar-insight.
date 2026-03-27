@@ -36,10 +36,10 @@ export default function LegalTerms() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">الشروط والأحكام</h1>
-              <p className="text-white/70 text-sm mt-1">منصة عقار إنسايت</p>
+              <p className="text-white/85 text-sm mt-1">منصة عقار إنسايت</p>
             </div>
           </div>
-          <p className="text-white/60 text-sm mt-4">آخر تحديث: مارس 2025 · تسري هذه الشروط على جميع مستخدمي المنصة</p>
+          <p className="text-white/80 text-sm mt-4">آخر تحديث: مارس 2025 · تسري هذه الشروط على جميع مستخدمي المنصة</p>
         </div>
 
         {/* Intro */}

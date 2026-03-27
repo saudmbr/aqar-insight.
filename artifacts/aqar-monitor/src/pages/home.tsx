@@ -266,7 +266,7 @@ export default function Home() {
                   <br />
                   <span className="text-primary-foreground/75">بذكاء ودقة حقيقية</span>
                 </h1>
-                <p className="text-[17px] text-white/65 leading-relaxed mb-8 max-w-xl">
+                <p className="text-[17px] text-white/85 leading-relaxed mb-8 max-w-xl">
                   تحليلات ومؤشرات حية مبنية على إعلانات عقارية حقيقية — اكتشف، قارن، وافهم السوق.
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -303,7 +303,7 @@ export default function Home() {
                   ].map(s => (
                     <div key={s.label} className="bg-white/8 border border-white/10 rounded-2xl px-5 py-4 min-w-[130px] text-center backdrop-blur-sm">
                       <div className="text-xl font-extrabold text-white mb-1">{s.value}</div>
-                      <div className="text-[11px] text-white/55 leading-tight">{s.label}</div>
+                      <div className="text-[11px] text-white/80 leading-tight">{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -789,7 +789,7 @@ export default function Home() {
                 <div className="relative">
                   <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
-                  <p className="text-[13px] text-white/55 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
+                  <p className="text-[13px] text-white/80 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-primary">
                     ابدأ الآن <ArrowLeft className="w-4 h-4" />
                   </div>
@@ -802,7 +802,7 @@ export default function Home() {
                 <div className="relative">
                   <Users className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">المسوّقون العقاريون</h3>
-                  <p className="text-[13px] text-white/70 mb-4">تواصل مع أفضل المسوّقين المعتمدين وصحاب الخبرة</p>
+                  <p className="text-[13px] text-white/85 mb-4">تواصل مع أفضل المسوّقين المعتمدين وصحاب الخبرة</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
                     استعرض الملفات <ArrowLeft className="w-4 h-4" />
                   </div>
@@ -815,7 +815,7 @@ export default function Home() {
                 <div className="relative">
                   <Search className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">اطلب عقاراً</h3>
-                  <p className="text-[13px] text-white/70 mb-4">أخبرنا عن احتياجك وسنجد لك أفضل الخيارات المتاحة</p>
+                  <p className="text-[13px] text-white/85 mb-4">أخبرنا عن احتياجك وسنجد لك أفضل الخيارات المتاحة</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
                     قدّم طلبك <ArrowLeft className="w-4 h-4" />
                   </div>

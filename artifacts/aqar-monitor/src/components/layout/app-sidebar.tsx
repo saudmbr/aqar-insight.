@@ -63,11 +63,11 @@ function NavItem({ item, location }: { item: NavItemDef; location: string }) {
           "h-11 rounded-xl transition-all duration-300",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
-            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white"
         )}
       >
         <Link href={item.url} className="flex items-center gap-3 px-4">
-          <item.icon className={cn("w-4 h-4 transition-colors", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/50")} />
+          <item.icon className={cn("w-4 h-4 transition-colors", isActive ? "text-sidebar-accent-foreground" : "text-sidebar-foreground/75")} />
           <span className="text-sm">{item.title}</span>
         </Link>
       </SidebarMenuButton>
@@ -78,7 +78,7 @@ function NavItem({ item, location }: { item: NavItemDef; location: string }) {
 function NavGroup({ label, items, location }: { label: string; items: NavItemDef[]; location: string }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[10px] uppercase tracking-wider mb-2">
+      <SidebarGroupLabel className="text-sidebar-foreground/60 px-6 font-semibold text-[10px] uppercase tracking-wider mb-2">
         {label}
       </SidebarGroupLabel>
       <SidebarGroupContent>
@@ -113,8 +113,8 @@ export function AppSidebar() {
             <Building2 className="w-5 h-5 text-primary-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-xl leading-tight tracking-tight text-sidebar-foreground">عقار إنسايت</span>
-            <span className="text-xs text-sidebar-foreground/60 leading-tight mt-0.5">منصة ذكية للعقار</span>
+            <span className="font-bold text-xl leading-tight tracking-tight text-white">عقار إنسايت</span>
+            <span className="text-xs text-sidebar-foreground/80 leading-tight mt-0.5">منصة ذكية للعقار</span>
           </div>
         </div>
       </SidebarHeader>
@@ -138,15 +138,15 @@ export function AppSidebar() {
         {/* Marketer shortcut for non-marketers */}
         {isAuthenticated && !isMarketer && !isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[10px] uppercase tracking-wider mb-2">
+            <SidebarGroupLabel className="text-sidebar-foreground/60 px-6 font-semibold text-[10px] uppercase tracking-wider mb-2">
               انضم كمسوّق
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="px-4">
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="h-11 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
+                  <SidebarMenuButton asChild className="h-11 rounded-xl text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-white">
                     <Link href="/marketer/dashboard" className="flex items-center gap-3 px-4">
-                      <Star className="w-4 h-4 text-sidebar-foreground/50" />
+                      <Star className="w-4 h-4 text-sidebar-foreground/75" />
                       <span className="text-sm">أنشئ ملف مسوّق</span>
                     </Link>
                   </SidebarMenuButton>
@@ -165,19 +165,19 @@ export function AppSidebar() {
       {isAuthenticated && user && (
         <SidebarFooter className="border-t border-sidebar-border/50 p-4">
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sidebar-border/30 mb-2">
-            <UserCircle2 className="w-8 h-8 text-sidebar-foreground/70 shrink-0" />
+            <UserCircle2 className="w-8 h-8 text-sidebar-foreground shrink-0" />
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-sm font-semibold text-sidebar-foreground truncate">
+              <span className="text-sm font-semibold text-white truncate">
                 {user.fullName || user.username}
               </span>
-              <span className="text-xs text-sidebar-foreground/50 mt-0.5">
+              <span className="text-xs text-sidebar-foreground/75 mt-0.5">
                 {ROLE_LABELS[user.role ?? "user"] ?? "عضو"}
               </span>
             </div>
           </div>
           <button
             onClick={() => void logout()}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-destructive transition-all duration-300 group"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive transition-all duration-300 group"
           >
             <LogOut className="w-4 h-4 group-hover:text-destructive transition-colors" />
             <span>تسجيل الخروج</span>
