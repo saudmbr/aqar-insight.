@@ -176,8 +176,10 @@ export default function Services() {
                     {img ? (
                       <img src={img} alt={p.businessName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-secondary">
-                        <Wrench className="w-12 h-12 text-muted-foreground/30" />
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-secondary/80 to-muted/50">
+                        <div className="w-14 h-14 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center">
+                          <Wrench className="w-7 h-7 text-primary/50" />
+                        </div>
                       </div>
                     )}
                     

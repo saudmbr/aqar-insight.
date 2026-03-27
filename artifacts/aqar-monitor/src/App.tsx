@@ -25,6 +25,7 @@ import MarketerDashboard from "@/pages/marketer-dashboard";
 
 import Services from "@/pages/services";
 import ServiceForm from "@/pages/service-form";
+import ServiceProviderProfile from "@/pages/service-provider-profile";
 
 import Requests from "@/pages/requests";
 import RequestForm from "@/pages/request-form";
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/services/new">
         {() => <UserRoute component={ServiceForm} />}
       </Route>
+      <Route path="/services/:id" component={ServiceProviderProfile} />
       <Route path="/requests/new">
         {() => <UserRoute component={RequestForm} />}
       </Route>

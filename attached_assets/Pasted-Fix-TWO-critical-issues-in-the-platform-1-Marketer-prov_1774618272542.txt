@@ -1,0 +1,176 @@
+Fix TWO critical issues in the platform:
+
+1) Marketer / provider profile images are not displaying correctly
+2) Clicking provider/advertiser profiles in the services marketplace leads to a 404 page
+
+IMPORTANT:
+- Do NOT redesign the UI
+- Do NOT change unrelated functionality
+- Focus ONLY on fixing images and routing
+
+==================================================
+PART 1: FIX MARKETER / PROVIDER IMAGE ISSUE
+==================================================
+
+Current issues:
+- Profile image is broken or not showing
+- Image container is visible but image itself is missing
+- Username text overlaps image area
+- Broken image icon appears
+
+----------------------------------------
+1) VERIFY IMAGE SOURCE
+----------------------------------------
+
+Check:
+- Which field is used for profile image:
+  - avatar
+  - image_url
+  - profile_image
+  - images[0]
+
+Fix:
+- Use the correct field consistently across frontend
+
+----------------------------------------
+2) VERIFY IMAGE STORAGE
+----------------------------------------
+
+Ensure:
+- Images are stored correctly in server (e.g. /uploads)
+- Images are publicly accessible
+
+Fix path issues:
+- Convert relative paths to absolute URLs if needed
+
+Example:
+- BAD: /uploads/img.jpg
+- GOOD: https://your-domain/uploads/img.jpg
+
+----------------------------------------
+3) FRONTEND DISPLAY FIX
+----------------------------------------
+
+Ensure profile image displays correctly in:
+- marketer profile page
+- service provider profile page
+- cards in marketplace
+- avatar thumbnails
+
+Use:
+- object-fit: cover
+- width: 100%
+- height: 100%
+
+----------------------------------------
+4) FIX OVERLAP ISSUE (CRITICAL)
+----------------------------------------
+
+Fix layout:
+- Remove any broken absolute positioning
+- Ensure:
+  position: relative (container)
+  proper alignment of image and text
+
+- Prevent username or text from overlapping avatar
+
+----------------------------------------
+5) FALLBACK IMAGE
+----------------------------------------
+
+If image missing:
+- show clean default avatar
+- NEVER show broken image icon
+
+----------------------------------------
+6) DEBUG
+----------------------------------------
+
+Log:
+- image URL from backend
+- confirm it works in browser
+
+==================================================
+PART 2: FIX PROVIDER PROFILE 404 ROUTE
+==================================================
+
+Current issue:
+- Clicking advertiser/provider profile in services marketplace opens 404 page
+
+----------------------------------------
+1) IDENTIFY ROUTE ISSUE
+----------------------------------------
+
+Check:
+- What URL is generated on click?
+- Does this route exist in router?
+
+----------------------------------------
+2) CREATE OR FIX ROUTE
+----------------------------------------
+
+Ensure a valid route exists:
+
+Example:
+- /providers/:id
+OR
+- /service-providers/:id
+
+Use ONE consistent route everywhere
+
+----------------------------------------
+3) FIX LINKING
+----------------------------------------
+
+Ensure marketplace cards use correct link:
+- correct id or slug
+- not undefined
+- not pointing to wrong route
+
+----------------------------------------
+4) PROFILE PAGE LOADING
+----------------------------------------
+
+Ensure provider profile page loads:
+- name
+- image
+- business info
+- services
+- location
+- stats
+
+----------------------------------------
+5) ROUTER REGISTRATION
+----------------------------------------
+
+Ensure:
+- route is registered in router
+- page loads on refresh
+- direct URL works
+
+----------------------------------------
+6) CLEAN NOT FOUND HANDLING
+----------------------------------------
+
+If provider not found:
+- show Arabic "غير موجود"
+- NOT the generic 404 router page
+
+==================================================
+FINAL TEST
+==================================================
+
+Test both:
+
+1) Add provider with image → verify image shows everywhere
+2) Click provider from services marketplace → opens profile (NO 404)
+3) Test with missing image → fallback works
+4) Refresh profile page → still works
+
+==================================================
+GOAL
+==================================================
+
+- Fix all marketer/provider image issues
+- Fix all provider profile routing issues
+- Ensure clean, working, professional experience
