@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "./app-sidebar";
 import { useAuth } from "@/contexts/auth-context";
+import { Scale, Shield, BookOpen } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -84,10 +85,46 @@ export function Layout({ children }: LayoutProps) {
               )}
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto px-4 py-8 md:px-8 lg:px-12 bg-background">
-            <div className="max-w-7xl mx-auto w-full">
-              {children}
+          <main className="flex-1 overflow-y-auto bg-background flex flex-col">
+            <div className="flex-1 px-4 py-8 md:px-8 lg:px-12">
+              <div className="max-w-7xl mx-auto w-full">
+                {children}
+              </div>
             </div>
+
+            {/* Footer */}
+            <footer className="border-t border-border bg-muted/30 px-4 py-5 md:px-8 lg:px-12 mt-auto" dir="rtl">
+              <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p className="text-xs text-muted-foreground order-2 sm:order-1">
+                  © 2025 منصة عقار إنسايت · جميع الحقوق محفوظة
+                </p>
+                <nav className="flex items-center gap-1 order-1 sm:order-2 flex-wrap justify-center">
+                  <Link
+                    href="/privacy"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+                  >
+                    <Shield className="w-3 h-3" />
+                    سياسة الخصوصية
+                  </Link>
+                  <span className="text-border">·</span>
+                  <Link
+                    href="/terms"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+                  >
+                    <Scale className="w-3 h-3" />
+                    الشروط والأحكام
+                  </Link>
+                  <span className="text-border">·</span>
+                  <Link
+                    href="/usage"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+                  >
+                    <BookOpen className="w-3 h-3" />
+                    سياسة الاستخدام
+                  </Link>
+                </nav>
+              </div>
+            </footer>
           </main>
         </div>
       </div>

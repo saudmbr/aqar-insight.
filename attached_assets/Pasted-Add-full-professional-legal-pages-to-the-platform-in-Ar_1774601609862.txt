@@ -1,0 +1,105 @@
+Add full professional legal pages to the platform in Arabic (Saudi-style, enterprise-level quality), matching top real estate platforms like Bayut.
+
+Requirements:
+
+1) Create 3 standalone pages:
+- /privacy (سياسة الخصوصية)
+- /terms (الشروط والأحكام)
+- /usage (سياسة الاستخدام)
+
+2) Use the following content EXACTLY (do not simplify or shorten):
+
+========================
+PAGE: /terms
+TITLE: الشروط والأحكام – منصة عقار إنسايت
+
+Include:
+
+- Formal legal tone
+- Structured numbered sections
+- Binding agreement language
+
+Content sections:
+
+1. القبول والالتزام  
+2. تعريف المنصة  
+3. إنشاء الحساب  
+4. الإعلانات والمحتوى  
+5. حقوق المنصة في إدارة المحتوى  
+6. الترخيص والاستخدام  
+7. القيود  
+8. الخدمات المدفوعة  
+9. حدود المسؤولية  
+10. القوة القاهرة  
+11. الملكية الفكرية  
+12. التعديلات  
+13. القانون الواجب التطبيق  
+
+Important:
+- Clearly state platform is NOT a party in any real estate transaction
+- Limit liability as much as legally possible
+- Emphasize user responsibility
+- Use strong formal Arabic wording
+
+========================
+PAGE: /privacy
+TITLE: سياسة الخصوصية – منصة عقار إنسايت
+
+Include:
+
+1. نطاق التطبيق  
+2. البيانات التي يتم جمعها  
+3. أغراض استخدام البيانات  
+4. مشاركة البيانات  
+5. حماية البيانات  
+6. ملفات تعريف الارتباط  
+7. حقوق المستخدم  
+8. الاحتفاظ بالبيانات  
+9. التعديلات  
+
+Important:
+- Mention Saudi data protection compliance
+- Explain clearly how data is used and protected
+- Keep professional tone
+
+========================
+PAGE: /usage
+TITLE: سياسة الاستخدام – منصة عقار إنسايت
+
+Include:
+
+1. الاستخدام المقبول  
+2. المحتوى المسموح  
+3. المحتوى الممنوع  
+4. التقييمات والتعليقات  
+5. التفاعل بين المستخدمين  
+6. البلاغات  
+7. الإجراءات والعقوبات  
+
+Important:
+- Clearly define allowed vs prohibited behavior
+- Protect platform from misuse
+
+========================
+
+3) UI/UX Requirements:
+- Arabic RTL layout
+- Clean, minimal, professional legal page design
+- Proper spacing, readable typography
+- Section headers clearly styled
+- Consistent with platform design system
+
+4) Footer Integration:
+- Add links in footer:
+  - سياسة الخصوصية
+  - الشروط والأحكام
+  - سياسة الاستخدام
+
+5) SEO:
+- Add meta titles and descriptions in Arabic
+- Make pages indexable
+
+6) Important:
+- Do NOT break existing UI
+- Make pages production-ready
+- Ensure readability on mobile and desktop

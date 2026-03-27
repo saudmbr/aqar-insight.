@@ -143,6 +143,21 @@ DELETE /api/marketers/:id (admin)
 
 50+ fields including: title, description, propertyType, listingType, listingPurpose, city, district, subDistrict, location, price, areaSqm, pricePerSqm, negotiable, bedrooms, bathrooms, livingRooms, kitchens, propertyAge, furnishingStatus, streetWidth, numberOfStreets, facade, floorNumber, totalFloors, buildingQuality, finishingType, availabilityDate, parking, elevator, garden, roof, pool, maidRoom, driverRoom, storageRoom, kitchen, balcony, basement, airConditioning, smartHome, securitySystem, internet, electricityMeter, waterMeter, sewage, mortgageEligibility, nearbySchools, nearbyHospitals, nearbyMosques, nearbyMalls, nearbyTransport, nearbyParks, nearbyMainRoads, deedStatus, licenseStatus, contactPhone, whatsapp, images, videoUrl, floorPlan, featured, urgent, exclusive, ownerDirect, referenceNumber, internalNotes, views
 
+## Legal Pages
+
+Three full Arabic professional legal pages (public, no auth required):
+
+| Route | Page | Color |
+|-------|------|-------|
+| `/terms` | الشروط والأحكام (13 sections) | Navy gradient |
+| `/privacy` | سياسة الخصوصية (9 sections) | Teal gradient |
+| `/usage` | سياسة الاستخدام (7 sections) | Gold gradient |
+
+- Each page: gradient hero banner, breadcrumb, numbered sections, RTL Arabic
+- All pages update `document.title` and meta description via `useEffect`
+- **Footer**: added to `layout.tsx` with links to all 3 legal pages + copyright
+- Clickable footer on every page in the app
+
 ## Development Commands
 
 ```bash

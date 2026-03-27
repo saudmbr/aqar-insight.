@@ -35,6 +35,10 @@ import AdminAdd from "@/pages/admin-add";
 import AdminEdit from "@/pages/admin-edit";
 import AdminUsers from "@/pages/admin-users";
 
+import LegalTerms from "@/pages/legal-terms";
+import LegalPrivacy from "@/pages/legal-privacy";
+import LegalUsage from "@/pages/legal-usage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -107,6 +111,11 @@ function Router() {
       <Route path="/admin/users">
         {() => <AdminRoute component={AdminUsers} />}
       </Route>
+
+      {/* Legal pages */}
+      <Route path="/terms" component={LegalTerms} />
+      <Route path="/privacy" component={LegalPrivacy} />
+      <Route path="/usage" component={LegalUsage} />
 
       <Route component={NotFound} />
     </Switch>
