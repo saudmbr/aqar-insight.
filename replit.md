@@ -216,6 +216,44 @@ Three full Arabic professional legal pages (public, no auth required):
 - **Footer**: added to `layout.tsx` with links to all 3 legal pages + copyright
 - Clickable footer on every page in the app
 
+## Design System (Ultra Premium UI)
+
+### Typography
+- **Font**: Cairo (Google Fonts), weights 300–900. Loaded via `@import` in `index.css`
+- `--font-sans: 'Cairo', sans-serif` applied globally on `html`/`body`
+- **CRITICAL heading rule**: Global `h1–h6` must NOT have `text-foreground` — headings inherit color from parent container. Hero/dark sections set `text-white` on the wrapper; individual `h1` in heroes also carry explicit `text-white`.
+
+### Color Palette
+- Sidebar bg: `#0F1C3F` (dark navy)
+- Primary teal: `#0F7BA0`
+- App background: `#F6F7FA`
+- Gold accent: `#C9A84C`
+- **CRITICAL CSS variable rule**: CSS vars store raw HEX (`#0F7BA0`), NOT HSL triples. Always `var(--primary)`, never `hsl(var(--primary))`.
+
+### Dark Hero Pattern (all page headers)
+```
+background: linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)
+```
+With radial soft glow overlay and dot grid: `radial-gradient(circle, #ffffff 1px, transparent 1px)` at `28px 28px`, opacity 0.04. White text enforced via container class or explicit `text-white`.
+
+### Shadow System
+CSS vars in `:root`: `--shadow-card`, `--shadow-card-hover`, `--shadow-primary`, `--shadow-dropdown`. Tailwind utility `shadow-card` maps to `--shadow-card`. ListingCard and KpiCard use inline styles for custom hover transitions.
+
+### Component Defaults (as upgraded)
+| Component | Key styles |
+|-----------|-----------|
+| `Button` (default/primary) | `rounded-xl h-10`, teal bg, `shadow-sm shadow-primary/25`, hover bg/90 + shadow-md, `active:scale-[0.98]` |
+| `Button` (outline) | `rounded-xl`, border + bg-background, hover:bg-muted |
+| `Input` | `h-11 rounded-xl`, focus ring-2 ring-primary/30 + border-primary, hover:border-primary/40 |
+| `Card` | `rounded-2xl border shadow-card` |
+| `ListingCard` | `rounded-[22px]`, premium hover shadow via inline style onMouseEnter/Leave, Building2 SVG placeholder |
+| `KpiCard` | Gold "رئيسي" badge for primary card, trend icons, arabic numerals |
+
+### Contrast Rules
+- Dark/navy backgrounds → minimum `text-white/75`; explicit labels use `text-white`
+- Light backgrounds → `text-foreground` or `text-muted-foreground`
+- Never use opacity below `/75` for text on dark backgrounds
+
 ## Development Commands
 
 ```bash

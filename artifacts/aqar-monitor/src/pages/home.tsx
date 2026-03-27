@@ -114,17 +114,35 @@ function KpiCard({
   color: string; icon: React.ReactNode; highlight?: boolean;
 }) {
   return (
-    <Card className={`rounded-2xl overflow-hidden transition-shadow hover:shadow-md ${highlight ? "ring-1 ring-primary/20" : ""}`} style={{ borderColor: color + "22" }}>
-      <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}88)` }} />
-      <CardContent className="p-5">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4" style={{ background: color + "15" }}>
-          <span style={{ color }}>{icon}</span>
+    <div
+      className={`relative bg-card rounded-[22px] overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-default ${highlight ? "ring-1.5 ring-primary/25" : ""}`}
+      style={{
+        border: `1.5px solid ${color}20`,
+        boxShadow: "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)",
+      }}
+    >
+      <div className="h-[3px] w-full" style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }} />
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-4">
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center"
+            style={{ background: color + "12" }}
+          >
+            <span style={{ color }}>{icon}</span>
+          </div>
+          {highlight && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: color + "15", color }}>
+              رئيسي
+            </span>
+          )}
         </div>
-        <div className="text-[1.6rem] font-extrabold text-foreground leading-none mb-1.5 tabular-nums">{value}</div>
-        <div className="text-[13px] font-medium text-muted-foreground">{title}</div>
-        {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
-      </CardContent>
-    </Card>
+        <div className="text-[1.65rem] font-extrabold text-foreground leading-none mb-2 tabular-nums tracking-tight">{value}</div>
+        <div className="text-[12.5px] font-medium text-muted-foreground leading-snug">{title}</div>
+        {sub && (
+          <div className="text-[11px] text-muted-foreground/80 mt-1.5 font-medium">{sub}</div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -249,10 +267,27 @@ export default function Home() {
             HERO
         ══════════════════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
-          <div className="relative rounded-[2rem] overflow-hidden bg-sidebar text-white shadow-2xl">
-            {/* Radial glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_top_right,rgba(15,123,160,0.3),transparent)] pointer-events-none" />
-            <div className="absolute -left-20 bottom-0 w-96 h-64 bg-accent/8 blur-[140px] rounded-full pointer-events-none" />
+          <div className="relative rounded-[2rem] overflow-hidden bg-sidebar text-white shadow-2xl" style={{ boxShadow: "0 24px 64px rgba(15,28,63,0.35), 0 4px 16px rgba(15,28,63,0.2)" }}>
+            {/* Background gradient layers */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_top_right,rgba(15,123,160,0.35),transparent)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_bottom_left,rgba(201,168,76,0.08),transparent)] pointer-events-none" />
+            {/* Dot grid overlay */}
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+              style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+            {/* Architectural silhouette on the left */}
+            <div className="absolute left-0 bottom-0 top-0 w-72 opacity-[0.04] pointer-events-none overflow-hidden hidden md:block">
+              <svg viewBox="0 0 300 400" className="h-full w-auto" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="200" width="50" height="200" />
+                <rect x="80" y="150" width="60" height="250" />
+                <rect x="150" y="100" width="40" height="300" />
+                <rect x="200" y="170" width="55" height="230" />
+                <rect x="260" y="220" width="40" height="180" />
+                <rect x="30" y="210" width="8" height="10" fill="#0F1C3F" /><rect x="42" y="210" width="8" height="10" fill="#0F1C3F" />
+                <rect x="30" y="225" width="8" height="10" fill="#0F1C3F" /><rect x="42" y="225" width="8" height="10" fill="#0F1C3F" />
+                <rect x="88" y="165" width="10" height="12" fill="#0F1C3F" /><rect x="104" y="165" width="10" height="12" fill="#0F1C3F" />
+                <rect x="88" y="182" width="10" height="12" fill="#0F1C3F" /><rect x="104" y="182" width="10" height="12" fill="#0F1C3F" />
+              </svg>
+            </div>
 
             <div className="relative px-8 py-14 md:px-14 md:py-20 flex flex-col md:flex-row md:items-end md:gap-12">
               {/* Left: copy */}
@@ -261,12 +296,12 @@ export default function Home() {
                   <HomeIcon className="w-3.5 h-3.5" />
                   المنصة العقارية الذكية
                 </div>
-                <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.08] tracking-tight mb-4">
+                <h1 className="text-[2.2rem] md:text-[2.75rem] font-extrabold leading-[1.12] tracking-tight mb-5 text-white">
                   اكتشف سوق العقار
                   <br />
-                  <span className="text-primary-foreground/75">بذكاء ودقة حقيقية</span>
+                  <span className="text-white/90">بذكاء ودقة حقيقية</span>
                 </h1>
-                <p className="text-[17px] text-white/85 leading-relaxed mb-8 max-w-xl">
+                <p className="text-[16px] text-white/80 leading-relaxed mb-8 max-w-xl">
                   تحليلات ومؤشرات حية مبنية على إعلانات عقارية حقيقية — اكتشف، قارن، وافهم السوق.
                 </p>
                 <div className="flex flex-wrap gap-3">

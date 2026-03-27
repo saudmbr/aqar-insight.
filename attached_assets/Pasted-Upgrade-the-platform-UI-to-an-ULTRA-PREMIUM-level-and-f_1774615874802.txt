@@ -1,0 +1,256 @@
+Upgrade the platform UI to an ULTRA PREMIUM level and fix the homepage hero text contrast issue.
+
+IMPORTANT:
+- Do NOT change core functionality
+- Do NOT break routes, filters, data logic, auth, map, or listing flows
+- Focus on visual quality, usability, readability, and premium polish only
+
+==================================================
+1) FIX HERO TEXT CONTRAST (CRITICAL)
+==================================================
+
+Current issue:
+- In the homepage hero section, some large heading text is dark navy on a dark navy background and is hard to read
+
+Fix this immediately:
+
+- Keep the dark premium hero background
+- Change the main hero heading text to pure white: #FFFFFF
+- Change secondary hero text / subtitle to very light gray: #E2E8F0
+- Ensure badge text and any hero labels are white
+- Remove any low-opacity dark text in the hero
+- The hero heading must be readable instantly and feel bold, premium, and clear
+
+==================================================
+2) ULTRA PREMIUM UI DIRECTION
+==================================================
+
+Redesign the full platform visual experience to feel like a world-class premium product.
+
+Target feeling:
+- ultra premium
+- modern
+- calm
+- elegant
+- polished
+- executive-level
+- easy to browse
+- visually impressive but not noisy
+
+This should feel closer to a top-tier global SaaS / prop-tech platform, not a basic template.
+
+==================================================
+3) DESIGN SYSTEM UPGRADE
+==================================================
+
+Create a refined and consistent design system across the platform:
+
+Color system:
+- Keep brand direction based on:
+  - deep navy
+  - teal
+  - off-white
+  - soft gray
+  - subtle premium accent
+- Prioritize readability
+- Any dark background must always use white or very light text
+
+Typography:
+- Upgrade Arabic typography significantly
+- Use a modern Arabic-friendly font
+- Strong hierarchy:
+  - premium hero headline
+  - elegant section titles
+  - readable body text
+  - refined labels and stats
+- Improve number styling for prices, metrics, and analytics
+
+Spacing:
+- Add more intentional spacing
+- Improve section rhythm
+- Better internal card padding
+- Better distances between headings, charts, cards, and filters
+
+==================================================
+4) HOMEPAGE UPGRADE
+==================================================
+
+Make the homepage feel premium, purposeful, and beautifully structured.
+
+Improve:
+- hero section
+- section transitions
+- search area
+- market insights area
+- district comparison area
+- interactive map area
+- listing showcase area
+- CTA areas
+
+Requirements:
+- Homepage must feel balanced, not crowded
+- Strong visual storytelling
+- Better use of space
+- More premium hierarchy from top to bottom
+- Smooth flow between sections
+
+==================================================
+5) CARDS / CONTAINERS / PANELS
+==================================================
+
+Upgrade all cards and containers to premium quality:
+
+- larger border radius
+- softer but richer shadows
+- cleaner outlines
+- better spacing
+- subtle hover effects
+- stronger visual separation between sections
+- premium KPI cards
+- better analytics card design
+- more polished listing cards
+
+Cards should feel:
+- elegant
+- expensive
+- modern
+- highly readable
+
+==================================================
+6) NAVBAR / SIDEBAR / NAVIGATION
+==================================================
+
+Make navigation feel polished and world-class:
+
+- cleaner navbar spacing
+- better active states
+- elegant hover states
+- improve icon alignment
+- improve badge styling
+- improve sidebar clarity if sidebar exists
+- make browsing feel easier and more intuitive
+
+==================================================
+7) BUTTONS / FORMS / INPUTS
+==================================================
+
+Upgrade all interactive elements:
+
+Buttons:
+- make them feel premium
+- stronger hierarchy between primary / secondary / ghost buttons
+- smoother hover / press states
+- better size and spacing
+
+Inputs / filters / dropdowns:
+- cleaner
+- more readable
+- more elegant
+- improve borders, focus states, spacing, and labels
+
+Auth forms:
+- make login / signup / forgot password feel polished and premium
+
+==================================================
+8) CHARTS / ANALYTICS / TABLES
+==================================================
+
+Upgrade all analytics areas to executive-level UI quality:
+
+- better chart containers
+- better chart labels and legends
+- improve readability of numbers and axes
+- premium KPI styling
+- better table row spacing
+- better table headers
+- improve empty states and no-data states
+
+Make the analytics feel:
+- useful
+- modern
+- premium
+- trustworthy
+
+==================================================
+9) INTERACTIVE MAP VISUAL UPGRADE
+==================================================
+
+Upgrade map-related UI so it looks premium and integrated:
+
+- map controls should feel cleaner
+- popups should be readable and well-designed
+- marker interactions should feel smooth
+- map cards / overlays should match the rest of the design system
+- ensure filters and map browsing are elegant and easy to use
+
+==================================================
+10) READABILITY RULES (STRICT)
+==================================================
+
+Global readability rules:
+
+- Any dark/navy background → white or very light text only
+- Any light background → dark readable text only
+- No dark text on dark background
+- No low-contrast combinations
+- Ensure hover states never reduce readability
+- Ensure buttons, badges, cards, tables, charts, modals, popups, and hero text remain clearly readable
+
+==================================================
+11) MICRO-INTERACTIONS
+==================================================
+
+Add subtle premium motion where useful:
+
+- smooth section entrance or fade transitions
+- hover elevation for cards
+- refined button hover states
+- subtle chart / filter transitions
+- keep motion calm and not distracting
+
+==================================================
+12) CONSISTENCY
+==================================================
+
+Apply the new premium design language consistently across:
+
+- homepage
+- auth pages
+- account pages
+- admin pages
+- marketer pages
+- service provider pages
+- listing cards
+- property detail pages
+- map UI
+- modals
+- tables
+- forms
+- footer
+
+The whole product must feel like one premium, cohesive platform.
+
+==================================================
+13) FINAL QUALITY CHECK
+==================================================
+
+After implementing:
+
+- review the full site visually
+- ensure the homepage hero text is clearly visible
+- ensure the homepage feels ultra premium
+- ensure the site is easier to browse
+- ensure no dark text remains on dark background
+- ensure all major sections feel polished and world-class
+
+==================================================
+GOAL
+==================================================
+
+Transform the platform into an ULTRA PREMIUM Saudi real estate intelligence product with:
+- world-class visual quality
+- strong readability
+- premium homepage
+- elegant analytics experience
+- easier navigation
+- polished interactive browsing
