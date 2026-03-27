@@ -9,7 +9,6 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Analytics from "@/pages/analytics";
 import Districts from "@/pages/districts";
-import Records from "@/pages/records";
 import Future from "@/pages/future";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
@@ -63,7 +62,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/districts" component={Districts} />
-      <Route path="/records" component={Records} />
       <Route path="/future" component={Future} />
 
       {/* Marketplace — authenticated actions (MUST be before /:id wildcards) */}

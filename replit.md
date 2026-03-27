@@ -20,6 +20,35 @@ Saudi real estate **marketplace platform** — full-stack with Arabic RTL interf
 - `UserRoute` guard: redirects unauthenticated users to `/login`
 - `AdminRoute` guard: redirects non-admins to 403 page
 
+## Homepage Architecture
+
+The homepage (`home.tsx`) is the primary landing experience with 9 integrated sections:
+
+1. **Hero** — dark premium banner with "تصفح العقارات" + "فلتر التحليلات" buttons
+2. **Filter Bar** — toggleable panel: city, district, property type, listing type, price range, area range
+3. **KPI Cards** — 8 cards: total listings, avg price/sqm, median price, avg price, max/min price, sale count, rent count
+4. **Growth Badges** — new listings in last 7 days and 30 days
+5. **Smart Insights** — auto-generated Arabic summaries from real listings data
+6. **Charts** — price trend line chart (count + avgPrice dual axis) + property type donut
+7. **City/District Comparison** — tables + bar chart comparing cities and districts
+8. **Interactive Map** — Leaflet map with Saudi city coordinate bubbles (sized by listing count); click to filter
+9. **Listings Showcase** — 6 most recent listings as cards, connected to active filters
+10. **CTA Cards** — "أضف عقارك", "المسوّقون العقاريون", "اطلب عقاراً"
+
+All sections react to the same filter state — changing filters updates every section simultaneously.
+
+**Analytics API endpoints** (all from `listings` table, active status only):
+- `GET /api/analytics/listings-insights?[filters]` — KPIs, byCity, byDistrict, byPropertyType, byListingType, smartInsights
+- `GET /api/analytics/listings-trends?[filters]` — monthly time series
+- `GET /api/analytics/listings-filter-options` — distinct cities, districts, property types for dropdowns
+
+**Map component**: `artifacts/aqar-monitor/src/components/listings-map.tsx`
+- Uses Leaflet + react-leaflet (installed)
+- Saudi city coordinate mapping for ~25 major cities
+- Circle markers sized by listing count; popup on hover; click triggers city filter
+
+**Sidebar**: "سجل البيانات" removed from public navigation (route `/records` also removed from App.tsx)
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
@@ -52,7 +81,8 @@ artifacts/
 │   ├── health.ts
 │   ├── auth.ts              # login, signup, logout, me
 │   ├── properties.ts        # analytics CRUD + CSV
-│   ├── analytics.ts         # KPIs, trends
+│   ├── analytics.ts         # KPIs, trends (legacy properties table)
+│   ├── listings-analytics.ts # Listings-based: insights, trends, filter-options
 │   ├── districts.ts         # district comparison
 │   ├── listings.ts          # CRUD + search + my/similar/meta (50+ fields)
 │   ├── favorites.ts         # toggle + status + list
@@ -61,10 +91,9 @@ artifacts/
 │   ├── admin-users.ts       # list + role-update + delete (admin only)
 │   └── marketers.ts         # marketer profiles CRUD + directory + verify (admin)
 └── aqar-monitor/src/pages/
-    ├── home.tsx             # Analytics dashboard
+    ├── home.tsx             # Premium homepage (hero+filters+KPIs+insights+charts+map+listings)
     ├── analytics.tsx        # Market analytics
     ├── districts.tsx        # District comparison
-    ├── records.tsx          # Data table
     ├── future.tsx           # Future modules
     ├── login.tsx            # Login
     ├── signup.tsx           # Signup

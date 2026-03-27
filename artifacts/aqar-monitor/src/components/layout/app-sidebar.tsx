@@ -6,7 +6,6 @@ import {
   Map,
   PlusCircle,
   Sparkles,
-  Table,
   LayoutDashboard,
   UserCircle2,
   Wrench,
@@ -42,7 +41,6 @@ const analyticsNavItems = [
   { title: "الرئيسية", url: "/", icon: Home, exact: true },
   { title: "تحليل السوق", url: "/analytics", icon: BarChart3 },
   { title: "مقارنة الأحياء", url: "/districts", icon: Map },
-  { title: "سجل البيانات", url: "/records", icon: Table },
   { title: "المشاريع المستقبلية", url: "/future", icon: Sparkles },
 ];
 

@@ -1,0 +1,293 @@
+Refactor and improve the platform homepage and core public experience with the following requirements.
+
+IMPORTANT:
+- Keep the homepage as the FIRST and MAIN experience of the platform
+- The homepage must be the most important page in the product
+- The homepage should combine:
+  1) premium landing page feel
+  2) real estate market intelligence
+  3) property discovery experience
+  4) interactive map experience
+
+Do NOT create disconnected or random sections.
+Everything must feel intentional, useful, and premium.
+
+==================================================
+1) HOMEPAGE PRIORITY AND STRUCTURE
+==================================================
+
+Make the homepage the main destination of the platform.
+
+The homepage should be carefully organized in this order:
+
+A) Premium hero / introduction section
+B) Search and discovery section
+C) Market insights section
+D) District / city comparison section
+E) Interactive map section
+F) Property listings showcase section
+G) Guest/user CTA sections if needed
+H) Footer
+
+The homepage should feel modern, balanced, and not cluttered.
+
+==================================================
+2) REMOVE UNWANTED SECTION
+==================================================
+
+Remove the "data records" / "سجل البيانات" section or page from the public-facing website UI.
+
+If this data records functionality is needed internally, keep it only in admin/backend areas if necessary, but do NOT show it in the public site navigation or homepage.
+
+==================================================
+3) MARKET INSIGHTS MUST BE BASED ONLY ON INTERNAL PLATFORM DATA
+==================================================
+
+CRITICAL RULE:
+All market insights and statistics must be derived ONLY from the actual listings stored inside the platform database.
+
+Do NOT use:
+- external APIs
+- fake data
+- placeholder numbers
+- hardcoded statistics
+
+Use only real listings data from the platform.
+
+Use available listing fields such as:
+- price
+- area
+- city
+- district
+- property_type
+- listing_type
+- created_at
+- bedrooms
+- bathrooms
+- year (if available)
+
+If a field is missing, adapt calculations to the actual available fields only.
+
+==================================================
+4) HOMEPAGE MARKET INSIGHTS SECTION
+==================================================
+
+Create a premium and useful homepage market insights section that gives the user a clear overview of the current listings on the platform.
+
+This section should provide real value and help the user understand the current market based on the listings inside the platform.
+
+Required metrics:
+
+1. Average price per square meter
+2. Median property price
+3. Total number of published listings
+4. Highest listed price
+5. Lowest listed price
+6. Number of listings by city
+7. Number of listings by district
+8. Number of listings by property type
+9. Number of listings by listing type (sale / rent)
+10. Average price by city
+11. Average price by district
+12. Average price per square meter by district
+13. Most active city
+14. Most active district
+15. Most common property type
+16. Listings growth in last 7 days
+17. Listings growth in last 30 days
+18. Price trend over time
+19. Price per square meter trend over time
+20. Price distribution summary (min / max / median / quartiles if possible)
+
+==================================================
+5) MARKET INSIGHTS SHOULD BE USEFUL, NOT JUST DECORATIVE
+==================================================
+
+The market insights must produce useful Arabic summaries for users, based only on the real listings data.
+
+Examples of useful smart summaries:
+- "الشقق هي الفئة الأكثر عرضًا على المنصة حاليًا"
+- "مدينة الرياض تستحوذ على أعلى عدد من الإعلانات المنشورة"
+- "حي X يسجل متوسط سعر متر أعلى من المتوسط العام"
+- "العقارات المعروضة للإيجار تمثل X% من إجمالي الإعلانات"
+- "الفلل تسجل متوسط سعر أعلى من الشقق بنسبة X%"
+- "حي Y من أقل الأحياء المعروضة سعرًا ضمن البيانات الحالية"
+- "حي Z هو الأكثر نشاطًا من حيث عدد الإعلانات"
+
+Generate these insights dynamically from the actual platform data.
+
+==================================================
+6) HOMEPAGE FILTERS FOR INSIGHTS
+==================================================
+
+Add filters directly on the homepage so users can refine insights and listings.
+
+Required filters:
+- city
+- district
+- property type
+- listing type
+- price range
+- area range
+- bedrooms if available
+- bathrooms if available
+
+IMPORTANT:
+- All homepage analytics, summaries, charts, tables, and map results must update dynamically when filters change
+- The homepage should always reflect the selected scope
+
+==================================================
+7) DISTRICT / CITY COMPARISON SECTION
+==================================================
+
+Create a dedicated section on the homepage for comparing cities and districts.
+
+This section must compare:
+- average price
+- average price per m²
+- number of listings
+- listing type composition
+- property type distribution
+- activity level
+
+The user should be able to compare areas meaningfully.
+
+IMPORTANT ADDITION:
+Add an interactive map to this comparison experience so the user can visually understand the geography of cities / districts and connect the comparison to real map locations.
+
+==================================================
+8) INTERACTIVE MAP - PLATFORM WIDE
+==================================================
+
+Add a powerful interactive map feature across the platform, not just as a small visual element.
+
+The map must be a core part of the user experience.
+
+The map should:
+- display property locations
+- update based on current filters
+- support zoom and pan
+- allow users to click markers to view property summary
+- open property details from the map
+- support clustering if many listings exist
+- show city / district context where possible
+- be modern, smooth, and responsive
+
+The map should reflect the main strengths of the platform:
+- property discovery
+- city / district comparison
+- listing exploration
+- market understanding
+
+==================================================
+9) INTERACTIVE MAP ON THE HOMEPAGE
+==================================================
+
+Add a dedicated homepage interactive map section.
+
+This section should:
+- show current property listings on the map
+- work with homepage filters
+- let the user browse listings visually
+- let the user click properties directly from the map
+- help the user understand where properties are located
+- feel like a premium discovery tool
+
+==================================================
+10) INTERACTIVE MAP IN GENERAL PROPERTY SEARCH EXPERIENCE
+==================================================
+
+The platform overall should include a map-based browsing experience.
+
+Users should be able to:
+- search properties using the map
+- browse listings by geographic location
+- view listings near each other
+- filter map results
+- move around the map and see updated property results
+- use map as a major property discovery interface
+
+If needed, create a dedicated map view mode in addition to the homepage map section.
+
+==================================================
+11) PROPERTY LISTINGS SHOWCASE ON HOMEPAGE
+==================================================
+
+Add a homepage property showcase section that is connected to the internal listings data and filters.
+
+This section should:
+- show featured / recent / relevant listings
+- work with homepage filtering logic
+- allow users to open listing details
+- feel visually premium
+- support cards with image, title, city, district, price, area, type, purpose
+
+IMPORTANT:
+Do NOT make this section random.
+It should feel connected to the analytics and map.
+
+==================================================
+12) UI / UX REQUIREMENTS
+==================================================
+
+The homepage must be:
+- Arabic RTL
+- premium and modern
+- calm and visually elegant
+- useful and readable
+- clearly structured
+- not overcrowded
+- suitable for a Saudi real estate intelligence platform
+
+The homepage should feel like:
+- a premium real estate landing page
+- a smart analytics dashboard
+- a property discovery experience
+all combined in one polished page.
+
+Use:
+- clear hierarchy
+- section rhythm
+- elegant cards
+- refined icons
+- balanced spacing
+- strong but calm typography
+- premium chart styling
+- premium map styling
+
+==================================================
+13) PERFORMANCE REQUIREMENTS
+==================================================
+
+- Use efficient aggregation queries
+- Use backend calculations based on real database data
+- Add short caching if useful (30–60 seconds)
+- Keep the homepage fast
+- Optimize map markers and clustering for larger listing counts
+- Keep everything scalable
+
+==================================================
+14) IMPLEMENTATION RULES
+==================================================
+
+- Do NOT create a separate insights page for this requirement
+- Integrate market insights directly into the homepage
+- Do NOT use fake numbers
+- Do NOT use external data
+- Do NOT keep the public "data records" section
+- Make the map a first-class feature
+- Make all statistics, comparisons, and map results reflect the actual listings stored in the platform
+- Keep the result production-ready and modular
+
+==================================================
+15) FINAL GOAL
+==================================================
+
+Transform the homepage into the central intelligence and discovery experience of the platform:
+- users land on the homepage first
+- users understand the market through real internal listings data
+- users compare cities and districts visually and analytically
+- users explore properties through a powerful interactive map
+- users get a clear and useful overview of all listings currently inside the platform
+
+The result should feel like a premium Saudi real estate intelligence platform with a real competitive advantage.
