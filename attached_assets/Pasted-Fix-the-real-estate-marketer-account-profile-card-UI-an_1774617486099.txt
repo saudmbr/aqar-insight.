@@ -1,0 +1,119 @@
+Fix the real estate marketer account/profile card UI and image display issues only.
+
+Current issues in the marketer profile/account card:
+- The marketer profile image is broken or not showing
+- The username/text overlaps the image area
+- The card layout is visually broken
+- The image container exists but the image itself is not rendering correctly
+- The spacing and alignment around the marketer avatar and info need correction
+
+Scope:
+- Focus ONLY on the real estate marketer profile card / marketer account card / marketer public profile header
+- Do NOT change unrelated pages or platform-wide design
+
+==================================================
+1) PROFILE IMAGE FIX
+==================================================
+
+Ensure the marketer profile image works correctly:
+- Use the correct image field from the database
+- Verify the image URL is valid and publicly accessible
+- If the image URL is relative, convert it correctly
+- If the image is missing or invalid, show a clean default avatar placeholder
+- Never show a broken image icon
+
+The avatar must:
+- display correctly
+- be centered
+- fit the container properly
+- use object-fit: cover
+- keep rounded corners / border radius correctly
+- not overflow outside the intended area
+
+==================================================
+2) OVERLAP / LAYOUT FIX
+==================================================
+
+Fix the layout so text does NOT overlap the avatar area.
+
+Requirements:
+- The username, company name, city, and property specialty must be positioned cleanly below or beside the image
+- Remove any broken absolute positioning causing overlap
+- Fix z-index / positioning issues
+- Ensure the image sits above the background card correctly
+- Ensure text spacing is balanced and readable
+
+==================================================
+3) CARD STRUCTURE IMPROVEMENT
+==================================================
+
+Refine the marketer card/header visually without redesigning the whole platform.
+
+Make sure:
+- avatar block is aligned properly
+- marketer name is clearly readable
+- company/brand name is readable
+- city/location line is aligned correctly
+- badge/tag (مثل شقق سكنية) is placed cleanly
+- stats row at bottom is aligned and not cramped
+
+==================================================
+4) STATS ROW FIX
+==================================================
+
+Fix the marketer stats row:
+- number of active listings
+- years of experience
+- license number
+
+Ensure:
+- icons align correctly
+- numbers and labels have proper spacing
+- row is visually balanced
+- no text overlap or broken wrapping
+
+==================================================
+5) RESPONSIVE FIX
+==================================================
+
+Ensure the marketer card works correctly on:
+- desktop
+- tablet
+- mobile
+
+No overlap, no broken image, no text collision.
+
+==================================================
+6) FALLBACKS
+==================================================
+
+If any marketer field is missing:
+- do not break the layout
+- hide empty values gracefully
+- use placeholder avatar if no image exists
+
+==================================================
+7) FINAL TEST
+==================================================
+
+Test with a marketer account that has:
+- profile image
+- no profile image
+- company name
+- city
+- specialty
+- stats
+
+Verify:
+- image appears
+- no broken icon
+- no text overlapping
+- card looks polished and correct
+
+==================================================
+IMPORTANT
+==================================================
+
+- Do NOT redesign the whole website
+- Do NOT change functionality
+- Focus only on fixing the marketer profile/account card image and layout issues
