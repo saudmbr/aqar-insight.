@@ -120,7 +120,7 @@ export default function Signup() {
                   dir="ltr"
                 />
               </div>
-              <p className="text-xs text-muted-foreground/70">
+              <p className="text-xs text-muted-foreground">
                 أحرف إنجليزية وأرقام وشرطة سفلية فقط
               </p>
             </div>
@@ -175,7 +175,7 @@ export default function Signup() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground/70">8 أحرف على الأقل</p>
+              <p className="text-xs text-muted-foreground">8 أحرف على الأقل</p>
             </div>
 
             {/* Error */}
@@ -218,7 +218,7 @@ export default function Signup() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground/60">
+        <p className="text-center text-xs text-muted-foreground/80">
           © {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة
         </p>
       </div>

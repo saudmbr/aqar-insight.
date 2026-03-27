@@ -157,7 +157,7 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground/60">
+        <p className="text-center text-xs text-muted-foreground/80">
           © {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة
         </p>
       </div>

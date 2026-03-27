@@ -273,7 +273,7 @@ export default function ResetPassword() {
           )}
         </div>
 
-        <p className="text-center text-xs text-muted-foreground/60">
+        <p className="text-center text-xs text-muted-foreground/80">
           © {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة
         </p>
       </div>
@@ -284,7 +284,7 @@ export default function ResetPassword() {
 function StrengthRow({ met, label }: { met: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${met ? "bg-green-100 text-green-600" : "bg-muted text-muted-foreground/40"}`}>
+      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${met ? "bg-green-100 text-green-600" : "bg-muted text-muted-foreground"}`}>
         {met ? "✓" : "○"}
       </span>
       <span className={`text-xs ${met ? "text-green-700" : "text-muted-foreground"}`}>{label}</span>

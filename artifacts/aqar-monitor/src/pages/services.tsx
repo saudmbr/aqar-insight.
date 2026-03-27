@@ -71,7 +71,7 @@ export default function Services() {
           <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(201,168,76,0.1),transparent_50%)] pointer-events-none" />
           <div className="relative z-10 max-w-2xl">
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">دليل مزودي الخدمات <span className="text-accent">العقارية</span></h1>
-            <p className="text-lg text-sidebar-foreground/80 leading-relaxed">
+            <p className="text-lg text-white/85 leading-relaxed">
               ابحث عن أفضل شركات المقاولات، مكاتب التصميم، ومزودي خدمات الصيانة الموثوقين في منطقتك.
             </p>
           </div>

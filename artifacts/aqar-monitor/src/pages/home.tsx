@@ -122,7 +122,7 @@ function KpiCard({
         </div>
         <div className="text-[1.6rem] font-extrabold text-foreground leading-none mb-1.5 tabular-nums">{value}</div>
         <div className="text-[13px] font-medium text-muted-foreground">{title}</div>
-        {sub && <div className="text-[11px] text-muted-foreground/70 mt-1">{sub}</div>}
+        {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
       </CardContent>
     </Card>
   );
@@ -790,7 +790,7 @@ export default function Home() {
                   <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
                   <p className="text-[13px] text-white/80 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
-                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-primary">
+                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90 group-hover:text-white transition-colors">
                     ابدأ الآن <ArrowLeft className="w-4 h-4" />
                   </div>
                 </div>

@@ -58,23 +58,31 @@ export default function Requests() {
   return (
     <Layout>
       <div className="space-y-8 pb-12 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-card p-8 rounded-3xl border border-border shadow-sm">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-2">سوق الطلبات</h1>
-            <p className="text-lg text-muted-foreground">تصفح طلبات العملاء أو انشر طلبك للبحث عن عقار أو خدمة</p>
+        {/* Header Hero */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 55%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_90%_at_top_right,rgba(201,168,76,0.12),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+              <FileText className="w-3.5 h-3.5" />
+              طلبات عقارية مفتوحة
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">سوق الطلبات</h1>
+            <p className="text-white/80 mt-2 text-base font-medium">تصفح طلبات العملاء أو انشر طلبك للبحث عن عقار أو خدمة</p>
           </div>
           {isAuthenticated ? (
-            <Button asChild size="lg" className="gap-2 rounded-2xl h-14 px-8 shadow-lg shadow-primary/20 shrink-0 text-base font-bold">
+            <Button asChild size="lg" className="relative z-10 gap-2 rounded-xl h-12 px-8 shrink-0 text-base font-bold bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-none">
               <Link href="/requests/new">
                 <PlusCircle className="w-5 h-5" />
                 اطلب الآن
               </Link>
             </Button>
           ) : (
-             <Button asChild size="lg" variant="outline" className="gap-2 rounded-2xl h-14 px-8 shrink-0 text-base font-bold border-border">
+            <Button asChild size="lg" className="relative z-10 gap-2 rounded-xl h-12 px-8 shrink-0 text-base font-bold bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-none">
               <Link href="/signup">
-                سجل حساب للطلب
+                سجل حساباً
               </Link>
             </Button>
           )}

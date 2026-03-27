@@ -1,0 +1,89 @@
+Fix all remaining readability and UI quality issues across the platform.
+
+CURRENT ISSUE:
+There are still places where dark navy text appears on dark navy backgrounds, which makes the text hard to read.
+
+STRICT RULE:
+- Any dark navy / dark blue / dark teal background must always use WHITE text
+- Do not use dark text on any dark background
+- Prioritize readability over any stylistic choice
+
+REQUIREMENTS:
+
+1) Contrast and readability:
+- Audit the full platform and find every component with dark background
+- For every dark/navy background:
+  - headings = white
+  - body text = white or very light gray
+  - icons = white or very light gray
+  - labels = white
+  - stats/numbers = white
+- Ensure hover states, active states, tabs, cards, badges, modals, and dropdowns also remain readable
+
+2) Scope:
+Apply this across the entire platform:
+- homepage
+- navbar
+- sidebar
+- hero section
+- CTA sections
+- KPI cards
+- charts containers
+- tables
+- forms
+- login / signup / forgot password pages
+- account pages
+- admin pages
+- marketer pages
+- service provider pages
+- map overlays / popups / filters
+- footer
+
+3) Design upgrade:
+Make the whole website feel more premium, elegant, and easier to browse.
+
+Improve:
+- spacing between sections
+- card balance and padding
+- button hierarchy
+- font sizes and text hierarchy
+- section headings
+- filters layout
+- navigation clarity
+- visual consistency
+
+4) Luxury modern style:
+Keep the site calm, premium, and modern.
+
+Use:
+- deep navy
+- teal
+- off-white
+- soft gray
+- subtle premium accents
+
+Make it feel:
+- more luxurious
+- more polished
+- more professional
+- easier to scan and navigate
+
+5) Navigation and usability:
+- Make browsing easier and more intuitive
+- Improve navbar and sidebar structure
+- Make filters cleaner and easier to understand
+- Improve page flow and section ordering where needed
+- Reduce any visual clutter
+
+6) Important:
+- Do NOT break any existing functionality
+- Do NOT change the core branding direction
+- Focus on readability, elegance, and usability
+- The result should feel like a premium Saudi real estate platform
+
+7) Final check:
+After applying the changes, review the full platform and ensure:
+- no navy text remains on navy backgrounds
+- all text is clearly readable
+- the site looks more luxurious
+- the site is easier to navigate

@@ -97,16 +97,24 @@ export default function Listings() {
   return (
     <Layout>
       <div className="space-y-8 pb-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card p-6 md:p-8 rounded-3xl premium-shadow border border-border">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">تصفح العقارات</h1>
-            <p className="text-muted-foreground mt-2 text-lg font-medium">
+        {/* Header Hero */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_top_left,rgba(15,123,160,0.25),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+              <Building2 className="w-3.5 h-3.5" />
+              سوق العقارات السعودي
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">تصفح العقارات</h1>
+            <p className="text-white/80 mt-2 text-base font-medium">
               {data ? `${data.total.toLocaleString("ar-SA")} عقار متاح حالياً` : "جارٍ تحميل العقارات…"}
             </p>
           </div>
           {isAuthenticated && (
-            <Button asChild size="lg" className="gap-2 rounded-xl shadow-lg shadow-primary/20 shrink-0 whitespace-nowrap px-8">
+            <Button asChild size="lg" className="relative z-10 gap-2 rounded-xl shrink-0 whitespace-nowrap px-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold shadow-none">
               <Link href="/listings/new">
                 <PlusCircle className="w-5 h-5" />
                 نشر إعلان عقاري

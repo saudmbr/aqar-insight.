@@ -7,7 +7,8 @@ import {
   MessageSquareText, 
   Map, 
   Star,
-  Lock
+  Lock,
+  Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -71,12 +72,21 @@ export default function Future() {
   return (
     <Layout>
       <div className="space-y-8 pb-12">
-        <div className="text-center max-w-2xl mx-auto py-8">
-          <Badge variant="outline" className="mb-4 px-4 py-1 text-primary border-primary/30 bg-primary/5">خارطة الطريق</Badge>
-          <h1 className="text-4xl font-bold text-foreground mb-4 tracking-tight">الوحدات المستقبلية القادمة</h1>
-          <p className="text-lg text-muted-foreground">
-            نعمل في "عقار إنسايت" على تطوير أدوات متقدمة مدعومة بالذكاء الاصطناعي لتمكين المستثمرين من اتخاذ قرارات مبنية على بيانات موثوقة.
-          </p>
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-14 text-center"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 55%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_center,rgba(15,123,160,0.3),transparent)] pointer-events-none" />
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
+              <Star className="w-3.5 h-3.5" />
+              خارطة الطريق
+            </span>
+            <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">الوحدات المستقبلية القادمة</h1>
+            <p className="text-lg text-white/80 leading-relaxed">
+              نعمل في "عقار إنسايت" على تطوير أدوات متقدمة مدعومة بالذكاء الاصطناعي لتمكين المستثمرين من اتخاذ قرارات مبنية على بيانات موثوقة.
+            </p>
+          </div>
         </div>
 
         <motion.div 

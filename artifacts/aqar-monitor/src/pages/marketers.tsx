@@ -119,7 +119,7 @@ export default function Marketers() {
             <Users className="w-8 h-8 text-white/80" />
             <h1 className="text-3xl font-extrabold">دليل المسوّقين العقاريين</h1>
           </div>
-          <p className="relative z-10 text-white/70 text-lg max-w-2xl">
+          <p className="relative z-10 text-white/85 text-lg max-w-2xl">
             تصفح كوكبة من أفضل المسوّقين العقاريين المحترفين، واطّلع على كتالوج عقاراتهم
           </p>
         </div>

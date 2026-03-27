@@ -164,23 +164,24 @@ export default function MarketerDashboard() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
-        {/* Header */}
-        <div className="bg-card rounded-3xl border border-border p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-2">
-              <Star className="w-6 h-6 text-accent" />
-              لوحة المسوّق العقاري
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              أهلاً {user?.fullName ?? user?.username} —
-              {profile.verified ? (
-                <span className="mr-2 text-primary font-semibold inline-flex items-center gap-1"><BadgeCheck className="w-4 h-4" />حساب موثّق</span>
-              ) : (
-                <span className="mr-2 text-muted-foreground text-sm">في انتظار التوثيق</span>
-              )}
+        {/* Header Hero */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_top_right,rgba(201,168,76,0.12),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-accent/15 border border-accent/25 text-accent px-3 py-1 rounded-full text-xs font-semibold mb-3">
+              <Star className="w-3.5 h-3.5" />
+              مسوّق عقاري
+              {profile.verified && <BadgeCheck className="w-3.5 h-3.5" />}
+            </div>
+            <h1 className="text-3xl font-extrabold text-white leading-tight">لوحة المسوّق العقاري</h1>
+            <p className="text-white/75 mt-2 text-sm">
+              أهلاً {user?.fullName ?? user?.username} — {profile.verified ? "حساب موثّق ✓" : "في انتظار التوثيق"}
             </p>
           </div>
-          <Button asChild className="rounded-xl gap-2 shrink-0">
+          <Button asChild className="relative z-10 rounded-xl gap-2 shrink-0 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold shadow-none">
             <Link href="/listings/new"><Plus className="w-4 h-4" />نشر إعلان جديد</Link>
           </Button>
         </div>

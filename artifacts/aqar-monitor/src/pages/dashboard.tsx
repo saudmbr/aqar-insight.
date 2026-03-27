@@ -81,13 +81,18 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="space-y-8 pb-12">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-4xl font-extrabold text-foreground tracking-tight">لوحتي العقارية</h1>
-            <p className="text-lg text-muted-foreground mt-2">مرحباً بك، {user?.fullName ?? user?.username}</p>
+        {/* Header Hero */}
+        <div
+          className="relative rounded-[2rem] overflow-hidden p-8 md:p-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 65%, #0F7BA0 100%)" }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_100%_at_top_left,rgba(15,123,160,0.2),transparent)] pointer-events-none" />
+          <div className="relative z-10">
+            <p className="text-white/70 text-sm font-medium mb-1">مرحباً بك،</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">{user?.fullName ?? user?.username}</h1>
+            <p className="text-white/75 mt-2 text-sm">لوحتك العقارية الشخصية — أدِر إعلاناتك، مفضلتك، وطلباتك</p>
           </div>
-          <Button asChild className="gap-2 rounded-xl h-12 px-6 shadow-lg shadow-primary/20">
+          <Button asChild className="relative z-10 gap-2 rounded-xl h-12 px-6 shrink-0 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold shadow-none">
             <Link href="/listings/new"><PlusCircle className="w-5 h-5" />نشر إعلان جديد</Link>
           </Button>
         </div>
