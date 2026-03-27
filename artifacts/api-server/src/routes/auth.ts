@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { eq, or, and, gt, isNull } from "drizzle-orm";
 import { db, usersTable, passwordResetTokensTable } from "@workspace/db";
+import { sendPasswordResetEmail } from "../lib/email.js";
 
 const authRouter = Router();
 
@@ -387,7 +388,7 @@ authRouter.put("/password", async (req: Request, res: Response) => {
 const _fpRateMap = new Map<string, { count: number; resetAt: number }>();
 const FP_MAX = 3;
 const FP_WINDOW = 15 * 60 * 1000;
-const TOKEN_TTL = 20 * 60 * 1000; // 20 minutes
+const TOKEN_TTL = 15 * 60 * 1000; // 15 minutes
 
 authRouter.post("/forgot-password", async (req: Request, res: Response) => {
   const { identifier } = req.body as { identifier?: string };
@@ -404,7 +405,7 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
   if (rate) {
     if (now < rate.resetAt) {
       if (rate.count >= FP_MAX) {
-        // Rate-limited — return success silently for security
+        // Rate-limited — return success silently (never reveal account existence)
         res.json({ success: true });
         return;
       }
@@ -416,30 +417,42 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
     _fpRateMap.set(key, { count: 1, resetAt: now + FP_WINDOW });
   }
 
+  // Always respond with generic success — never reveal if email exists
+  const GENERIC_SUCCESS = { success: true };
+
   try {
     const rows = await db
-      .select({ id: usersTable.id })
+      .select({ id: usersTable.id, email: usersTable.email })
       .from(usersTable)
       .where(eq(usersTable.email, key))
       .limit(1);
 
     if (!rows[0]) {
-      // Always respond with success — never reveal whether account exists
-      res.json({ success: true });
+      res.json(GENERIC_SUCCESS);
       return;
     }
 
-    const userId = rows[0].id;
+    const { id: userId, email } = rows[0];
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(now + TOKEN_TTL);
 
     await db.insert(passwordResetTokensTable).values({ userId, tokenHash, expiresAt });
 
-    // No email service configured — return token directly so it can be used immediately.
-    // When an email service is integrated, remove `resetToken` from this response
-    // and send it via email instead.
-    res.json({ success: true, resetToken: rawToken });
+    // Send email (or log to console in dev if SMTP is not configured)
+    try {
+      await sendPasswordResetEmail(email, rawToken);
+    } catch (emailErr) {
+      // Log but do not expose error details to the client
+      console.error("[forgot-password] Failed to send reset email:", emailErr);
+      // In production with SMTP configured, surface a generic error
+      if (process.env.NODE_ENV === "production" && process.env.SMTP_HOST) {
+        res.status(500).json({ message: "حدث خطأ أثناء إرسال البريد الإلكتروني، يرجى المحاولة لاحقاً" });
+        return;
+      }
+    }
+
+    res.json(GENERIC_SUCCESS);
   } catch {
     res.status(500).json({ message: "حدث خطأ في الخادم" });
   }

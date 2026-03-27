@@ -145,26 +145,32 @@ DELETE /api/marketers/:id (admin)
 
 ## Password Recovery
 
-Forgot-password / reset-password feature (no email service required):
+Secure email-based password reset (production-ready):
 
-- **`/forgot-password`** — email input form. Always returns success (security). Returns `resetToken` in response body since no email service is configured yet. Displays token in an amber box with a one-click copy button and direct navigation to reset page.
-- **`/reset-password?token=XXX`** — validates token on load; shows form or invalid/expired error state.
+- **`/forgot-password`** — email input form. Always shows generic success regardless of email existence (prevents account enumeration). In dev mode (no SMTP), logs reset link to server console only. In production, sends HTML email via SMTP.
+- **`/reset-password?token=XXX`** — validates token on page load; shows password form or invalid/expired Arabic error.
 
 Backend routes in `auth.ts`:
-- `POST /api/auth/forgot-password` → looks up user by email, generates 32-byte random token, stores SHA-256 hash in `password_reset_tokens` table, returns raw token.
+- `POST /api/auth/forgot-password` → finds user by email (silently), generates 32-byte random token, stores SHA-256 hash in DB, sends email via SMTP (or logs in dev). Response: `{ success: true }` — **never** includes `resetToken`.
 - `GET /api/auth/validate-reset-token?token=XXX` → checks hash exists, not used, not expired.
 - `POST /api/auth/reset-password` → validates token, updates bcrypt hash, marks `used_at`.
 
+Email service: `artifacts/api-server/src/lib/email.ts` (nodemailer)
+- SMTP configured via secrets: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+- App URL for reset links: `APP_URL` secret or `REPLIT_DOMAINS` env var (auto-detected)
+- Dev fallback: logs link to server console if SMTP not configured
+- Production guard: throws error in production if SMTP_HOST missing
+
 Security features:
-- Token stored as SHA-256 hash; only raw token sent to client
-- Token TTL: 20 minutes, one-time use (marked `used_at` after use)
-- In-memory rate limiter: max 3 requests per email per 15-minute window
-- Always returns HTTP 200 for forgot-password (no account enumeration)
-- Password rules enforced client + server: ≥8 chars, must contain letters AND numbers
+- Token stored as SHA-256 hash; raw token only exists in-process briefly
+- Token TTL: **15 minutes**, one-time use (`used_at` timestamp)
+- In-memory rate limiter: max 3 requests per email per 15-min window
+- Never reveals whether an account exists (always `{ success: true }`)
+- Password rules: ≥8 chars, must contain letters AND numbers (enforced both client and server)
 
 DB table: `password_reset_tokens` — `id, user_id (FK→users), token_hash, expires_at, used_at, created_at`
 
-Login page updated with "نسيت كلمة المرور؟" link next to the password label.
+Login page has "نسيت كلمة المرور؟" link next to the password label.
 
 ## Legal Pages
 
