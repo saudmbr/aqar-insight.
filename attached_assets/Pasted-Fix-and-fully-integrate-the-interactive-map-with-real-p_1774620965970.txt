@@ -1,0 +1,137 @@
+Fix and fully integrate the interactive map with real property listings.
+
+Current issue:
+- The map is not reflecting actual listings
+- Properties are not displayed correctly on the map
+- The map is not connected to filters or real data
+
+IMPORTANT:
+- Do NOT redesign the whole UI
+- Focus ONLY on map functionality and data integration
+
+==================================================
+1) CONNECT MAP TO REAL DATA
+==================================================
+
+The map MUST use real property listings from the database.
+
+Each property must have:
+- latitude
+- longitude
+
+If missing:
+- add support for storing coordinates
+- OR convert city/district into coordinates (geocoding)
+
+==================================================
+2) DISPLAY PROPERTIES ON MAP
+==================================================
+
+For every property:
+
+- render a map marker using:
+  latitude + longitude
+
+- each marker should:
+  - be clickable
+  - show preview card (price, type, area)
+  - open property details page
+
+==================================================
+3) FIX MISSING LOCATION DATA
+==================================================
+
+If properties do NOT have coordinates:
+
+- temporarily:
+  - map by district or city center
+
+- long-term:
+  - require location selection when posting property
+
+==================================================
+4) FILTER INTEGRATION (CRITICAL)
+==================================================
+
+Map MUST sync with filters:
+
+Filters:
+- city
+- district
+- property type
+- price
+- area
+
+When filters change:
+- map markers update instantly
+
+==================================================
+5) MAP → LIST SYNC
+==================================================
+
+When user:
+- moves map
+- zooms
+- pans
+
+Then:
+- update visible properties list
+
+==================================================
+6) LIST → MAP SYNC
+==================================================
+
+When user:
+- clicks property card
+
+Then:
+- highlight marker on map
+
+==================================================
+7) CLUSTERING
+==================================================
+
+If many properties exist:
+
+- group markers (clusters)
+- show count
+- expand on zoom
+
+==================================================
+8) MAP UX IMPROVEMENTS
+==================================================
+
+- smooth zoom and pan
+- clean markers design
+- modern popup cards
+- responsive on mobile
+
+==================================================
+9) DEBUG
+==================================================
+
+Log:
+- number of properties loaded
+- coordinates used
+- markers rendered
+
+==================================================
+10) FINAL TEST
+==================================================
+
+Test:
+
+- properties appear on map
+- markers clickable
+- filters update map
+- map updates listings
+- no empty map
+
+==================================================
+GOAL
+==================================================
+
+Make the map a CORE feature where users:
+- explore properties visually
+- discover listings by location
+- interact with real data

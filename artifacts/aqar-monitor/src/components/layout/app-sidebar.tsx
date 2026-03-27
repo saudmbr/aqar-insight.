@@ -33,6 +33,7 @@ import { useAuth } from "@/contexts/auth-context";
 const marketplaceNavItems = [
   { title: "الرئيسية", url: "/", icon: Home, exact: true },
   { title: "العقارات", url: "/listings", icon: Building2 },
+  { title: "الخريطة التفاعلية", url: "/map", icon: Map },
   { title: "المسوّقون", url: "/marketers", icon: Star },
   { title: "سوق الخدمات", url: "/services", icon: Wrench },
   { title: "الطلبات", url: "/requests", icon: FileText },

@@ -27,6 +27,8 @@ import Services from "@/pages/services";
 import ServiceForm from "@/pages/service-form";
 import ServiceProviderProfile from "@/pages/service-provider-profile";
 
+import MapPage from "@/pages/map-page";
+
 import Requests from "@/pages/requests";
 import RequestForm from "@/pages/request-form";
 
@@ -84,6 +86,9 @@ function Router() {
       <Route path="/marketer/dashboard">
         {() => <UserRoute component={MarketerDashboard} />}
       </Route>
+
+      {/* Interactive map */}
+      <Route path="/map" component={MapPage} />
 
       {/* Marketplace — public browse */}
       <Route path="/listings" component={Listings} />

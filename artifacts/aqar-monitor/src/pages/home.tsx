@@ -7,6 +7,7 @@ import { Link, useLocation } from "wouter";
 import { formatCurrency, formatNumber, getImageSrc } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,8 +20,9 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, PieChart, Pie, Cell, BarChart, Bar,
 } from "recharts";
+import type { MapPin as MapPinItem } from "@/components/property-map";
 
-const ListingsMap = lazy(() => import("@/components/listings-map"));
+const PropertyMap = lazy(() => import("@/components/property-map"));
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
@@ -280,6 +282,18 @@ export default function Home() {
     staleTime: 60_000,
   });
 
+  // Map pins — individual property markers
+  const { data: mapPinsData } = useQuery<{ pins: MapPinItem[] }>({
+    queryKey: ["home-map-pins"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE()}/api/listings/map-pins?limit=200`);
+      if (!res.ok) throw new Error("فشل");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+  const mapPins: MapPinItem[] = mapPinsData?.pins ?? [];
+
   const kpis = insights?.kpis;
   const hasData = (kpis?.totalListings ?? 0) > 0;
 
@@ -505,28 +519,39 @@ export default function Home() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            INTERACTIVE MAP
+            INTERACTIVE MAP — individual property pins
         ══════════════════════════════════════════════════════════════ */}
-        {hasData && (
-          <motion.div variants={fadeUp}>
-            <SectionLabel
-              eyebrow="استكشاف جغرافي"
-              title="توزيع العقارات على الخريطة"
-              description="اضغط على مدينة لعرض إعلاناتها — الدوائر الأكبر تعني نشاطاً أعلى"
-            />
-            <Card className="rounded-2xl overflow-hidden border-border/60 shadow-sm">
-              <CardContent className="p-0">
-                <Suspense fallback={<Skeleton className="w-full h-[460px] rounded-2xl" />}>
-                  <ListingsMap
-                    cityData={insights?.byCity ?? []}
-                    onCityClick={city => { setFilters(f => ({ ...f, city })); setApplied(f => ({ ...f, city })); }}
-                    height={460}
-                  />
-                </Suspense>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        <motion.div variants={fadeUp}>
+          <SectionLabel
+            eyebrow="استكشاف جغرافي"
+            title="العقارات على الخريطة"
+            description="انقر على أي عقار للاطلاع على التفاصيل — تعمل مع بيانات حقيقية"
+            action={
+              <Link href="/map">
+                <Button size="sm" variant="outline" className="gap-2 rounded-xl border-primary/30 text-primary hover:bg-primary/5">
+                  <span>فتح الخريطة الكاملة</span>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            }
+          />
+          <Card className="rounded-2xl overflow-hidden border-border/60 shadow-sm">
+            <CardContent className="p-0">
+              <Suspense fallback={<Skeleton className="w-full h-[460px] rounded-2xl" />}>
+                <PropertyMap
+                  pins={mapPins}
+                  onPinClick={id => navigate(`/listings/${id}`)}
+                  height={460}
+                />
+              </Suspense>
+            </CardContent>
+          </Card>
+          {mapPins.length === 0 && (
+            <p className="text-xs text-center text-muted-foreground mt-2">
+              جارٍ تحميل مواقع العقارات…
+            </p>
+          )}
+        </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
             PLATFORM CTA CARDS

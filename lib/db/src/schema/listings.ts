@@ -28,6 +28,8 @@ export const listingsTable = pgTable("listings", {
   district: text("district"),
   subDistrict: text("sub_district"),
   location: text("location"),
+  latitude: real("latitude"),
+  longitude: real("longitude"),
 
   // Pricing
   price: real("price").notNull(),

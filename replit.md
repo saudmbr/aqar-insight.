@@ -45,10 +45,23 @@ The homepage (`home.tsx`) is structured as a **real estate marketplace** with an
 - `GET /api/analytics/listings-trends?[filters]` — monthly time series
 - `GET /api/analytics/listings-filter-options` — distinct cities, districts, property types for dropdowns
 
-**Map component**: `artifacts/aqar-monitor/src/components/listings-map.tsx`
-- Uses Leaflet + react-leaflet (installed)
-- Saudi city coordinate mapping for ~25 major cities
-- Circle markers sized by listing count; popup on hover; click triggers city filter
+**Map components**:
+- `artifacts/aqar-monitor/src/components/listings-map.tsx` — legacy city-bubble aggregate map (kept for reference)
+- `artifacts/aqar-monitor/src/components/property-map.tsx` — NEW individual property pin map
+  - Individual L.divIcon markers per listing, color-coded by listing type
+  - Clickable popup cards (image, price, type, area, link to detail)
+  - Active pin highlighting — calling `activePinId` visually enlarges + opens popup
+  - Viewport-change callback `onBoundsChange` reports visible IDs for list sync
+  - Coordinates: uses listing `latitude`/`longitude` if set; otherwise deterministic geocoding via golden-angle spread from city center
+
+**Listings schema additions**: `latitude REAL`, `longitude REAL` columns added to `listings` table via ALTER TABLE.
+
+**Geocoding**: `artifacts/api-server/src/routes/listings.ts` → `geocodeListing(id, city)` function
+- Uses `MAP_CITY_COORDS` dictionary (25+ Saudi cities)
+- Golden-angle distribution: `angle = id × 137.5°`, `radius = 0.025 + (id%12)×0.015` degrees
+- Ensures markers spread naturally within the city rather than stacking
+
+**`/api/listings/map-pins` endpoint**: Lightweight, returns up to 300 active listings with geocoded coordinates, supports same filter params as `/api/listings` (city, district, propertyType, listingType, minPrice, maxPrice, minArea, maxArea).
 
 **Sidebar**: "سجل البيانات" removed from public navigation (route `/records` also removed from App.tsx)
 

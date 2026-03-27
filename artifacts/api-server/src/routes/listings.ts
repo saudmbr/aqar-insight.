@@ -99,6 +99,79 @@ listingsRouter.get("/", async (req: Request, res: Response) => {
   });
 });
 
+// ─── Map pins — lightweight endpoint for the interactive property map ────────
+const MAP_CITY_COORDS: Record<string, [number, number]> = {
+  "الرياض": [24.7136, 46.6753], "جدة": [21.4858, 39.1925],
+  "مكة المكرمة": [21.3891, 39.8579], "المدينة المنورة": [24.5247, 39.5692],
+  "الدمام": [26.4207, 50.0888], "الخبر": [26.2172, 50.1971],
+  "الظهران": [26.2361, 50.0395], "تبوك": [28.3838, 36.5550],
+  "أبها": [18.2164, 42.5053], "نجران": [17.4920, 44.1322],
+  "جازان": [16.8892, 42.5611], "حائل": [27.5219, 41.6906],
+  "القصيم": [26.3260, 43.9750], "بريدة": [26.3260, 43.9750],
+  "الطائف": [21.2854, 40.4149], "القطيف": [26.5569, 50.0073],
+  "ينبع": [24.0888, 38.0618], "الجبيل": [27.0174, 49.6581],
+  "الأحساء": [25.3787, 49.5862], "خميس مشيط": [18.3059, 42.7289],
+  "عرعر": [30.9753, 41.0381], "سكاكا": [29.9708, 40.2064],
+};
+
+// Produce a stable, spread-out coordinate for a listing that lacks exact lat/lng
+function geocodeListing(id: number, city: string): [number, number] | null {
+  const base = MAP_CITY_COORDS[city];
+  if (!base) return null;
+  // Golden-angle distribution so nearby ids don't cluster on the same spot
+  const angleRad = (id * 137.508) * (Math.PI / 180);
+  const radius = 0.025 + (id % 12) * 0.015; // 0.025–0.205 degrees (~3–23 km)
+  return [base[0] + radius * Math.cos(angleRad), base[1] + radius * Math.sin(angleRad)];
+}
+
+listingsRouter.get("/map-pins", async (req: Request, res: Response) => {
+  const {
+    city, district, propertyType, listingType,
+    minPrice, maxPrice, minArea, maxArea,
+  } = req.query as Record<string, string>;
+
+  const conditions = [eq(listingsTable.status, "active")];
+  if (city) conditions.push(eq(listingsTable.city, city));
+  if (district) conditions.push(ilike(listingsTable.district, `%${district}%`));
+  if (propertyType) conditions.push(eq(listingsTable.propertyType, propertyType));
+  if (listingType) conditions.push(eq(listingsTable.listingType, listingType));
+  if (minPrice) conditions.push(gte(listingsTable.price, parseFloat(minPrice)));
+  if (maxPrice) conditions.push(lte(listingsTable.price, parseFloat(maxPrice)));
+  if (minArea) conditions.push(gte(listingsTable.areaSqm, parseFloat(minArea)));
+  if (maxArea) conditions.push(lte(listingsTable.areaSqm, parseFloat(maxArea)));
+
+  const rows = await db
+    .select({
+      id: listingsTable.id,
+      title: listingsTable.title,
+      city: listingsTable.city,
+      district: listingsTable.district,
+      price: listingsTable.price,
+      areaSqm: listingsTable.areaSqm,
+      propertyType: listingsTable.propertyType,
+      listingType: listingsTable.listingType,
+      images: listingsTable.images,
+      latitude: listingsTable.latitude,
+      longitude: listingsTable.longitude,
+    })
+    .from(listingsTable)
+    .where(and(...conditions))
+    .orderBy(desc(listingsTable.createdAt))
+    .limit(300);
+
+  const pins = rows.map(r => {
+    let lat = r.latitude ?? null;
+    let lng = r.longitude ?? null;
+    if (lat === null || lng === null) {
+      const approx = geocodeListing(r.id, r.city);
+      if (approx) { lat = approx[0]; lng = approx[1]; }
+    }
+    return { ...r, lat, lng, geocoded: r.latitude === null };
+  }).filter(r => r.lat !== null && r.lng !== null);
+
+  res.json({ pins, total: pins.length });
+});
+
 // ─── My listings ──────────────────────────────────────────────────────────────
 listingsRouter.get("/my/listings", async (req: Request, res: Response) => {
   if (!req.session.isAuthenticated) {
