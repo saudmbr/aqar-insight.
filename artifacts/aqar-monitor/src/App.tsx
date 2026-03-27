@@ -20,6 +20,10 @@ import Listings from "@/pages/listings";
 import ListingDetail from "@/pages/listing-detail";
 import ListingForm from "@/pages/listing-form";
 
+import Marketers from "@/pages/marketers";
+import MarketerProfile from "@/pages/marketer-profile";
+import MarketerDashboard from "@/pages/marketer-dashboard";
+
 import Services from "@/pages/services";
 import ServiceForm from "@/pages/service-form";
 
@@ -55,7 +59,7 @@ function Router() {
       <Route path="/records" component={Records} />
       <Route path="/future" component={Future} />
 
-      {/* Marketplace — authenticated actions (MUST come before /:id wildcards) */}
+      {/* Marketplace — authenticated actions (MUST be before /:id wildcards) */}
       <Route path="/listings/new">
         {() => <UserRoute component={ListingForm} />}
       </Route>
@@ -69,9 +73,16 @@ function Router() {
         {() => <UserRoute component={RequestForm} />}
       </Route>
 
-      {/* Marketplace — public browse (after specific paths) */}
+      {/* Marketer dashboard — must come before /marketers/:id wildcard */}
+      <Route path="/marketer/dashboard">
+        {() => <UserRoute component={MarketerDashboard} />}
+      </Route>
+
+      {/* Marketplace — public browse */}
       <Route path="/listings" component={Listings} />
       <Route path="/listings/:id" component={ListingDetail} />
+      <Route path="/marketers" component={Marketers} />
+      <Route path="/marketers/:id" component={MarketerProfile} />
       <Route path="/services" component={Services} />
       <Route path="/requests" component={Requests} />
 

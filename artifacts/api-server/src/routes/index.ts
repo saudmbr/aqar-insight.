@@ -9,6 +9,7 @@ import favoritesRouter from "./favorites";
 import serviceProvidersRouter from "./service-providers";
 import customerRequestsRouter from "./customer-requests";
 import adminUsersRouter from "./admin-users";
+import marketersRouter from "./marketers";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use("/favorites", favoritesRouter);
 router.use("/service-providers", serviceProvidersRouter);
 router.use("/customer-requests", customerRequestsRouter);
 router.use("/admin/users", adminUsersRouter);
+router.use("/marketers", marketersRouter);
 
 export default router;

@@ -2,20 +2,21 @@
 
 ## Overview
 
-Saudi real estate **marketplace platform** — full-stack with Arabic RTL interface, analytics dashboards, live property listings, service providers marketplace, customer requests, favorites, user dashboard, and admin user management.
+Saudi real estate **marketplace platform** — full-stack with Arabic RTL interface, analytics dashboards, live property listings, service providers marketplace, customer requests, favorites, user dashboard, real estate marketer profiles directory, and admin user management.
 
 ## Authentication & Users
 
 - Session-based auth via `express-session` (httpOnly cookie `aqar.sid`)
-- **Session store: PostgreSQL** via `connect-pg-simple` → sessions survive server restarts and are shared across all worker processes. `session` table auto-pruned every 15 min.
+- **Session store: PostgreSQL** via `connect-pg-simple` → sessions survive server restarts. `session` table auto-pruned every 15 min.
 - `app.set("trust proxy", 1)` so Express correctly handles Replit's TLS-terminating reverse proxy
 - Two auth paths: hardcoded admin + DB-backed regular users
 - Admin credentials: `admin` / `AqarInsight2025` — override via `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars
-- Hardcoded admin has `userId=null` in session; personal endpoints handle this gracefully (return [] or filter by NULL userId)
+- Hardcoded admin has `userId=null` in session; personal endpoints handle this gracefully
 - Session secret: override via `SESSION_SECRET` env var
 - Passwords hashed with `bcryptjs` (cost factor 12)
 - Login accepts username OR email as identifier
-- Roles: `admin`, `user`, `property_owner`, `broker`, `real_estate_office`, `developer`, `service_provider`
+- Roles: `admin`, `user`, `property_owner`, `broker`, `real_estate_marketer`, `real_estate_office`, `developer`, `service_provider`
+- Creating a marketer profile auto-upgrades role from `user` → `real_estate_marketer`
 - `UserRoute` guard: redirects unauthenticated users to `/login`
 - `AdminRoute` guard: redirects non-admins to 403 page
 
@@ -33,11 +34,12 @@ Saudi real estate **marketplace platform** — full-stack with Arabic RTL interf
 ### Legacy (Analytics)
 - `properties` — historical real estate analytics data (3,300 seeded records)
 
-### Marketplace (New)
-- `listings` — live marketplace property listings (status: active/sold/rented/cancelled)
+### Marketplace (Live)
+- `listings` — live marketplace property listings (50+ fields including all amenities, nearby places, marketing flags, video, floor plan)
 - `favorites` — user favorited listings (unique constraint on user_id + listing_id)
 - `service_providers` — service provider profiles (contractors, designers, etc.)
 - `customer_requests` — open customer requests for services or properties
+- `marketer_profiles` — real estate marketer profiles with social links, verification, specialties, served areas
 
 ### Users
 - `users` — registered users with role column
@@ -48,15 +50,16 @@ Saudi real estate **marketplace platform** — full-stack with Arabic RTL interf
 artifacts/
 ├── api-server/src/routes/
 │   ├── health.ts
-│   ├── auth.ts             # login, signup, logout, me
-│   ├── properties.ts       # analytics CRUD + CSV
-│   ├── analytics.ts        # KPIs, trends
-│   ├── districts.ts        # district comparison
-│   ├── listings.ts         # CRUD + search + my/similar/meta
-│   ├── favorites.ts        # toggle + status + list
+│   ├── auth.ts              # login, signup, logout, me
+│   ├── properties.ts        # analytics CRUD + CSV
+│   ├── analytics.ts         # KPIs, trends
+│   ├── districts.ts         # district comparison
+│   ├── listings.ts          # CRUD + search + my/similar/meta (50+ fields)
+│   ├── favorites.ts         # toggle + status + list
 │   ├── service-providers.ts # CRUD + my/meta
 │   ├── customer-requests.ts # CRUD + my
-│   └── admin-users.ts      # list + role-update + delete (admin only)
+│   ├── admin-users.ts       # list + role-update + delete (admin only)
+│   └── marketers.ts         # marketer profiles CRUD + directory + verify (admin)
 └── aqar-monitor/src/pages/
     ├── home.tsx             # Analytics dashboard
     ├── analytics.tsx        # Market analytics
@@ -67,8 +70,11 @@ artifacts/
     ├── signup.tsx           # Signup
     ├── account.tsx          # Profile + password change
     ├── listings.tsx         # Browse/search listings
-    ├── listing-detail.tsx   # Single listing detail + favorites
-    ├── listing-form.tsx     # Create/edit listing
+    ├── listing-detail.tsx   # Single listing + gallery + marketer card + nearby chips
+    ├── listing-form.tsx     # Create/edit listing (50+ fields, nearby places, marketing flags)
+    ├── marketers.tsx        # Browse all marketer profiles (directory)
+    ├── marketer-profile.tsx # Public marketer profile + listings grid/list
+    ├── marketer-dashboard.tsx # Marketer's own profile CRUD + listings management
     ├── dashboard.tsx        # User dashboard (listings, favorites, requests tabs)
     ├── services.tsx         # Service providers marketplace
     ├── service-form.tsx     # Create service provider
@@ -82,15 +88,15 @@ artifacts/
 
 ## Sidebar Navigation
 
-1. **السوق**: العقارات (/listings), سوق الخدمات (/services), الطلبات (/requests)
+1. **السوق**: العقارات (/listings), المسوّقون (/marketers), سوق الخدمات (/services), الطلبات (/requests)
 2. **التحليلات**: لوحة التحكم (/), تحليل السوق, مقارنة الأحياء, سجل البيانات, الوحدات المستقبلية
-3. **حسابي** (authenticated): لوحتي (/dashboard), حسابي (/account)
+3. **حسابي** (authenticated): لوحتي (/dashboard), ملف المسوّق (/marketer/dashboard if marketer role), الملف الشخصي (/account)
 4. **الإدارة** (admin only): لوحة الإدارة, إضافة سجل, المستخدمون (/admin/users)
 
 ## Key API Endpoints
 
 ```
-POST /api/auth/login|signup|logout   GET /api/auth/me
+POST /api/auth/login|signup|logout   GET  /api/auth/me
 GET  /api/listings                   POST /api/listings
 GET  /api/listings/my/listings       GET  /api/listings/meta/options
 GET  /api/listings/:id               PUT  /api/listings/:id
@@ -105,7 +111,23 @@ GET  /api/customer-requests/my/requests
 DELETE /api/customer-requests/:id
 GET  /api/admin/users                PUT  /api/admin/users/:id/role
 DELETE /api/admin/users/:id
+GET  /api/marketers                  GET  /api/marketers/:id
+GET  /api/marketers/:id/listings     GET  /api/marketers/me/profile
+PUT  /api/marketers/me/profile       PUT  /api/marketers/:id/verify (admin)
+DELETE /api/marketers/:id (admin)
 ```
+
+## Marketer Module Notes
+
+- `GET /api/marketers/me/profile` and `PUT /api/marketers/me/profile` MUST be declared BEFORE `GET /api/marketers/:id` to avoid "me" being parsed as a numeric id
+- Admin (userId=null) gets a null response for GET /me/profile and 403 for PUT /me/profile
+- Creating a marketer profile auto-upgrades the user's role to `real_estate_marketer`
+- `servedAreas` and `specialties` stored as JSON array strings in the DB
+- Marketer profile is unique per user (one profile per userId)
+
+## Listings Fields
+
+50+ fields including: title, description, propertyType, listingType, listingPurpose, city, district, subDistrict, location, price, areaSqm, pricePerSqm, negotiable, bedrooms, bathrooms, livingRooms, kitchens, propertyAge, furnishingStatus, streetWidth, numberOfStreets, facade, floorNumber, totalFloors, buildingQuality, finishingType, availabilityDate, parking, elevator, garden, roof, pool, maidRoom, driverRoom, storageRoom, kitchen, balcony, basement, airConditioning, smartHome, securitySystem, internet, electricityMeter, waterMeter, sewage, mortgageEligibility, nearbySchools, nearbyHospitals, nearbyMosques, nearbyMalls, nearbyTransport, nearbyParks, nearbyMainRoads, deedStatus, licenseStatus, contactPhone, whatsapp, images, videoUrl, floorPlan, featured, urgent, exclusive, ownerDirect, referenceNumber, internalNotes, views
 
 ## Development Commands
 

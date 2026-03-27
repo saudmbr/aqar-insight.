@@ -1,0 +1,272 @@
+Add a complete “Real Estate Marketers” module to the platform.
+
+Goal:
+Create a dedicated experience for real estate marketers so they can publish, organize, and showcase all their listings in a professional way, while allowing customers to browse all listings by each marketer as a trusted reference library.
+
+Requirements:
+
+1) New user role:
+- Add a new role called: "real_estate_marketer"
+- This role should have its own dashboard and permissions
+- Marketers can create and manage their own property listings
+- Normal users cannot access marketer-only controls
+- Admin can manage all marketers and their listings
+
+2) Marketer profile system:
+Create a professional public profile page for each real estate marketer that includes:
+- profile photo or company logo
+- full name
+- office / brand name
+- short bio
+- city
+- served areas / districts
+- specialties (residential, commercial, land, villas, rentals, etc.)
+- years of experience
+- license number / registration number (if available)
+- verification badge placeholder
+- WhatsApp
+- phone number
+- email
+- social links
+- rating and reviews placeholder
+- total active listings
+- total sold/rented listings placeholder
+- “contact marketer” button
+- “view all listings” button
+
+3) Marketer public listing library:
+Each marketer should have a dedicated public page that acts like a listings library/reference center for their clients.
+This page should:
+- show all listings published by that marketer
+- support grid and list view
+- include strong filters
+- allow sorting by newest, oldest, highest price, lowest price, largest area
+- show listing cards with image, title, city, district, price, area, type, purpose
+- include quick actions:
+  - view details
+  - save to favorites
+  - contact marketer
+  - share listing
+
+4) Full property classification system:
+Create a complete property classification system for marketers, including:
+Property types:
+- apartment
+- villa
+- floor
+- duplex
+- penthouse
+- studio
+- room
+- land
+- building
+- tower
+- office
+- shop
+- showroom
+- warehouse
+- factory
+- farm
+- resort
+- chalet
+- rest house
+- labor housing
+- commercial property
+- industrial property
+- mixed-use property
+- development project
+
+Listing purposes:
+- sale
+- rent
+- daily rent
+- monthly rent
+- investment
+- auction
+- off-plan
+- joint venture
+
+5) Property listing form for marketers:
+Create a premium and detailed listing creation form for real estate marketers.
+Include as many useful fields as possible for both marketer and customer.
+
+Basic details:
+- listing title
+- description
+- city
+- district
+- sub-district / neighborhood
+- exact location / map pin
+- property type
+- listing purpose
+- price
+- negotiable yes/no
+- area in sqm
+- price per sqm auto-calculated
+- listing status (active / draft / sold / rented / archived)
+
+Property specifications:
+- bedrooms
+- bathrooms
+- living rooms
+- kitchens
+- maid room
+- driver room
+- storage room
+- floor number
+- total floors
+- property age
+- furnishing status
+- air conditioning
+- kitchen installed
+- elevator
+- parking
+- roof
+- balcony
+- garden
+- pool
+- basement
+- smart home
+- security system
+- internet / fiber
+- electricity meter
+- water meter
+- sewage
+- street width
+- number of streets
+- facade
+- building quality
+- finishing type
+- deed status
+- mortgage eligibility placeholder
+- license status
+- availability date
+
+Location & nearby places:
+- nearby schools
+- nearby hospitals
+- nearby mosques
+- nearby malls
+- nearby public transport
+- nearby parks
+- nearby main roads
+
+Media & attachments:
+- main cover image
+- multiple images gallery
+- video upload
+- virtual tour / 360 placeholder
+- floor plan upload
+- brochure / PDF attachment
+- documents placeholder
+
+Marketing enhancements:
+- featured listing toggle
+- urgent listing toggle
+- exclusive listing toggle
+- owner direct / agent listing
+- internal notes for marketer only
+- reference number
+- QR code placeholder
+- share link
+
+6) Marketer dashboard:
+Create a dedicated dashboard for real estate marketers with:
+- overview cards:
+  - total listings
+  - active listings
+  - sold/rented placeholder
+  - views placeholder
+  - inquiries placeholder
+- my listings
+- add new listing
+- edit listing
+- delete listing
+- archive listing
+- duplicate listing
+- drafts
+- saved leads placeholder
+- customer inquiries placeholder
+- profile settings
+- subscription placeholder
+- analytics placeholder
+
+7) Customer experience:
+Customers visiting the site should be able to:
+- browse marketer profiles
+- browse each marketer’s full listing library
+- filter by city, district, type, purpose, price, area, bedrooms, bathrooms, furnished, verified, featured
+- view listing details clearly
+- contact marketer directly
+- save favorites
+- compare listings placeholder
+- share listings
+- request property visit
+- request callback
+- send inquiry message
+
+8) Listing details page:
+Each property details page should include:
+- full image gallery
+- major property facts
+- detailed description
+- property features section
+- map section placeholder
+- nearby places section
+- marketer card
+- marketer other listings
+- similar listings
+- price per sqm
+- market insight placeholder
+- contact buttons
+- WhatsApp button
+- request visit form
+- report listing button
+
+9) Trust & quality features:
+Add support for:
+- verified marketer badge placeholder
+- verified listing placeholder
+- review placeholder
+- report abuse
+- inactive listing handling
+- sold/rented badge
+- featured badge
+- exclusive badge
+
+10) Admin controls:
+Admin should be able to:
+- manage all marketers
+- approve/reject marketer accounts placeholder
+- manage listings
+- feature listings
+- archive or remove bad listings
+- manage property categories
+- manage cities and districts
+- manage reports and complaints placeholder
+
+11) UI/UX requirements:
+- Arabic RTL first
+- modern premium calm design
+- elegant listing cards
+- beautiful marketer profile pages
+- polished filters
+- clear hierarchy
+- mobile-friendly responsive design
+- visually suitable for a Saudi real estate marketplace
+
+12) Important implementation note:
+Build this module in a modular and scalable way.
+Do NOT make it a giant single page.
+Create proper pages, routes, components, and reusable forms.
+
+Start with the core first:
+- marketer role
+- marketer public profile
+- marketer dashboard
+- listing CRUD
+- public marketer listing library
+- listing details page
+- filtering and classification system
+
+Make the result production-ready and ready for future subscriptions, verification, leads, and paid promotions.

@@ -12,6 +12,7 @@ import {
   Wrench,
   FileText,
   Users,
+  Star,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -32,6 +33,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 const marketplaceNavItems = [
   { title: "العقارات", url: "/listings", icon: Building2 },
+  { title: "المسوّقون", url: "/marketers", icon: Star },
   { title: "سوق الخدمات", url: "/services", icon: Wrench },
   { title: "الطلبات", url: "/requests", icon: FileText },
 ];
@@ -50,7 +52,9 @@ const adminNavItems = [
   { title: "المستخدمون", url: "/admin/users", icon: Users },
 ];
 
-function NavItem({ item, location }: { item: { title: string; url: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean }; location: string }) {
+type NavItemDef = { title: string; url: string; icon: React.ComponentType<{ className?: string }>; exact?: boolean };
+
+function NavItem({ item, location }: { item: NavItemDef; location: string }) {
   const isActive = item.exact ? location === item.url : location.startsWith(item.url);
   return (
     <SidebarMenuItem className="mb-1.5">
@@ -73,7 +77,7 @@ function NavItem({ item, location }: { item: { title: string; url: string; icon:
   );
 }
 
-function NavGroup({ label, items, location }: { label: string; items: Parameters<typeof NavItem>[0]["item"][]; location: string }) {
+function NavGroup({ label, items, location }: { label: string; items: NavItemDef[]; location: string }) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[10px] uppercase tracking-wider mb-2">
@@ -88,9 +92,20 @@ function NavGroup({ label, items, location }: { label: string; items: Parameters
   );
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: "مدير النظام",
+  real_estate_marketer: "مسوّق عقاري",
+  service_provider: "مزوّد خدمة",
+  broker: "وسيط عقاري",
+  developer: "مطوّر عقاري",
+  user: "عضو موثق",
+};
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+
+  const isMarketer = user?.role === "real_estate_marketer";
 
   return (
     <Sidebar side="right" variant="inset" className="border-l-0 bg-sidebar shadow-2xl">
@@ -117,8 +132,30 @@ export function AppSidebar() {
         {isAuthenticated && (
           <NavGroup label="حسابي" items={[
             { title: "لوحتي", url: "/dashboard", icon: LayoutDashboard },
-            { title: "الملف الشخصي", url: "/account", icon: UserCircle2 }
+            ...(isMarketer ? [{ title: "ملف المسوّق", url: "/marketer/dashboard", icon: Star }] : []),
+            { title: "الملف الشخصي", url: "/account", icon: UserCircle2 },
           ]} location={location} />
+        )}
+
+        {/* Marketer shortcut for non-marketers */}
+        {isAuthenticated && !isMarketer && !isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/40 px-6 font-medium text-[10px] uppercase tracking-wider mb-2">
+              انضم كمسوّق
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="px-4">
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="h-11 rounded-xl text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground">
+                    <Link href="/marketer/dashboard" className="flex items-center gap-3 px-4">
+                      <Star className="w-4 h-4 text-sidebar-foreground/50" />
+                      <span className="text-sm">أنشئ ملف مسوّق</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         )}
 
         {/* Admin Nav */}
@@ -136,7 +173,7 @@ export function AppSidebar() {
                 {user.fullName || user.username}
               </span>
               <span className="text-xs text-sidebar-foreground/50 mt-0.5">
-                {user.role === "admin" ? "مدير النظام" : "عضو موثق"}
+                {ROLE_LABELS[user.role ?? "user"] ?? "عضو"}
               </span>
             </div>
           </div>

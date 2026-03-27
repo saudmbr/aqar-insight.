@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, Building, Map, Info, Grid2X2, FileText, Image as ImageIcon, Contact } from "lucide-react";
+import { Loader2, Save, Building, Map, Info, Grid2X2, FileText, Image as ImageIcon, Contact, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import type { Listing } from "@workspace/db";
 
@@ -19,8 +19,11 @@ const LISTING_TYPES = [
   { value: "investment", label: "استثماري" },
   { value: "auction", label: "مزاد" },
 ];
+const LISTING_PURPOSES = ["سكني", "تجاري", "صناعي", "زراعي", "استثماري"];
 const FURNISHING = ["مفروش", "غير مفروش", "نصف مفروش"];
 const FACADES = ["شمالي", "جنوبي", "شرقي", "غربي", "شمالي شرقي", "شمالي غربي", "جنوبي شرقي", "جنوبي غربي"];
+const BUILDING_QUALITY = ["فاخر", "ممتاز", "جيد", "متوسط", "يحتاج تجديد"];
+const FINISHING = ["كامل التشطيب", "شبه مشطّب", "هيكل", "مشطّب فاخر"];
 
 function FieldGroup({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -37,12 +40,24 @@ function FieldGroup({ label, required, children }: { label: string; required?: b
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:bg-muted/30 cursor-pointer transition-colors select-none">
-      <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${checked ? 'bg-primary border-primary' : 'bg-background border-input'}`}>
+      <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${checked ? "bg-primary border-primary" : "bg-background border-input"}`}>
         {checked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
       </div>
       <span className="text-sm font-medium text-foreground">{label}</span>
       <input type="checkbox" className="hidden" checked={checked} onChange={e => onChange(e.target.checked)} />
     </label>
+  );
+}
+
+function SSelect({ value, onChange, children, className }: { value: string; onChange: (v: string) => void; children: React.ReactNode; className?: string }) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className={`h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none ${className ?? ""}`}
+    >
+      {children}
+    </select>
   );
 }
 
@@ -58,15 +73,20 @@ export default function ListingForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
   const [form, setForm] = useState<PartialListing>({
-    status: "active", parking: false, elevator: false, garden: false, roof: false,
+    status: "active",
+    parking: false, elevator: false, garden: false, roof: false,
     pool: false, maidRoom: false, driverRoom: false, kitchen: false,
     airConditioning: false, electricityMeter: false, waterMeter: false,
+    storageRoom: false, balcony: false, basement: false,
+    smartHome: false, securitySystem: false, internet: false, sewage: false,
+    mortgageEligibility: false, negotiable: false,
+    nearbySchools: false, nearbyHospitals: false, nearbyMosques: false,
+    nearbyMalls: false, nearbyTransport: false, nearbyParks: false, nearbyMainRoads: false,
+    urgent: false, exclusive: false, ownerDirect: false,
   });
 
-  const set = (key: keyof PartialListing, value: unknown) =>
-    setForm(f => ({ ...f, [key]: value }));
+  const set = (key: keyof PartialListing, value: unknown) => setForm(f => ({ ...f, [key]: value }));
 
   useEffect(() => {
     if (!isAuthenticated) { navigate("/login"); return; }
@@ -83,8 +103,8 @@ export default function ListingForm() {
     e.preventDefault();
     setError(null);
     if (!form.title || !form.propertyType || !form.listingType || !form.city || !form.price) {
-      setError("يرجى ملء الحقول الإلزامية: العنوان، النوع، الغرض، المدينة، السعر");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setError("يرجى ملء الحقول الإلزامية: العنوان، نوع العقار، الغرض، المدينة، السعر");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setSaving(true);
@@ -101,7 +121,7 @@ export default function ListingForm() {
       navigate(`/listings/${data.id ?? id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "حدث خطأ");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setSaving(false);
     }
@@ -120,147 +140,200 @@ export default function ListingForm() {
 
   return (
     <Layout>
-      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-4xl mx-auto space-y-8 pb-16">
+      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-4xl mx-auto space-y-8 pb-24">
+        {/* Page header */}
         <div className="bg-card p-8 rounded-3xl border border-border shadow-sm">
-          <h1 className="text-3xl font-extrabold text-foreground mb-2">{isEdit ? "تعديل الإعلان" : "نشر إعلان عقاري جديد"}</h1>
+          <h1 className="text-3xl font-extrabold text-foreground mb-2">
+            {isEdit ? "تعديل الإعلان" : "نشر إعلان عقاري جديد"}
+          </h1>
           <p className="text-lg text-muted-foreground">أدخل تفاصيل العقار بدقة لجذب أكبر عدد من المهتمين والمشترين المحتملين.</p>
         </div>
 
         {error && (
-          <div className="rounded-2xl border border-destructive bg-destructive/10 p-5 text-destructive font-semibold flex items-center gap-3 shadow-sm">
+          <div className="rounded-2xl border border-destructive bg-destructive/10 p-5 text-destructive font-semibold flex items-center gap-3">
             <span className="text-2xl">⚠️</span> {error}
           </div>
         )}
 
-        {/* Section 1: Basic Info */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Section 1: Core Info ─────────────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Building className="w-5 h-5 text-primary" />
-              المعلومات الأساسية
+              <Building className="w-5 h-5 text-primary" />المعلومات الأساسية
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             <FieldGroup label="عنوان الإعلان" required>
-              <Input placeholder="مثال: شقة فاخرة للبيع في حي الملقا بتشطيب مودرن" value={form.title ?? ""} onChange={e => set("title", e.target.value)} className="h-12 rounded-xl text-base" />
+              <Input
+                placeholder="مثال: فيلا فاخرة للبيع في حي الياسمين مع مسبح"
+                value={form.title ?? ""}
+                onChange={e => set("title", e.target.value)}
+                className="h-12 rounded-xl text-base"
+              />
             </FieldGroup>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <FieldGroup label="نوع العقار" required>
-                <select value={form.propertyType ?? ""} onChange={e => set("propertyType", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
+                <SSelect value={form.propertyType ?? ""} onChange={v => set("propertyType", v)}>
                   <option value="">اختر النوع</option>
                   {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                </SSelect>
               </FieldGroup>
-              <FieldGroup label="الغرض" required>
-                <select value={form.listingType ?? ""} onChange={e => set("listingType", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">اختر الغرض</option>
+              <FieldGroup label="نوع الإعلان" required>
+                <SSelect value={form.listingType ?? ""} onChange={v => set("listingType", v)}>
+                  <option value="">اختر</option>
                   {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
+                </SSelect>
+              </FieldGroup>
+              <FieldGroup label="الغرض">
+                <SSelect value={form.listingPurpose ?? ""} onChange={v => set("listingPurpose", v)}>
+                  <option value="">اختر</option>
+                  {LISTING_PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
+                </SSelect>
               </FieldGroup>
               <FieldGroup label="حالة الإعلان">
-                <select value={form.status ?? "active"} onChange={e => set("status", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base font-semibold focus:ring-2 focus:ring-primary/20 outline-none">
+                <SSelect value={form.status ?? "active"} onChange={v => set("status", v)}>
                   <option value="active">🟢 نشط</option>
                   <option value="sold">🔵 مُباع</option>
                   <option value="rented">🟣 مُؤجّر</option>
                   <option value="cancelled">🔴 ملغي</option>
-                </select>
+                </SSelect>
+              </FieldGroup>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+              <FieldGroup label="رقم المرجع (اختياري)">
+                <Input
+                  placeholder="مثال: REF-2024-001"
+                  value={form.referenceNumber ?? ""}
+                  onChange={e => set("referenceNumber", e.target.value)}
+                  className="h-12 rounded-xl font-mono"
+                  dir="ltr"
+                />
+              </FieldGroup>
+              <FieldGroup label="تاريخ الإتاحة">
+                <Input
+                  type="date"
+                  value={form.availabilityDate ?? ""}
+                  onChange={e => set("availabilityDate", e.target.value)}
+                  className="h-12 rounded-xl"
+                  dir="ltr"
+                />
               </FieldGroup>
             </div>
           </CardContent>
         </Card>
 
-        {/* Section: Location */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Section 2: Location & Price ─────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Map className="w-5 h-5 text-primary" />
-              الموقع والتسعير
+              <Map className="w-5 h-5 text-primary" />الموقع والتسعير
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <FieldGroup label="المدينة" required>
-                <select value={form.city ?? ""} onChange={e => set("city", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
+                <SSelect value={form.city ?? ""} onChange={v => set("city", v)}>
                   <option value="">اختر المدينة</option>
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                </SSelect>
               </FieldGroup>
               <FieldGroup label="الحي">
-                <Input placeholder="مثال: حي الملقا" value={form.district ?? ""} onChange={e => set("district", e.target.value)} className="h-12 rounded-xl text-base" />
+                <Input placeholder="مثال: حي الملقا" value={form.district ?? ""} onChange={e => set("district", e.target.value)} className="h-12 rounded-xl" />
+              </FieldGroup>
+              <FieldGroup label="الحي الفرعي">
+                <Input placeholder="مثال: مخطط 123" value={form.subDistrict ?? ""} onChange={e => set("subDistrict", e.target.value)} className="h-12 rounded-xl" />
               </FieldGroup>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4 border-t border-border">
+            <FieldGroup label="الموقع التفصيلي أو رابط الخريطة">
+              <Input placeholder="مثال: طريق الملك عبدالله، أمام مجمع..." value={form.location ?? ""} onChange={e => set("location", e.target.value)} className="h-12 rounded-xl" />
+            </FieldGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2 border-t border-border">
               <FieldGroup label="السعر (ريال سعودي)" required>
                 <Input type="number" min="0" placeholder="0" value={form.price ?? ""} onChange={e => set("price", e.target.value)} className="h-12 rounded-xl text-base font-bold text-primary" />
               </FieldGroup>
               <FieldGroup label="المساحة (م²)">
-                <Input type="number" min="0" placeholder="0" value={form.areaSqm ?? ""} onChange={e => set("areaSqm", e.target.value)} className="h-12 rounded-xl text-base" />
+                <Input type="number" min="0" placeholder="0" value={form.areaSqm ?? ""} onChange={e => set("areaSqm", e.target.value)} className="h-12 rounded-xl" />
+              </FieldGroup>
+              <FieldGroup label="قابل للتفاوض">
+                <div className="h-12 flex items-center">
+                  <Checkbox label="نعم، قابل للتفاوض" checked={!!form.negotiable} onChange={v => set("negotiable", v)} />
+                </div>
               </FieldGroup>
             </div>
           </CardContent>
         </Card>
 
-        {/* Section 3: Property Details */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Section 3: Property Specs ────────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Info className="w-5 h-5 text-primary" />
-              مواصفات العقار
+              <Info className="w-5 h-5 text-primary" />مواصفات العقار
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              <FieldGroup label="غرف النوم">
-                <Input type="number" min="0" placeholder="—" value={form.bedrooms ?? ""} onChange={e => set("bedrooms", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
-              <FieldGroup label="دورات المياه">
-                <Input type="number" min="0" placeholder="—" value={form.bathrooms ?? ""} onChange={e => set("bathrooms", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
-              <FieldGroup label="غرف الجلوس">
-                <Input type="number" min="0" placeholder="—" value={form.livingRooms ?? ""} onChange={e => set("livingRooms", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
-              <FieldGroup label="عمر العقار (سنة)">
-                <Input type="number" min="0" placeholder="جديد = 0" value={form.propertyAge ?? ""} onChange={e => set("propertyAge", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
-              <FieldGroup label="رقم الطابق">
-                <Input type="number" placeholder="—" value={form.floorNumber ?? ""} onChange={e => set("floorNumber", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
-              <FieldGroup label="إجمالي الطوابق">
-                <Input type="number" min="1" placeholder="—" value={form.totalFloors ?? ""} onChange={e => set("totalFloors", e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
-              </FieldGroup>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {[
+                { label: "غرف النوم", key: "bedrooms" as const },
+                { label: "دورات المياه", key: "bathrooms" as const },
+                { label: "غرف الجلوس", key: "livingRooms" as const },
+                { label: "المطابخ", key: "kitchens" as const },
+                { label: "عمر العقار (سنة)", key: "propertyAge" as const },
+                { label: "رقم الطابق", key: "floorNumber" as const },
+                { label: "إجمالي الطوابق", key: "totalFloors" as const },
+                { label: "عدد الشوارع", key: "numberOfStreets" as const },
+              ].map(({ label, key }) => (
+                <FieldGroup key={key} label={label}>
+                  <Input type="number" min="0" placeholder="—" value={form[key] ?? ""} onChange={e => set(key, e.target.value)} className="h-12 rounded-xl text-center text-lg font-medium" />
+                </FieldGroup>
+              ))}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-4 border-t border-border">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 pt-4 border-t border-border">
               <FieldGroup label="التأثيث">
-                <select value={form.furnishingStatus ?? ""} onChange={e => set("furnishingStatus", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 focus:ring-2 focus:ring-primary/20 outline-none">
+                <SSelect value={form.furnishingStatus ?? ""} onChange={v => set("furnishingStatus", v)}>
                   <option value="">غير محدد</option>
                   {FURNISHING.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
+                </SSelect>
               </FieldGroup>
               <FieldGroup label="الواجهة">
-                <select value={form.facade ?? ""} onChange={e => set("facade", e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 focus:ring-2 focus:ring-primary/20 outline-none">
+                <SSelect value={form.facade ?? ""} onChange={v => set("facade", v)}>
                   <option value="">غير محدد</option>
                   {FACADES.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
+                </SSelect>
               </FieldGroup>
+              <FieldGroup label="جودة البناء">
+                <SSelect value={form.buildingQuality ?? ""} onChange={v => set("buildingQuality", v)}>
+                  <option value="">غير محدد</option>
+                  {BUILDING_QUALITY.map(q => <option key={q} value={q}>{q}</option>)}
+                </SSelect>
+              </FieldGroup>
+              <FieldGroup label="نوع التشطيب">
+                <SSelect value={form.finishingType ?? ""} onChange={v => set("finishingType", v)}>
+                  <option value="">غير محدد</option>
+                  {FINISHING.map(f => <option key={f} value={f}>{f}</option>)}
+                </SSelect>
+              </FieldGroup>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4 border-t border-border">
               <FieldGroup label="عرض الشارع (م)">
                 <Input type="number" min="0" placeholder="—" value={form.streetWidth ?? ""} onChange={e => set("streetWidth", e.target.value)} className="h-12 rounded-xl" />
               </FieldGroup>
+              <div />
             </div>
           </CardContent>
         </Card>
 
-        {/* Section 4: Features */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Section 4: Amenities ─────────────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Grid2X2 className="w-5 h-5 text-primary" />
-              المميزات والخدمات
+              <Grid2X2 className="w-5 h-5 text-primary" />المميزات والخدمات
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <CardContent className="p-6 space-y-6">
+            <p className="text-sm text-muted-foreground font-medium">المرافق الأساسية</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               <Checkbox label="موقف سيارات" checked={!!form.parking} onChange={v => set("parking", v)} />
               <Checkbox label="مصعد" checked={!!form.elevator} onChange={v => set("elevator", v)} />
               <Checkbox label="حديقة" checked={!!form.garden} onChange={v => set("garden", v)} />
@@ -270,41 +343,75 @@ export default function ListingForm() {
               <Checkbox label="غرفة سائق" checked={!!form.driverRoom} onChange={v => set("driverRoom", v)} />
               <Checkbox label="مطبخ" checked={!!form.kitchen} onChange={v => set("kitchen", v)} />
               <Checkbox label="تكييف مركزي" checked={!!form.airConditioning} onChange={v => set("airConditioning", v)} />
+              <Checkbox label="بلكونة / شرفة" checked={!!form.balcony} onChange={v => set("balcony", v)} />
+              <Checkbox label="غرفة تخزين" checked={!!form.storageRoom} onChange={v => set("storageRoom", v)} />
+              <Checkbox label="قبو / بدروم" checked={!!form.basement} onChange={v => set("basement", v)} />
+            </div>
+            <p className="text-sm text-muted-foreground font-medium pt-2 border-t border-border">البنية التحتية</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               <Checkbox label="عداد كهرباء" checked={!!form.electricityMeter} onChange={v => set("electricityMeter", v)} />
               <Checkbox label="عداد ماء" checked={!!form.waterMeter} onChange={v => set("waterMeter", v)} />
+              <Checkbox label="شبكة صرف صحي" checked={!!form.sewage} onChange={v => set("sewage", v)} />
+              <Checkbox label="إنترنت / ألياف" checked={!!form.internet} onChange={v => set("internet", v)} />
+              <Checkbox label="منزل ذكي" checked={!!form.smartHome} onChange={v => set("smartHome", v)} />
+              <Checkbox label="نظام أمني" checked={!!form.securitySystem} onChange={v => set("securitySystem", v)} />
+              <Checkbox label="مؤهل للتمويل" checked={!!form.mortgageEligibility} onChange={v => set("mortgageEligibility", v)} />
+            </div>
+            <p className="text-sm text-muted-foreground font-medium pt-2 border-t border-border">المرافق القريبة</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <Checkbox label="مدارس قريبة" checked={!!form.nearbySchools} onChange={v => set("nearbySchools", v)} />
+              <Checkbox label="مستشفيات" checked={!!form.nearbyHospitals} onChange={v => set("nearbyHospitals", v)} />
+              <Checkbox label="مساجد" checked={!!form.nearbyMosques} onChange={v => set("nearbyMosques", v)} />
+              <Checkbox label="مراكز تجارية" checked={!!form.nearbyMalls} onChange={v => set("nearbyMalls", v)} />
+              <Checkbox label="مواصلات عامة" checked={!!form.nearbyTransport} onChange={v => set("nearbyTransport", v)} />
+              <Checkbox label="حدائق" checked={!!form.nearbyParks} onChange={v => set("nearbyParks", v)} />
+              <Checkbox label="طرق رئيسية" checked={!!form.nearbyMainRoads} onChange={v => set("nearbyMainRoads", v)} />
             </div>
           </CardContent>
         </Card>
 
+        {/* ── Section 5: Marketing flags ───────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />خيارات تسويقية
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <Checkbox label="⚡ عرض عاجل" checked={!!form.urgent} onChange={v => set("urgent", v)} />
+              <Checkbox label="⭐ حصري" checked={!!form.exclusive} onChange={v => set("exclusive", v)} />
+              <Checkbox label="🤝 مالك مباشر" checked={!!form.ownerDirect} onChange={v => set("ownerDirect", v)} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Documents + Contact side by side ─────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Section 5: Documents */}
-          <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+          <Card className="border-border rounded-3xl overflow-hidden">
             <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
               <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
-                الوثائق والترخيص
+                <FileText className="w-5 h-5 text-primary" />الوثائق والترخيص
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-5">
-              <FieldGroup label="رقم/حالة الصك">
+              <FieldGroup label="حالة الصك">
                 <Input placeholder="مثال: صك إلكتروني مستقل" value={form.deedStatus ?? ""} onChange={e => set("deedStatus", e.target.value)} className="h-12 rounded-xl" />
               </FieldGroup>
-              <FieldGroup label="رقم رخصة فال (إن وجد)">
-                <Input placeholder="مثال: 12000XXXXX" value={form.licenseStatus ?? ""} onChange={e => set("licenseStatus", e.target.value)} className="h-12 rounded-xl" />
+              <FieldGroup label="رقم رخصة فال">
+                <Input placeholder="مثال: 12000XXXXX" value={form.licenseStatus ?? ""} onChange={e => set("licenseStatus", e.target.value)} className="h-12 rounded-xl font-mono" dir="ltr" />
               </FieldGroup>
             </CardContent>
           </Card>
 
-          {/* Section 8: Contact */}
-          <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+          <Card className="border-border rounded-3xl overflow-hidden">
             <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Contact className="w-5 h-5 text-primary" />
-                معلومات التواصل
+                <Contact className="w-5 h-5 text-primary" />معلومات التواصل
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-5">
-              <FieldGroup label="رقم الهاتف للإتصال">
+              <FieldGroup label="رقم الهاتف">
                 <Input type="tel" placeholder="05XXXXXXXX" value={form.contactPhone ?? ""} onChange={e => set("contactPhone", e.target.value)} className="h-12 rounded-xl font-mono text-left" dir="ltr" />
               </FieldGroup>
               <FieldGroup label="رقم الواتساب">
@@ -314,18 +421,17 @@ export default function ListingForm() {
           </Card>
         </div>
 
-        {/* Section 7: Description */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Description ──────────────────────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              الوصف التفصيلي
+              <FileText className="w-5 h-5 text-primary" />الوصف التفصيلي
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <textarea
-              rows={6}
-              placeholder="اكتب وصفاً جذاباً وتفصيلياً للعقار يوضح أهم معالمه وموقعه الاستراتيجي والخدمات القريبة منه..."
+              rows={7}
+              placeholder="اكتب وصفاً جذاباً للعقار يوضح أهم معالمه وموقعه وما يميزه..."
               value={form.description ?? ""}
               onChange={e => set("description", e.target.value)}
               className="w-full rounded-2xl border border-input bg-background p-5 text-base leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -333,16 +439,15 @@ export default function ListingForm() {
           </CardContent>
         </Card>
 
-        {/* Section 6: Media */}
-        <Card className="border-border rounded-3xl premium-shadow overflow-hidden">
+        {/* ── Media ────────────────────────────────────────────── */}
+        <Card className="border-border rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
             <CardTitle className="text-lg flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-primary" />
-              الصور
+              <ImageIcon className="w-5 h-5 text-primary" />الصور والميديا
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <FieldGroup label="روابط الصور المباشرة (رابط واحد في كل سطر)">
+          <CardContent className="p-6 space-y-6">
+            <FieldGroup label="روابط الصور (رابط واحد في كل سطر)">
               <textarea
                 rows={5}
                 placeholder={"https://example.com/image1.jpg\nhttps://example.com/image2.jpg"}
@@ -351,19 +456,27 @@ export default function ListingForm() {
                 className="w-full rounded-2xl border border-input bg-background p-5 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 text-left"
                 dir="ltr"
               />
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Info className="w-4 h-4" />الصورة الأولى ستكون الصورة الرئيسية للإعلان.
+              </p>
             </FieldGroup>
-            <p className="text-sm text-muted-foreground mt-3 flex items-center gap-2">
-              <Info className="w-4 h-4"/> ضع كل رابط في سطر منفصل. الصورة الأولى ستكون الصورة الرئيسية للإعلان.
-            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-border">
+              <FieldGroup label="رابط الفيديو (يوتيوب / Vimeo)">
+                <Input type="url" placeholder="https://youtube.com/..." value={form.videoUrl ?? ""} onChange={e => set("videoUrl", e.target.value)} className="h-12 rounded-xl font-mono text-sm" dir="ltr" />
+              </FieldGroup>
+              <FieldGroup label="رابط المخطط الهندسي">
+                <Input type="url" placeholder="https://example.com/floor-plan.jpg" value={form.floorPlan ?? ""} onChange={e => set("floorPlan", e.target.value)} className="h-12 rounded-xl font-mono text-sm" dir="ltr" />
+              </FieldGroup>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Submit */}
+        {/* ── Sticky submit ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-4 sticky bottom-6 z-10 bg-card/80 backdrop-blur-md p-4 rounded-3xl border border-border shadow-2xl">
           <Button type="submit" disabled={saving} size="lg" className="flex-1 h-14 rounded-2xl text-lg font-bold gap-2 shadow-lg shadow-primary/30">
             {saving ? <><Loader2 className="w-5 h-5 animate-spin" />جارٍ الحفظ…</> : <><Save className="w-5 h-5" />{isEdit ? "حفظ وتحديث الإعلان" : "نشر الإعلان الآن"}</>}
           </Button>
-          <Button type="button" variant="outline" size="lg" className="rounded-2xl h-14 sm:w-48 font-bold border-border bg-white" onClick={() => navigate(isEdit ? `/listings/${id}` : "/listings")}>
+          <Button type="button" variant="outline" size="lg" className="rounded-2xl h-14 sm:w-48 font-bold" onClick={() => navigate(isEdit ? `/listings/${id}` : "/listings")}>
             إلغاء والعودة
           </Button>
         </div>
