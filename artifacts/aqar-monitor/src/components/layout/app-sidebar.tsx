@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
 const marketplaceNavItems = [
+  { title: "الرئيسية", url: "/", icon: Home, exact: true },
   { title: "العقارات", url: "/listings", icon: Building2 },
   { title: "المسوّقون", url: "/marketers", icon: Star },
   { title: "سوق الخدمات", url: "/services", icon: Wrench },
@@ -38,7 +39,6 @@ const marketplaceNavItems = [
 ];
 
 const analyticsNavItems = [
-  { title: "الرئيسية", url: "/", icon: Home, exact: true },
   { title: "تحليل السوق", url: "/analytics", icon: BarChart3 },
   { title: "مقارنة الأحياء", url: "/districts", icon: Map },
   { title: "المشاريع المستقبلية", url: "/future", icon: Sparkles },

@@ -1,0 +1,185 @@
+Refactor the platform to align with a NEW CORE CONCEPT:
+
+The platform is now a REAL ESTATE MARKETPLACE with integrated market insights.
+
+IMPORTANT:
+- This is a product direction shift
+- All features must align with property listings as the core
+- Market analytics must SUPPORT listings, not replace them
+
+==================================================
+1) NEW CORE CONCEPT (CRITICAL)
+==================================================
+
+The platform should function as:
+
+→ A real estate marketplace where:
+- users browse properties
+- users post their own properties (sell / rent)
+- marketers manage listings
+- service providers support the ecosystem
+
+AND
+
+→ A smart layer of market insights built on top of these listings
+
+==================================================
+2) PRIMARY PRODUCT STRUCTURE
+==================================================
+
+Everything must revolve around PROPERTY LISTINGS:
+
+Core entity:
+- properties
+
+Supporting entities:
+- users
+- marketers
+- service providers
+
+All pages, features, and flows must connect back to listings.
+
+==================================================
+3) USER FLOWS (PRIORITY)
+==================================================
+
+A) Browse properties
+- view listings
+- filter by:
+  city, district, type, price, area
+- open property details
+
+B) Post property
+- user can add property easily
+- upload images
+- set details (price, area, type, location)
+
+C) Manage listings
+- edit
+- delete
+- track
+
+D) Discover via map
+- explore properties geographically
+
+==================================================
+4) ROLE OF MARKET INSIGHTS (VERY IMPORTANT)
+==================================================
+
+Market insights should NOT be standalone.
+
+They must be:
+
+→ DIRECTLY derived from the platform’s listings
+→ AND used to help users understand the market
+
+Examples:
+
+- average price per m² (based on listings)
+- price by district
+- number of listings by city
+- most active areas
+- property type distribution
+
+==================================================
+5) CONNECT INSIGHTS TO REAL USER VALUE
+==================================================
+
+Insights must help users:
+
+- decide where to buy
+- understand price levels
+- compare districts
+- evaluate listings
+
+Example insights (Arabic):
+- "حي X أعلى من متوسط السوق بنسبة 15%"
+- "الشقق تمثل 60% من الإعلانات الحالية"
+- "الرياض تستحوذ على أكبر عدد من العقارات"
+
+==================================================
+6) HOMEPAGE ROLE UPDATE
+==================================================
+
+Homepage must reflect BOTH:
+
+1) Marketplace
+2) Market intelligence
+
+Structure:
+
+- search bar (primary)
+- property listings (featured / latest)
+- map exploration
+- categories (شقق، فلل، أراضي...)
+- market insights (based on listings only)
+
+==================================================
+7) REMOVE MISALIGNED FEATURES
+==================================================
+
+Remove or refactor any feature that:
+- is not related to property listings
+- does not support browsing or posting
+- does not connect to real estate ecosystem
+
+==================================================
+8) MARKETERS ROLE
+==================================================
+
+Marketers:
+- manage listings
+- promote properties
+- have profile showing their listings
+
+==================================================
+9) SERVICE PROVIDERS ROLE
+==================================================
+
+Service providers:
+- offer services related to real estate
+- (construction, finishing, cleaning, etc.)
+
+They must be conceptually linked to property lifecycle
+
+==================================================
+10) UI / UX DIRECTION
+==================================================
+
+Platform should feel like:
+
+- a modern real estate app
+- clean
+- fast
+- easy to use
+
+Focus on:
+- property cards
+- images
+- map
+- filters
+- search
+
+==================================================
+11) DATA RULE (CRITICAL)
+==================================================
+
+All analytics MUST come from:
+→ internal property listings data only
+
+NO external APIs
+NO fake data
+
+==================================================
+12) FINAL GOAL
+==================================================
+
+Transform the platform into:
+
+→ A modern Saudi real estate marketplace with built-in smart insights
+
+Where:
+- listings are the core
+- users can browse and post properties easily
+- analytics help users understand the market
+- everything is connected to real data inside the platform

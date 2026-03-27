@@ -20,22 +20,25 @@ Saudi real estate **marketplace platform** — full-stack with Arabic RTL interf
 - `UserRoute` guard: redirects unauthenticated users to `/login`
 - `AdminRoute` guard: redirects non-admins to 403 page
 
-## Homepage Architecture
+## Homepage Architecture — Marketplace First
 
-The homepage (`home.tsx`) is the primary landing experience with 9 integrated sections:
+The homepage (`home.tsx`) is structured as a **real estate marketplace** with analytics as a supporting layer:
 
-1. **Hero** — dark premium banner with "تصفح العقارات" + "فلتر التحليلات" buttons
-2. **Filter Bar** — toggleable panel: city, district, property type, listing type, price range, area range
-3. **KPI Cards** — 8 cards: total listings, avg price/sqm, median price, avg price, max/min price, sale count, rent count
-4. **Growth Badges** — new listings in last 7 days and 30 days
-5. **Smart Insights** — auto-generated Arabic summaries from real listings data
-6. **Charts** — price trend line chart (count + avgPrice dual axis) + property type donut
-7. **City/District Comparison** — tables + bar chart comparing cities and districts
-8. **Interactive Map** — Leaflet map with Saudi city coordinate bubbles (sized by listing count); click to filter
-9. **Listings Showcase** — 6 most recent listings as cards, connected to active filters
-10. **CTA Cards** — "أضف عقارك", "المسوّقون العقاريون", "اطلب عقاراً"
+**Section order (top to bottom):**
+1. **Hero** — dark premium banner with "ابحث عن عقارك المثالي", quick search bar (listing type + property type + city dropdowns + بحث button), live stats row (total listings, avg price/sqm, new this month)
+2. **Category Pills** — property type quick-filter buttons (شقق، فلل، أراضي، مكاتب، تجاري، استوديو، مستودع) + "أضف إعلانك" CTA
+3. **Listings Showcase (PRIMARY)** — 8 most recent listings in 4-column grid; filters by active category pill; "عرض الكل" link to /listings
+4. **Interactive Map** — Leaflet map with Saudi city bubbles; click city → navigates to /listings?city=X
+5. **User Welcome / Guest CTA** — conditional banner
+6. **Platform CTA Cards** — "أضف عقارك", "المسوّقون العقاريون", "اطلب عقاراً"
+7. **Market Insights (SECONDARY)** — KPI cards + smart insights + charts (all derived from listings data, with analytics filter toggle)
+8. **Trend Chart** — dual-axis line chart (count + avgPrice over time)
+9. **Geographic Analysis** — city/district comparison tables + bar chart
 
-All sections react to the same filter state — changing filters updates every section simultaneously.
+**Two independent filter states:**
+- `quickSearch` state → hero search bar → navigates to /listings with params
+- `activeCategory` state → category pills → filters listings showcase on-page
+- `applied` state → analytics filter toggle → filters KPIs + charts only
 
 **Analytics API endpoints** (all from `listings` table, active status only):
 - `GET /api/analytics/listings-insights?[filters]` — KPIs, byCity, byDistrict, byPropertyType, byListingType, smartInsights

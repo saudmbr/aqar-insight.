@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
 import { GuestCTA, UserWelcomeBanner } from "@/components/guest-cta";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { formatCurrency, formatNumber, getImageSrc } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import {
   Building2, MapPin, Banknote, TrendingUp, Activity, Search,
   BarChart3, AlertCircle, ArrowLeft, Users, Star, Home as HomeIcon,
   Lightbulb, ChevronDown, X, SlidersHorizontal, RefreshCcw,
-  ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, PlusCircle, ChevronLeft,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -59,6 +59,17 @@ const EMPTY_FILTERS: Filters = {
   city: "", district: "", propertyType: "", listingType: "",
   minPrice: "", maxPrice: "", minArea: "", maxArea: "",
 };
+
+// Property type quick-access categories
+const PROPERTY_CATEGORIES = [
+  { label: "شقق", value: "شقة", icon: "🏢" },
+  { label: "فلل", value: "فيلا", icon: "🏡" },
+  { label: "أراضي", value: "أرض", icon: "🗺️" },
+  { label: "مكاتب", value: "مكتب", icon: "🏛️" },
+  { label: "تجاري", value: "تجاري", icon: "🏬" },
+  { label: "استوديو", value: "استوديو", icon: "🛋️" },
+  { label: "مستودع", value: "مستودع", icon: "🏭" },
+];
 
 function filtersToQuery(f: Filters) {
   const p = new URLSearchParams();
@@ -195,20 +206,44 @@ const INPUT_CLS = "border border-border rounded-xl px-3 py-2.5 text-sm bg-backgr
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
+  const [, navigate] = useLocation();
+
+  // Quick search state (hero bar)
+  const [quickCity, setQuickCity] = useState("");
+  const [quickType, setQuickType] = useState("");
+  const [quickListingType, setQuickListingType] = useState("");
+
+  // Category quick filter (pills)
+  const [activeCategory, setActiveCategory] = useState("");
+
+  // Analytics filter state (separate from listings quick-search)
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showAnalyticsFilters, setShowAnalyticsFilters] = useState(false);
 
   const applyFilters = useCallback(() => setApplied({ ...filters }), [filters]);
   const resetFilters = useCallback(() => { setFilters(EMPTY_FILTERS); setApplied(EMPTY_FILTERS); }, []);
 
-  const qs = filtersToQuery(applied);
+  // Listings filters = category pill OR analytics filter
+  const listingsPropertyType = activeCategory || applied.propertyType;
+  const listingsQs = (() => {
+    const p = new URLSearchParams({ limit: "8", sort: "newest" });
+    if (applied.city) p.set("city", applied.city);
+    if (applied.district) p.set("district", applied.district);
+    if (listingsPropertyType) p.set("propertyType", listingsPropertyType);
+    if (applied.listingType) p.set("listingType", applied.listingType);
+    if (applied.minPrice) p.set("minPrice", applied.minPrice);
+    if (applied.maxPrice) p.set("maxPrice", applied.maxPrice);
+    return p.toString();
+  })();
+
+  const analyticsQs = filtersToQuery(applied);
   const active = hasActiveFilters(applied);
 
   const { data: insights, isLoading: loadingInsights } = useQuery<InsightsData>({
-    queryKey: ["listings-insights", qs],
+    queryKey: ["listings-insights", analyticsQs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-insights${qs ? `?${qs}` : ""}`);
+      const res = await fetch(`${BASE()}/api/analytics/listings-insights${analyticsQs ? `?${analyticsQs}` : ""}`);
       if (!res.ok) throw new Error("فشل في تحميل البيانات");
       return res.json();
     },
@@ -216,9 +251,9 @@ export default function Home() {
   });
 
   const { data: trends, isLoading: loadingTrends } = useQuery<TrendPoint[]>({
-    queryKey: ["listings-trends", qs],
+    queryKey: ["listings-trends", analyticsQs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-trends${qs ? `?${qs}` : ""}`);
+      const res = await fetch(`${BASE()}/api/analytics/listings-trends${analyticsQs ? `?${analyticsQs}` : ""}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -236,16 +271,9 @@ export default function Home() {
   });
 
   const { data: listingsData, isLoading: loadingListings } = useQuery<{ data: Listing[]; total: number }>({
-    queryKey: ["home-listings", qs],
+    queryKey: ["home-listings", listingsQs],
     queryFn: async () => {
-      const params = new URLSearchParams({ limit: "6", sort: "newest" });
-      if (applied.city) params.set("city", applied.city);
-      if (applied.district) params.set("district", applied.district);
-      if (applied.propertyType) params.set("propertyType", applied.propertyType);
-      if (applied.listingType) params.set("listingType", applied.listingType);
-      if (applied.minPrice) params.set("minPrice", applied.minPrice);
-      if (applied.maxPrice) params.set("maxPrice", applied.maxPrice);
-      const res = await fetch(`${BASE()}/api/listings?${params.toString()}`);
+      const res = await fetch(`${BASE()}/api/listings?${listingsQs}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -259,22 +287,28 @@ export default function Home() {
     ? (filterOpts?.districts ?? []).filter(d => d.city === applied.city)
     : (filterOpts?.districts ?? []);
 
+  // Quick search → navigate to /listings with params
+  const handleQuickSearch = () => {
+    const p = new URLSearchParams();
+    if (quickCity) p.set("city", quickCity);
+    if (quickType) p.set("propertyType", quickType);
+    if (quickListingType) p.set("listingType", quickListingType);
+    navigate(`/listings${p.toString() ? `?${p.toString()}` : ""}`);
+  };
+
   return (
     <Layout>
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-14 pb-16">
 
         {/* ══════════════════════════════════════════════════════════════
-            HERO
+            HERO — Marketplace First
         ══════════════════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
           <div className="relative rounded-[2rem] overflow-hidden bg-sidebar text-white shadow-2xl" style={{ boxShadow: "0 24px 64px rgba(15,28,63,0.35), 0 4px 16px rgba(15,28,63,0.2)" }}>
-            {/* Background gradient layers */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_top_right,rgba(15,123,160,0.35),transparent)] pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_bottom_left,rgba(201,168,76,0.08),transparent)] pointer-events-none" />
-            {/* Dot grid overlay */}
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
               style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
-            {/* Architectural silhouette on the left */}
             <div className="absolute left-0 bottom-0 top-0 w-72 opacity-[0.04] pointer-events-none overflow-hidden hidden md:block">
               <svg viewBox="0 0 300 400" className="h-full w-auto" fill="white" xmlns="http://www.w3.org/2000/svg">
                 <rect x="20" y="200" width="50" height="200" />
@@ -282,63 +316,75 @@ export default function Home() {
                 <rect x="150" y="100" width="40" height="300" />
                 <rect x="200" y="170" width="55" height="230" />
                 <rect x="260" y="220" width="40" height="180" />
-                <rect x="30" y="210" width="8" height="10" fill="#0F1C3F" /><rect x="42" y="210" width="8" height="10" fill="#0F1C3F" />
-                <rect x="30" y="225" width="8" height="10" fill="#0F1C3F" /><rect x="42" y="225" width="8" height="10" fill="#0F1C3F" />
-                <rect x="88" y="165" width="10" height="12" fill="#0F1C3F" /><rect x="104" y="165" width="10" height="12" fill="#0F1C3F" />
-                <rect x="88" y="182" width="10" height="12" fill="#0F1C3F" /><rect x="104" y="182" width="10" height="12" fill="#0F1C3F" />
               </svg>
             </div>
 
-            <div className="relative px-8 py-14 md:px-14 md:py-20 flex flex-col md:flex-row md:items-end md:gap-12">
-              {/* Left: copy */}
-              <div className="flex-1 max-w-2xl">
-                <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-medium mb-5">
-                  <HomeIcon className="w-3.5 h-3.5" />
-                  المنصة العقارية الذكية
-                </div>
-                <h1 className="text-[2.2rem] md:text-[2.75rem] font-extrabold leading-[1.12] tracking-tight mb-5 text-white">
-                  اكتشف سوق العقار
-                  <br />
-                  <span className="text-white/90">بذكاء ودقة حقيقية</span>
-                </h1>
-                <p className="text-[16px] text-white/80 leading-relaxed mb-8 max-w-xl">
-                  تحليلات ومؤشرات حية مبنية على إعلانات عقارية حقيقية — اكتشف، قارن، وافهم السوق.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link href="/listings">
-                    <button className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-primary/30 transition-all">
-                      <Search className="w-4 h-4" />
-                      تصفح العقارات
-                    </button>
-                  </Link>
-                  <button
-                    onClick={() => setShowFilters(v => !v)}
-                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/15 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all"
-                  >
-                    <SlidersHorizontal className="w-4 h-4" />
-                    فلتر التحليلات
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showFilters ? "rotate-180" : ""}`} />
-                  </button>
-                  {active && (
-                    <button onClick={resetFilters} className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-red-500/60 border border-white/15 text-white px-4 py-3 rounded-xl font-semibold text-sm transition-all">
-                      <X className="w-3.5 h-3.5" />
-                      إلغاء الفلتر
-                    </button>
-                  )}
-                </div>
+            <div className="relative px-8 py-12 md:px-14 md:py-16">
+              <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-medium mb-5">
+                <HomeIcon className="w-3.5 h-3.5" />
+                سوق العقارات السعودي
+              </div>
+              <h1 className="text-[2.2rem] md:text-[2.9rem] font-extrabold leading-[1.1] tracking-tight mb-3 text-white">
+                ابحث عن عقارك المثالي
+              </h1>
+              <p className="text-[16px] text-white/75 leading-relaxed mb-8 max-w-2xl">
+                آلاف الإعلانات العقارية — شقق، فلل، أراضي، مكاتب — للبيع والإيجار في مدن المملكة
+              </p>
+
+              {/* Quick Search Bar */}
+              <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row gap-3 max-w-3xl">
+                <select
+                  value={quickListingType}
+                  onChange={e => setQuickListingType(e.target.value)}
+                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 md:w-36 shrink-0"
+                  style={{ color: "white" }}
+                >
+                  <option value="" style={{ color: "#0F1C3F" }}>بيع وإيجار</option>
+                  <option value="sale" style={{ color: "#0F1C3F" }}>للبيع</option>
+                  <option value="rent" style={{ color: "#0F1C3F" }}>للإيجار</option>
+                </select>
+                <select
+                  value={quickType}
+                  onChange={e => setQuickType(e.target.value)}
+                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1"
+                  style={{ color: "white" }}
+                >
+                  <option value="" style={{ color: "#0F1C3F" }}>كل أنواع العقارات</option>
+                  {PROPERTY_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value} style={{ color: "#0F1C3F" }}>{c.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={quickCity}
+                  onChange={e => setQuickCity(e.target.value)}
+                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1"
+                  style={{ color: "white" }}
+                >
+                  <option value="" style={{ color: "#0F1C3F" }}>كل المدن</option>
+                  {(filterOpts?.cities ?? []).map(c => (
+                    <option key={c} value={c} style={{ color: "#0F1C3F" }}>{c}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleQuickSearch}
+                  className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-7 py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/40 transition-all shrink-0"
+                >
+                  <Search className="w-4 h-4" />
+                  بحث
+                </button>
               </div>
 
-              {/* Right: quick stats (desktop only) */}
+              {/* Stats row (desktop) */}
               {hasData && (
-                <div className="hidden md:flex gap-4 shrink-0">
+                <div className="hidden md:flex items-center gap-6 mt-6 pt-6 border-t border-white/10">
                   {[
                     { label: "إعلان نشط", value: formatNumber(kpis?.totalListings) },
                     { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm) },
                     { label: "إعلانات جديدة هذا الشهر", value: formatNumber(kpis?.newLast30Days) },
                   ].map(s => (
-                    <div key={s.label} className="bg-white/8 border border-white/10 rounded-2xl px-5 py-4 min-w-[130px] text-center backdrop-blur-sm">
-                      <div className="text-xl font-extrabold text-white mb-1">{s.value}</div>
-                      <div className="text-[11px] text-white/80 leading-tight">{s.label}</div>
+                    <div key={s.label} className="flex items-center gap-2">
+                      <div className="text-lg font-extrabold text-white">{s.value}</div>
+                      <div className="text-[12px] text-white/60">{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -348,90 +394,284 @@ export default function Home() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            FILTER PANEL — animated open/close
+            CATEGORY QUICK-ACCESS PILLS
         ══════════════════════════════════════════════════════════════ */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, marginTop: -24 }}
-              animate={{ opacity: 1, height: "auto", marginTop: 0 }}
-              exit={{ opacity: 0, height: 0, marginTop: -24 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="overflow-hidden"
+        <motion.div variants={fadeUp}>
+          <div className="flex flex-wrap gap-3 items-center">
+            <button
+              onClick={() => setActiveCategory("")}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold border transition-all duration-200 ${
+                activeCategory === ""
+                  ? "bg-primary text-white border-primary shadow-sm shadow-primary/25"
+                  : "bg-card text-muted-foreground border-border/60 hover:border-primary/30 hover:text-primary"
+              }`}
             >
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-bold text-foreground flex items-center gap-2 text-[15px]">
-                    <SlidersHorizontal className="w-4 h-4 text-primary" />
-                    فلترة التحليلات والإعلانات
-                    {active && <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] font-bold">مفعّل</Badge>}
-                  </span>
-                  {active && (
-                    <button onClick={resetFilters} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors">
-                      <RefreshCcw className="w-3 h-3" /> إعادة ضبط
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                  <select value={filters.city}
-                    onChange={e => setFilters(f => ({ ...f, city: e.target.value, district: "" }))}
-                    className={INPUT_CLS}>
-                    <option value="">كل المدن</option>
-                    {(filterOpts?.cities ?? []).map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <select value={filters.district}
-                    onChange={e => setFilters(f => ({ ...f, district: e.target.value }))}
-                    className={INPUT_CLS}>
-                    <option value="">كل الأحياء</option>
-                    {filteredDistricts.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
-                  </select>
-                  <select value={filters.propertyType}
-                    onChange={e => setFilters(f => ({ ...f, propertyType: e.target.value }))}
-                    className={INPUT_CLS}>
-                    <option value="">كل الأنواع</option>
-                    {(filterOpts?.propertyTypes ?? []).map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <select value={filters.listingType}
-                    onChange={e => setFilters(f => ({ ...f, listingType: e.target.value }))}
-                    className={INPUT_CLS}>
-                    <option value="">بيع وإيجار</option>
-                    <option value="sale">للبيع</option>
-                    <option value="rent">للإيجار</option>
-                  </select>
-                  <input type="number" placeholder="أقل سعر (ر.س)" value={filters.minPrice}
-                    onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} className={INPUT_CLS} />
-                  <input type="number" placeholder="أعلى سعر (ر.س)" value={filters.maxPrice}
-                    onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} className={INPUT_CLS} />
-                  <input type="number" placeholder="أقل مساحة (م²)" value={filters.minArea}
-                    onChange={e => setFilters(f => ({ ...f, minArea: e.target.value }))} className={INPUT_CLS} />
-                  <input type="number" placeholder="أعلى مساحة (م²)" value={filters.maxArea}
-                    onChange={e => setFilters(f => ({ ...f, maxArea: e.target.value }))} className={INPUT_CLS} />
-                </div>
-                <button onClick={applyFilters}
-                  className="bg-primary hover:bg-primary/90 text-white px-7 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-primary/20">
-                  تطبيق الفلتر
+              الكل
+            </button>
+            {PROPERTY_CATEGORIES.map(cat => (
+              <button
+                key={cat.value}
+                onClick={() => setActiveCategory(prev => prev === cat.value ? "" : cat.value)}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold border transition-all duration-200 ${
+                  activeCategory === cat.value
+                    ? "bg-primary text-white border-primary shadow-sm shadow-primary/25"
+                    : "bg-card text-muted-foreground border-border/60 hover:border-primary/30 hover:text-primary"
+                }`}
+              >
+                <span>{cat.icon}</span>
+                {cat.label}
+              </button>
+            ))}
+            <div className="mr-auto">
+              <Link href="/listings/new">
+                <button className="inline-flex items-center gap-2 bg-sidebar text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:opacity-90 transition-all">
+                  <PlusCircle className="w-4 h-4" />
+                  أضف إعلانك
                 </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            MARKET KPIs
+            LISTINGS SHOWCASE — PRIMARY CONTENT
         ══════════════════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
           <SectionLabel
-            eyebrow="مؤشرات السوق"
-            title="نظرة شاملة على السوق"
-            description="مبنية حصراً على الإعلانات الحقيقية المنشورة داخل المنصة"
-            action={active ? <Badge variant="outline" className="text-primary border-primary/30 font-bold text-xs">نتائج مفلترة</Badge> : undefined}
+            eyebrow={activeCategory ? `عقارات: ${activeCategory}` : (active ? "نتائج البحث" : "أحدث الإعلانات")}
+            title={activeCategory ? `إعلانات ${activeCategory}` : (active ? "الإعلانات المطابقة لبحثك" : "أحدث العقارات على المنصة")}
+            description={active || activeCategory ? "الإعلانات التي تطابق معايير الفلتر الحالي" : "أحدث الإعلانات العقارية المضافة — يتم التحديث تلقائياً"}
+            action={
+              <Link href={`/listings${listingsPropertyType ? `?propertyType=${encodeURIComponent(listingsPropertyType)}` : ""}`}>
+                <button className="flex items-center gap-1.5 text-primary font-bold text-[13px] hover:underline underline-offset-2">
+                  عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+              </Link>
+            }
           />
 
+          {loadingListings ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden border border-border/60 bg-card">
+                  <Skeleton className="h-48 w-full" />
+                  <div className="p-4 space-y-2.5">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-5 w-1/3 mt-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (listingsData?.data?.length ?? 0) === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4 bg-card rounded-3xl border border-dashed border-border/60">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl border border-primary/15 flex items-center justify-center">
+                <Building2 className="w-8 h-8 text-primary/40" />
+              </div>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground mb-1">لا توجد إعلانات {activeCategory ? `لـ "${activeCategory}"` : ""}بعد</p>
+                <p className="text-sm text-muted-foreground">كن أول من ينشر إعلاناً على المنصة</p>
+              </div>
+              {(active || activeCategory) && (
+                <button onClick={() => { resetFilters(); setActiveCategory(""); }} className="text-primary text-sm font-bold hover:underline">
+                  عرض جميع الإعلانات
+                </button>
+              )}
+              <Link href="/listings/new">
+                <button className="mt-1 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                  أضف أول إعلان
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {(listingsData?.data ?? []).map(listing => (
+                  <ListingCard key={listing.id} listing={listing} />
+                ))}
+              </div>
+              {(listingsData?.total ?? 0) > 8 && (
+                <div className="mt-8 text-center">
+                  <Link href={`/listings${listingsPropertyType ? `?propertyType=${encodeURIComponent(listingsPropertyType)}` : ""}`}>
+                    <button className="inline-flex items-center gap-2 border border-primary/30 text-primary font-bold px-8 py-3 rounded-2xl hover:bg-primary/5 transition-all text-sm">
+                      عرض جميع الإعلانات ({formatNumber(listingsData?.total ?? 0)})
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════════════════
+            INTERACTIVE MAP
+        ══════════════════════════════════════════════════════════════ */}
+        {hasData && (
+          <motion.div variants={fadeUp}>
+            <SectionLabel
+              eyebrow="استكشاف جغرافي"
+              title="توزيع العقارات على الخريطة"
+              description="اضغط على مدينة لعرض إعلاناتها — الدوائر الأكبر تعني نشاطاً أعلى"
+            />
+            <Card className="rounded-2xl overflow-hidden border-border/60 shadow-sm">
+              <CardContent className="p-0">
+                <Suspense fallback={<Skeleton className="w-full h-[460px] rounded-2xl" />}>
+                  <ListingsMap
+                    cityData={insights?.byCity ?? []}
+                    onCityClick={city => { setFilters(f => ({ ...f, city })); setApplied(f => ({ ...f, city })); }}
+                    height={460}
+                  />
+                </Suspense>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            PLATFORM CTA CARDS
+        ══════════════════════════════════════════════════════════════ */}
+        <motion.div variants={fadeUp}>
+          {isAuthenticated && user ? (
+            <UserWelcomeBanner fullName={user.fullName ?? user.username} />
+          ) : (
+            <GuestCTA />
+          )}
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/listings/new">
+              <div className="bg-sidebar rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(15,123,160,0.3),transparent_70%)] pointer-events-none" />
+                <div className="relative">
+                  <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
+                  <p className="text-[13px] text-white/80 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
+                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90 group-hover:text-white transition-colors">
+                    ابدأ الآن <ArrowLeft className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <Link href="/marketers">
+              <div className="bg-gradient-to-br from-accent/80 to-accent/50 rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none" />
+                <div className="relative">
+                  <Users className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <h3 className="font-bold text-lg mb-1.5">المسوّقون العقاريون</h3>
+                  <p className="text-[13px] text-white/85 mb-4">تواصل مع أفضل المسوّقين المعتمدين وذوي الخبرة</p>
+                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
+                    استعرض الملفات <ArrowLeft className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <Link href="/requests/new">
+              <div className="bg-gradient-to-br from-primary to-primary/70 rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(255,255,255,0.08),transparent_70%)] pointer-events-none" />
+                <div className="relative">
+                  <Search className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <h3 className="font-bold text-lg mb-1.5">اطلب عقاراً</h3>
+                  <p className="text-[13px] text-white/85 mb-4">أخبرنا عن احتياجك وسنجد لك أفضل الخيارات المتاحة</p>
+                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
+                    قدّم طلبك <ArrowLeft className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════════════════
+            MARKET INSIGHTS — Supporting layer
+        ══════════════════════════════════════════════════════════════ */}
+        <motion.div variants={fadeUp}>
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-bold tracking-widest text-primary uppercase mb-1.5">ذكاء السوق</p>
+              <h2 className="text-2xl font-extrabold text-foreground leading-snug">مؤشرات السوق العقاري</h2>
+              <p className="text-sm text-muted-foreground mt-1">مبنية حصراً على الإعلانات الحقيقية المنشورة داخل المنصة</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 mt-1">
+              {active && <Badge variant="outline" className="text-primary border-primary/30 font-bold text-xs">نتائج مفلترة</Badge>}
+              <button
+                onClick={() => setShowAnalyticsFilters(v => !v)}
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-primary border border-border rounded-xl px-3 py-2 transition-all"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                فلترة
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showAnalyticsFilters ? "rotate-180" : ""}`} />
+              </button>
+              {active && (
+                <button onClick={resetFilters} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive border border-border rounded-xl px-3 py-2 transition-all">
+                  <X className="w-3 h-3" /> إعادة ضبط
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Analytics filter panel */}
+          <AnimatePresence>
+            {showAnalyticsFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.22, ease: "easeInOut" }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <select value={filters.city}
+                      onChange={e => setFilters(f => ({ ...f, city: e.target.value, district: "" }))}
+                      className={INPUT_CLS}>
+                      <option value="">كل المدن</option>
+                      {(filterOpts?.cities ?? []).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={filters.district}
+                      onChange={e => setFilters(f => ({ ...f, district: e.target.value }))}
+                      className={INPUT_CLS}>
+                      <option value="">كل الأحياء</option>
+                      {filteredDistricts.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
+                    </select>
+                    <select value={filters.propertyType}
+                      onChange={e => setFilters(f => ({ ...f, propertyType: e.target.value }))}
+                      className={INPUT_CLS}>
+                      <option value="">كل الأنواع</option>
+                      {(filterOpts?.propertyTypes ?? []).map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <select value={filters.listingType}
+                      onChange={e => setFilters(f => ({ ...f, listingType: e.target.value }))}
+                      className={INPUT_CLS}>
+                      <option value="">بيع وإيجار</option>
+                      <option value="sale">للبيع</option>
+                      <option value="rent">للإيجار</option>
+                    </select>
+                    <input type="number" placeholder="أقل سعر (ر.س)" value={filters.minPrice}
+                      onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} className={INPUT_CLS} />
+                    <input type="number" placeholder="أعلى سعر (ر.س)" value={filters.maxPrice}
+                      onChange={e => setFilters(f => ({ ...f, maxPrice: e.target.value }))} className={INPUT_CLS} />
+                    <input type="number" placeholder="أقل مساحة (م²)" value={filters.minArea}
+                      onChange={e => setFilters(f => ({ ...f, minArea: e.target.value }))} className={INPUT_CLS} />
+                    <input type="number" placeholder="أعلى مساحة (م²)" value={filters.maxArea}
+                      onChange={e => setFilters(f => ({ ...f, maxArea: e.target.value }))} className={INPUT_CLS} />
+                  </div>
+                  <button onClick={applyFilters}
+                    className="bg-primary hover:bg-primary/90 text-white px-7 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-primary/20">
+                    تطبيق الفلتر
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* KPIs */}
           {!hasData && !loadingInsights ? (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-              <BarChart3 className="w-14 h-14 opacity-20" />
-              <p className="text-lg font-semibold">لا توجد إعلانات نشطة حالياً</p>
-              <p className="text-sm opacity-70">ستظهر التحليلات تلقائياً فور نشر الإعلانات الأولى</p>
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 bg-card rounded-2xl border border-dashed border-border/60">
+              <BarChart3 className="w-12 h-12 opacity-20" />
+              <p className="text-base font-semibold">لا توجد إعلانات نشطة حالياً</p>
+              <p className="text-sm opacity-70">ستظهر المؤشرات تلقائياً فور نشر الإعلانات الأولى</p>
               <Link href="/listings/new">
                 <button className="mt-2 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
                   أضف أول إعلان
@@ -440,7 +680,6 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {/* Primary KPIs — large */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <KpiCard highlight icon={<Building2 className="w-5 h-5" />} title="إجمالي الإعلانات النشطة" color="#0F7BA0"
                   value={loadingInsights ? <Skeleton className="h-8 w-16" /> : formatNumber(kpis?.totalListings)} />
@@ -451,8 +690,6 @@ export default function Home() {
                 <KpiCard icon={<Activity className="w-5 h-5" />} title="متوسط السعر الكلي" color="#34D399"
                   value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPrice)} />
               </div>
-
-              {/* Secondary KPIs — smaller, with inline growth stats */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <KpiCard icon={<ArrowUpRight className="w-4 h-4" />} title="أعلى سعر مدرج" color="#F97316"
                   value={loadingInsights ? <Skeleton className="h-6 w-20" /> : formatCurrency(kpis?.maxPrice)} />
@@ -469,8 +706,6 @@ export default function Home() {
                 <KpiCard icon={<Activity className="w-4 h-4" />} title="جديد في 30 يوماً" color="#0F7BA0"
                   value={loadingInsights ? <Skeleton className="h-6 w-10" /> : formatNumber(kpis?.newLast30Days)} />
               </div>
-
-              {/* Quartile band — only when data available */}
               {(kpis?.p25Price ?? 0) > 0 && (
                 <div className="mt-3 flex items-center gap-2 text-[12px] text-muted-foreground bg-muted/40 rounded-xl px-4 py-2.5 w-fit">
                   <BarChart3 className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -482,12 +717,10 @@ export default function Home() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            SMART INSIGHTS + TYPE BREAKDOWN  (2-col)
+            SMART INSIGHTS + TYPE BREAKDOWN
         ══════════════════════════════════════════════════════════════ */}
         {hasData && (
           <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-            {/* Smart Insights — 3 cols */}
             {(insights?.smartInsights?.length ?? 0) > 0 && (
               <Card className="lg:col-span-3 rounded-2xl border-border/60 shadow-sm">
                 <CardHeader className="pb-4">
@@ -496,8 +729,8 @@ export default function Home() {
                       <Lightbulb className="w-4.5 h-4.5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">ملخص ذكي</CardTitle>
-                      <CardDescription className="text-[12px] mt-0.5">استنتاجات من البيانات الفعلية للمنصة</CardDescription>
+                      <CardTitle className="text-lg">ملخص ذكي من السوق</CardTitle>
+                      <CardDescription className="text-[12px] mt-0.5">استنتاجات من بيانات الإعلانات الفعلية</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -512,7 +745,6 @@ export default function Home() {
               </Card>
             )}
 
-            {/* Property type donut — 2 cols */}
             <Card className="lg:col-span-2 rounded-2xl border-border/60 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">أنواع العقارات</CardTitle>
@@ -565,6 +797,13 @@ export default function Home() {
               eyebrow="تطور السوق"
               title="اتجاهات الأسعار والإعلانات"
               description="تطور عدد الإعلانات ومتوسط الأسعار بمرور الوقت"
+              action={
+                <Link href="/analytics">
+                  <button className="flex items-center gap-1.5 text-primary font-bold text-[13px] hover:underline underline-offset-2">
+                    التحليل الكامل <ArrowLeft className="w-3.5 h-3.5" />
+                  </button>
+                </Link>
+              }
             />
             <Card className="rounded-2xl border-border/60 shadow-sm">
               <CardContent className="pt-6 pb-4 px-6">
@@ -608,7 +847,7 @@ export default function Home() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            GEOGRAPHIC ANALYSIS — city + district tables
+            GEOGRAPHIC ANALYSIS
         ══════════════════════════════════════════════════════════════ */}
         {hasData && (
           <motion.div variants={fadeUp}>
@@ -619,7 +858,6 @@ export default function Home() {
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {/* Cities */}
               <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
                 <CardHeader className="pb-0 pt-5 px-5">
                   <CardTitle className="text-[15px] flex items-center gap-2">
@@ -643,7 +881,7 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-border/50">
                         {(insights?.byCity ?? []).map((c, i) => (
-                          <tr key={c.city} className="hover:bg-muted/20 transition-colors">
+                          <tr key={c.city} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate(`/listings?city=${encodeURIComponent(c.city)}`)}>
                             <td className="px-5 py-3.5 font-semibold text-foreground flex items-center gap-1.5">
                               {i === 0 && <Star className="w-3 h-3 text-accent shrink-0" />}
                               {c.city}
@@ -661,7 +899,6 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              {/* Districts */}
               <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
                 <CardHeader className="pb-0 pt-5 px-5">
                   <CardTitle className="text-[15px] flex items-center gap-2">
@@ -701,7 +938,6 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* City bar chart — only when 2+ cities */}
             {(insights?.byCity?.length ?? 0) > 1 && (
               <Card className="rounded-2xl border-border/60 shadow-sm mt-5">
                 <CardHeader className="pb-2">
@@ -728,137 +964,6 @@ export default function Home() {
             )}
           </motion.div>
         )}
-
-        {/* ══════════════════════════════════════════════════════════════
-            INTERACTIVE MAP
-        ══════════════════════════════════════════════════════════════ */}
-        {hasData && (
-          <motion.div variants={fadeUp}>
-            <SectionLabel
-              eyebrow="الخريطة التفاعلية"
-              title="توزيع العقارات جغرافياً"
-              description="الدوائر الأكبر تعني نشاطاً أعلى — انقر على مدينة لفلترة التحليلات"
-            />
-            <Card className="rounded-2xl overflow-hidden border-border/60 shadow-sm">
-              <CardContent className="p-0">
-                <Suspense fallback={<Skeleton className="w-full h-[460px] rounded-2xl" />}>
-                  <ListingsMap
-                    cityData={insights?.byCity ?? []}
-                    onCityClick={city => { setFilters(f => ({ ...f, city })); setApplied(f => ({ ...f, city })); }}
-                    height={460}
-                  />
-                </Suspense>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════
-            LISTINGS SHOWCASE
-        ══════════════════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          <SectionLabel
-            eyebrow={active ? "نتائج البحث" : "أحدث الإعلانات"}
-            title={active ? "الإعلانات المطابقة لفلترك" : "أحدث العقارات على المنصة"}
-            description={active ? "الإعلانات التي تطابق معايير الفلتر الحالي" : "أحدث الإعلانات العقارية المضافة على المنصة"}
-            action={
-              <Link href={`/listings${qs ? `?${qs}` : ""}`}>
-                <button className="flex items-center gap-1.5 text-primary font-bold text-[13px] hover:underline underline-offset-2">
-                  عرض الكل <ArrowLeft className="w-3.5 h-3.5" />
-                </button>
-              </Link>
-            }
-          />
-
-          {loadingListings ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl overflow-hidden border border-border/60 bg-card">
-                  <Skeleton className="h-48 w-full" />
-                  <div className="p-4 space-y-2.5">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-5 w-1/3 mt-2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (listingsData?.data?.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground border border-dashed border-border/60 rounded-2xl">
-              <Building2 className="w-12 h-12 opacity-20" />
-              <p className="text-base font-semibold">لا توجد إعلانات تطابق البحث</p>
-              {active && (
-                <button onClick={resetFilters} className="text-primary text-sm font-bold hover:underline mt-1">
-                  إزالة الفلتر لعرض كل الإعلانات
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {(listingsData?.data ?? []).map(listing => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
-          )}
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════════════════
-            WELCOME / GUEST BANNER
-        ══════════════════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          {isAuthenticated && user ? (
-            <UserWelcomeBanner fullName={user.fullName ?? user.username} />
-          ) : (
-            <GuestCTA />
-          )}
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════════════════
-            PLATFORM CTA CARDS
-        ══════════════════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/listings/new">
-              <div className="bg-sidebar rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(15,123,160,0.3),transparent_70%)] pointer-events-none" />
-                <div className="relative">
-                  <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                  <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
-                  <p className="text-[13px] text-white/80 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
-                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90 group-hover:text-white transition-colors">
-                    ابدأ الآن <ArrowLeft className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <Link href="/marketers">
-              <div className="bg-gradient-to-br from-accent/80 to-accent/50 rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none" />
-                <div className="relative">
-                  <Users className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                  <h3 className="font-bold text-lg mb-1.5">المسوّقون العقاريون</h3>
-                  <p className="text-[13px] text-white/85 mb-4">تواصل مع أفضل المسوّقين المعتمدين وصحاب الخبرة</p>
-                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
-                    استعرض الملفات <ArrowLeft className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <Link href="/requests/new">
-              <div className="bg-gradient-to-br from-primary to-primary/70 rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(255,255,255,0.08),transparent_70%)] pointer-events-none" />
-                <div className="relative">
-                  <Search className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                  <h3 className="font-bold text-lg mb-1.5">اطلب عقاراً</h3>
-                  <p className="text-[13px] text-white/85 mb-4">أخبرنا عن احتياجك وسنجد لك أفضل الخيارات المتاحة</p>
-                  <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
-                    قدّم طلبك <ArrowLeft className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </motion.div>
 
       </motion.div>
     </Layout>
