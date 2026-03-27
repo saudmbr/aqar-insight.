@@ -1,0 +1,108 @@
+Fix the property image upload and display system only.
+
+Current issue:
+- After posting a property, images are not showing on the platform
+
+Scope:
+- Focus ONLY on image upload, storage, and display
+- Do NOT modify UI design, colors, or other features
+
+========================================
+1) VERIFY IMAGE UPLOAD
+========================================
+
+Ensure:
+- Images are successfully uploaded from frontend
+- Supported formats:
+  jpg, jpeg, png, webp
+
+Check:
+- Is the upload request working correctly?
+- Are files received by backend?
+- Are files stored properly?
+
+========================================
+2) STORAGE FIX
+========================================
+
+Ensure images are:
+- Stored in a proper directory (e.g. /uploads or /public/uploads)
+- Accessible via public URL
+
+Example:
+- Stored: /uploads/image123.jpg
+- Accessible: https://your-domain/uploads/image123.jpg
+
+========================================
+3) DATABASE LINKING
+========================================
+
+Ensure:
+- Image URLs are saved in the database correctly
+- Each property has:
+  - image_url OR
+  - images array (preferred)
+
+Check:
+- Is the correct field being saved?
+- Is the field name consistent between backend and frontend?
+
+========================================
+4) FRONTEND DISPLAY FIX
+========================================
+
+Ensure images are displayed in:
+
+- homepage property cards
+- listings page
+- property detail page
+- admin panel
+
+Fix:
+- Use correct field (image_url or images[0])
+- Ensure correct URL format (no broken paths)
+
+========================================
+5) MULTIPLE IMAGES SUPPORT
+========================================
+
+If multiple images exist:
+- Display first image as cover
+- Support gallery/slider in property details
+
+========================================
+6) FALLBACK HANDLING
+========================================
+
+If image is missing:
+- Show placeholder image (default property image)
+
+========================================
+7) DEBUGGING
+========================================
+
+Add logs temporarily:
+- Log uploaded file path
+- Log saved database value
+- Log image URL used in frontend
+
+========================================
+8) FINAL TEST
+========================================
+
+Test flow:
+1. Add new property
+2. Upload image(s)
+3. Save property
+4. Verify:
+   - image stored
+   - URL saved
+   - image appears everywhere
+
+========================================
+IMPORTANT
+========================================
+
+- Do NOT change design or layout
+- Do NOT break existing property logic
+- Focus ONLY on making images work correctly end-to-end

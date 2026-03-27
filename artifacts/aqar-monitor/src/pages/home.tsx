@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
 import { GuestCTA, UserWelcomeBanner } from "@/components/guest-cta";
 import { Link } from "wouter";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatNumber, getImageSrc } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -130,7 +130,7 @@ function KpiCard({
 
 function ListingCard({ listing }: { listing: Listing }) {
   const images = listing.images?.split("\n").filter(Boolean) ?? [];
-  const img = images[0];
+  const img = getImageSrc(images[0]);
   const isForSale = listing.listingType === "sale";
   return (
     <Link href={`/listings/${listing.id}`}>

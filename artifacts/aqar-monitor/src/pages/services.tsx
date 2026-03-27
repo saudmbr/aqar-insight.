@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
+import { getImageSrc } from "@/lib/utils";
 import {
   Search, PlusCircle, MapPin, Star, Verified,
   Wrench, ArrowLeft, Filter
@@ -60,7 +61,8 @@ export default function Services() {
 
   const getFirstImage = (images?: string | null) => {
     if (!images) return null;
-    return images.split("\n").map(u => u.trim()).filter(Boolean)[0] ?? null;
+    const raw = images.split("\n").map(u => u.trim()).filter(Boolean)[0] ?? null;
+    return getImageSrc(raw);
   };
 
   return (

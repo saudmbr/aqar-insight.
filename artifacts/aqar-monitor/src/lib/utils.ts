@@ -18,3 +18,16 @@ export function formatNumber(value: number | undefined | null): string {
   if (value === undefined || value === null) return "0";
   return new Intl.NumberFormat("ar-SA").format(value);
 }
+
+/**
+ * Convert a stored image path to a displayable URL.
+ * Paths beginning with /objects/ are served via the storage proxy at /api/storage/objects/...
+ * External http(s) URLs and null/empty values are returned as-is.
+ */
+export function getImageSrc(path: string | null | undefined): string | null {
+  if (!path) return null;
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("/objects/")) return `/api/storage${trimmed}`;
+  return trimmed;
+}

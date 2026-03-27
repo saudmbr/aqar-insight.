@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageSrc } from "@/lib/utils";
 import {
   MapPin, Phone, MessageSquare, Mail, Globe, BadgeCheck, Building2,
   Star, Grid3X3, List, ArrowRight, Briefcase, Award,
@@ -130,7 +130,7 @@ export default function MarketerProfilePage() {
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center shadow-lg overflow-hidden shrink-0">
                   {profile.photo ? (
-                    <img src={profile.photo} alt={profile.fullName} className="w-full h-full object-cover" />
+                    <img src={getImageSrc(profile.photo) ?? ""} alt={profile.fullName} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-3xl font-bold text-primary">{profile.fullName.charAt(0)}</span>
                   )}
@@ -306,7 +306,7 @@ export default function MarketerProfilePage() {
                     <div className="bg-card border border-border/60 rounded-2xl p-4 flex gap-4 hover:border-primary/30 hover:shadow-md transition-all duration-200">
                       <div className="w-24 h-20 rounded-xl bg-muted shrink-0 overflow-hidden">
                         {l.images ? (
-                          <img src={l.images.split("\n")[0].trim()} alt={l.title} className="w-full h-full object-cover" />
+                          <img src={getImageSrc(l.images.split("\n")[0].trim()) ?? ""} alt={l.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Building2 className="w-8 h-8 text-muted-foreground/30" />

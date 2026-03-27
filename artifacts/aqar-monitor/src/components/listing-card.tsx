@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { MapPin, BedDouble, Bath, Maximize2, Verified, Star } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageSrc } from "@/lib/utils";
 
 export interface ListingCardData {
   id: number;
@@ -42,7 +42,7 @@ const LISTING_TYPE_COLORS: Record<string, string> = {
 function getFirstImage(images?: string | null): string | null {
   if (!images) return null;
   const urls = images.split("\n").map(u => u.trim()).filter(Boolean);
-  return urls[0] ?? null;
+  return getImageSrc(urls[0]) ?? null;
 }
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {

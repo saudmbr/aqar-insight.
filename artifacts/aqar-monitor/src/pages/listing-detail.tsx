@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getImageSrc } from "@/lib/utils";
 import type { Listing } from "@workspace/db";
 import {
   ArrowRight, MapPin, BedDouble, Bath, Maximize2, Phone, MessageSquare,
@@ -142,7 +142,7 @@ export default function ListingDetail() {
     );
   }
 
-  const images = listing.images?.split("\n").map(u => u.trim()).filter(Boolean) ?? [];
+  const images = listing.images?.split("\n").map(u => getImageSrc(u.trim())).filter((u): u is string => !!u) ?? [];
   const whatsappLink = listing.whatsapp
     ? `https://wa.me/${listing.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`مرحباً، أود الاستفسار عن إعلانكم: ${listing.title}`)}`
     : null;
@@ -461,7 +461,7 @@ export default function ListingDetail() {
               <Card className="border-border rounded-3xl overflow-hidden">
                 <CardContent className="p-5">
                   <h3 className="text-lg font-bold mb-3">المخطط الهندسي</h3>
-                  <img src={listing.floorPlan} alt="المخطط الهندسي" className="w-full rounded-2xl border border-border" />
+                  <img src={getImageSrc(listing.floorPlan) ?? ""} alt="المخطط الهندسي" className="w-full rounded-2xl border border-border" />
                 </CardContent>
               </Card>
             )}

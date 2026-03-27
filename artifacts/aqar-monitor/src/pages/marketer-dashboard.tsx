@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
+import { getImageSrc } from "@/lib/utils";
 import {
   Building2, Save, Loader2, Plus, User, MapPin, Phone, Globe, Star,
   BadgeCheck, Edit, Trash2, Eye,
@@ -374,7 +375,7 @@ export default function MarketerDashboard() {
                   <div key={listing.id} className="bg-card border border-border/60 rounded-2xl p-4 flex gap-4 items-center hover:border-primary/20 transition-all">
                     <div className="w-20 h-16 rounded-xl bg-muted shrink-0 overflow-hidden">
                       {listing.images ? (
-                        <img src={listing.images.split("\n")[0].trim()} alt={listing.title} className="w-full h-full object-cover" />
+                        <img src={getImageSrc(listing.images.split("\n")[0].trim()) ?? ""} alt={listing.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Building2 className="w-7 h-7 text-muted-foreground/30" />
