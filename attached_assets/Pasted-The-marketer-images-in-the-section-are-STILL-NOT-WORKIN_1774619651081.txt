@@ -1,0 +1,127 @@
+The marketer images in the "المسوقون" section are STILL NOT WORKING.
+
+Previous fixes did NOT solve the issue.
+
+You must now perform a FULL DEBUG and FIX the root cause.
+
+==================================================
+MANDATORY DEBUG (DO NOT SKIP)
+==================================================
+
+1) Inspect ONE real marketer record from the database
+
+Log:
+- marketer id
+- marketer name
+- ALL image-related fields:
+  avatar
+  avatar_url
+  image
+  image_url
+  profile_image
+  logo
+
+PRINT the actual value stored.
+
+==================================================
+2) VERIFY IMAGE VALUE
+==================================================
+
+Check:
+
+- Is the field empty?
+- Is it null?
+- Is it a relative path like /uploads/xxx?
+- Is it a full URL?
+- Is it invalid or broken?
+
+If empty → problem is upload/save
+If exists but broken → problem is path/render
+
+==================================================
+3) TEST IMAGE URL DIRECTLY
+==================================================
+
+Take the exact image value from DB and:
+
+- open it in browser
+- confirm if it loads
+
+If it DOES NOT load:
+→ fix storage / public access
+
+If it DOES load:
+→ problem is frontend rendering
+
+==================================================
+4) FORCE FRONTEND FIX
+==================================================
+
+In marketers card/component:
+
+- log the exact image URL being used
+- replace ANY dynamic logic temporarily with:
+
+<img src="FULL_IMAGE_URL_FROM_DB" />
+
+If it works → issue is wrong field mapping
+
+==================================================
+5) FIX FIELD MISMATCH (MOST LIKELY)
+==================================================
+
+Ensure:
+- frontend uses the SAME field as database
+
+Example fix:
+- If DB uses "avatar_url"
+- frontend MUST use avatar_url (not image or photo)
+
+Standardize ONE field:
+→ avatar_url
+
+==================================================
+6) FIX URL GENERATION
+==================================================
+
+If stored path is:
+  /uploads/img.jpg
+
+Convert it to:
+  https://your-domain/uploads/img.jpg
+
+Ensure server serves /uploads publicly
+
+==================================================
+7) FORCE FALLBACK
+==================================================
+
+If image missing or invalid:
+
+- show default avatar
+- NEVER show broken image icon
+
+==================================================
+8) FINAL TEST (REQUIRED)
+==================================================
+
+Test ONLY in "المسوقون":
+
+- marketer with image → MUST display
+- marketer without image → show placeholder
+- NO broken images allowed
+
+==================================================
+IMPORTANT
+==================================================
+
+- Do NOT assume anything
+- Log everything
+- Fix the ACTUAL root cause
+- The issue MUST be resolved, not partially improved
+
+==================================================
+GOAL
+==================================================
+
+Completely fix marketer image display in the "المسوقون" section by identifying the exact broken step (DB, URL, or frontend) and correcting it.

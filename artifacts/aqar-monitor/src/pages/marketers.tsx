@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Phone, Search, BadgeCheck, Building2, Star, Users, ChevronLeft } from "lucide-react";
+import { getImageSrc } from "@/lib/utils";
 
 interface MarketerRow {
   id: number;
@@ -42,9 +43,24 @@ function MarketerCard({ m }: { m: MarketerRow }) {
 
         <div className="px-5 pb-5 -mt-8">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center mb-3 shadow-md overflow-hidden">
-            {m.photo ? (
-              <img src={m.photo} alt={m.fullName} className="w-full h-full object-cover" />
+          <div className="w-16 h-16 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center mb-3 shadow-md overflow-hidden relative">
+            {m.photo && getImageSrc(m.photo) ? (
+              <>
+                <img
+                  src={getImageSrc(m.photo) ?? ""}
+                  alt={m.fullName}
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    img.style.display = "none";
+                    const fallback = img.nextElementSibling as HTMLElement | null;
+                    if (fallback) fallback.style.display = "flex";
+                  }}
+                />
+                <span className="text-xl font-bold text-primary absolute inset-0 items-center justify-center hidden">
+                  {m.fullName.charAt(0)}
+                </span>
+              </>
             ) : (
               <span className="text-xl font-bold text-primary">{m.fullName.charAt(0)}</span>
             )}
