@@ -1,0 +1,101 @@
+Use the uploaded logo as the foundation of a full brand identity system across the entire platform.
+
+Goal:
+Make the platform feel like a polished, premium, consistent real estate product where the new logo drives the full visual identity, not just the header image.
+
+Requirements:
+
+1) Logo implementation
+- Use the uploaded logo as the official primary logo
+- Integrate it consistently in:
+  - top navbar
+  - sidebar header
+  - login page
+  - signup page
+  - footer
+  - loading/auth screens if applicable
+- Make the logo clickable and route to the homepage
+
+2) Brand system extraction
+- Visually derive a consistent brand system from the uploaded logo
+- Extract or align the platform design with:
+  - primary color
+  - secondary color
+  - accent color
+  - neutral/light background colors
+  - text colors
+- Keep the platform elegant, calm, premium, and highly readable
+
+3) Typography alignment
+- Update typography so it matches the logo style and feels like one brand
+- For Arabic, use a modern bold-friendly font that visually matches the logo
+- Create a hierarchy for:
+  - main headings
+  - section titles
+  - buttons
+  - body text
+  - captions
+- Keep Arabic RTL premium and polished
+
+4) Visual consistency across the whole UI
+- Update the design system to align with the new logo:
+  - buttons
+  - cards
+  - badges
+  - section headers
+  - icons
+  - tables
+  - forms
+  - empty states
+  - auth pages
+- Make spacing, border radius, shadows, and hover states feel unified
+
+5) Navbar and sidebar branding
+- Make the header and sidebar feel more branded and premium
+- Align logo sizing, spacing, and text balance properly
+- Ensure it looks elegant on both desktop and mobile
+- If needed, create:
+  - full logo version
+  - compact logo/icon version for smaller spaces
+
+6) Hero section and homepage alignment
+- Adjust the homepage so the logo feels naturally connected to the hero section and overall message
+- Align homepage colors, CTA styling, and section headers with the logo identity
+- Make the first impression strong and coherent
+
+7) Auth and account pages
+- Redesign login/signup/account pages slightly so they visually match the logo and new brand identity
+- Keep them clean, premium, and trustworthy
+
+8) Favicon and app identity
+- Create or derive a favicon/app icon version from the uploaded logo
+- Use it in browser tab and platform identity if possible
+
+9) Responsive behavior
+- Ensure the logo and brand styling work well on:
+  - desktop
+  - tablet
+  - mobile
+- Prevent overflow, stretching, or poor scaling
+
+10) Fallback handling
+- If image fails to load, show a clean text fallback:
+  - "Aqar Insight | عقار إنسايت"
+
+11) Performance
+- Optimize the logo asset for fast loading
+- Use the most suitable version and dimensions for each location
+
+12) Important
+- Do NOT break current functionality
+- Do NOT apply random colors unrelated to the uploaded logo
+- Keep the product feeling premium, modern, and production-ready
+- Make the whole platform feel like one intentional brand
+
+13) Final deliverable
+After implementation, provide a summary of:
+- where the logo was added
+- what brand colors were adopted
+- what typography choices were aligned
+- what UI elements were updated to match the new identity
+- what compact/fallback versions were added

@@ -14,6 +14,7 @@ import {
   Star,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { LogoBrand } from "@/components/logo-brand";
 import {
   Sidebar,
   SidebarContent,
@@ -118,16 +119,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar side="right" variant="inset" className="border-l-0 bg-sidebar shadow-2xl">
-      <SidebarHeader className="h-16 flex items-center justify-center px-6 border-b border-sidebar-border/50">
-        <div className="flex items-center gap-4 w-full">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-            <Building2 className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-xl leading-tight tracking-tight text-white">عقار إنسايت</span>
-            <span className="text-xs text-sidebar-foreground/80 leading-tight mt-0.5">منصة ذكية للعقار</span>
-          </div>
-        </div>
+      <SidebarHeader className="h-20 flex items-center justify-center px-5 border-b border-sidebar-border/30">
+        <LogoBrand variant="full" linkTo="/" light className="w-full" />
       </SidebarHeader>
 
       <SidebarContent className="pt-6 space-y-4">

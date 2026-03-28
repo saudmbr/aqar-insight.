@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  Building2, Eye, EyeOff, Loader2, LockKeyhole, Mail, User,
+  Eye, EyeOff, Loader2, LockKeyhole, Mail, User,
   Briefcase, Wrench, Search, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
+import { LogoBrand } from "@/components/logo-brand";
 
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
@@ -115,14 +116,8 @@ export default function Signup() {
     >
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-xl shadow-primary/25">
-            <Building2 className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <div className="text-center space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">عقار إنسايت</h1>
-            <p className="text-sm text-muted-foreground">منصة ذكية لتحليل سوق العقار</p>
-          </div>
+        <div className="flex flex-col items-center">
+          <LogoBrand variant="stacked" linkTo="/" light={false} />
         </div>
 
         {/* Card */}

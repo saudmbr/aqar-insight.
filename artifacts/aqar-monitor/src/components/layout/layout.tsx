@@ -8,6 +8,7 @@ import { TopBar } from "./top-bar";
 import { useAuth } from "@/contexts/auth-context";
 import { useLang } from "@/contexts/language-context";
 import { Scale, Shield, BookOpen } from "lucide-react";
+import { LogoBrand } from "@/components/logo-brand";
 
 interface LayoutProps {
   children: ReactNode;
@@ -138,11 +139,14 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               {/* Footer */}
-              <footer className="border-t border-border bg-muted/30 px-4 py-5 md:px-8 lg:px-12 mt-auto" dir="rtl">
+              <footer className="border-t border-border bg-muted/30 px-4 py-6 md:px-8 lg:px-12 mt-auto" dir="rtl">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-xs text-muted-foreground order-2 sm:order-1">
-                    © 2025 منصة عقار إنسايت · جميع الحقوق محفوظة
-                  </p>
+                  <div className="order-2 sm:order-1 flex flex-col items-center sm:items-start gap-1.5">
+                    <LogoBrand variant="full" linkTo="/" light={false} />
+                    <p className="text-xs text-muted-foreground">
+                      © {new Date().getFullYear()} عقار إنسايت · جميع الحقوق محفوظة
+                    </p>
+                  </div>
                   <nav className="flex items-center gap-1 order-1 sm:order-2 flex-wrap justify-center">
                     <Link
                       href="/privacy"
