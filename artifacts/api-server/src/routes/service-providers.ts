@@ -36,58 +36,7 @@ serviceProvidersRouter.get("/", async (req: Request, res: Response) => {
   res.json(rows);
 });
 
-// ─── Get single provider ──────────────────────────────────────────────────────
-serviceProvidersRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
-
-  const [row] = await db
-    .select({
-      provider: serviceProvidersTable,
-      ownerName: usersTable.fullName,
-    })
-    .from(serviceProvidersTable)
-    .leftJoin(usersTable, eq(serviceProvidersTable.userId, usersTable.id))
-    .where(eq(serviceProvidersTable.id, id))
-    .limit(1);
-
-  if (!row) { res.status(404).json({ message: "مزوّد الخدمة غير موجود" }); return; }
-  res.json({ ...row.provider, ownerName: row.ownerName });
-});
-
-// ─── Create provider ──────────────────────────────────────────────────────────
-serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
-  if (!req.session.isAuthenticated) {
-    res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
-  }
-
-  const {
-    businessName, category, city, coveredAreas, description, startingPrice,
-    contactPhone, whatsapp, workingHours, portfolioImages,
-  } = req.body as Record<string, unknown>;
-
-  if (!businessName || !category || !city) {
-    res.status(400).json({ message: "يرجى ملء اسم النشاط، التصنيف، والمدينة" }); return;
-  }
-
-  const [created] = await db.insert(serviceProvidersTable).values({
-    userId: req.session.userId ?? null,
-    businessName: String(businessName),
-    category: String(category),
-    city: String(city),
-    coveredAreas: coveredAreas ? String(coveredAreas) : null,
-    description: description ? String(description) : null,
-    startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null,
-    contactPhone: contactPhone ? String(contactPhone) : null,
-    whatsapp: whatsapp ? String(whatsapp) : null,
-    workingHours: workingHours ? String(workingHours) : null,
-    portfolioImages: portfolioImages ? String(portfolioImages) : null,
-  }).returning();
-
-  res.status(201).json(created);
-});
-
-// ─── My provider profile (GET) ────────────────────────────────────────────────
+// ─── My provider profile (GET) — MUST come before /:id wildcard ───────────────
 serviceProvidersRouter.get("/my/profile", async (req: Request, res: Response) => {
   if (!req.session.isAuthenticated || !req.session.userId) {
     res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
@@ -117,7 +66,6 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
   const { businessName, category, city, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages } = req.body as Record<string, unknown>;
 
   if (!existing) {
-    // Create new profile
     if (!businessName || !category || !city) {
       res.status(400).json({ message: "يرجى ملء اسم النشاط، التصنيف، والمدينة" }); return;
     }
@@ -154,6 +102,63 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
 
   const [updated] = await db.select().from(serviceProvidersTable).where(eq(serviceProvidersTable.id, existing.id)).limit(1);
   res.json(updated);
+});
+
+// ─── Get distinct categories — MUST come before /:id wildcard ─────────────────
+serviceProvidersRouter.get("/meta/categories", async (_req: Request, res: Response) => {
+  const rows = await db.selectDistinct({ category: serviceProvidersTable.category }).from(serviceProvidersTable);
+  res.json(rows.map(r => r.category));
+});
+
+// ─── Create provider ──────────────────────────────────────────────────────────
+serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
+  if (!req.session.isAuthenticated) {
+    res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
+  }
+
+  const {
+    businessName, category, city, coveredAreas, description, startingPrice,
+    contactPhone, whatsapp, workingHours, portfolioImages,
+  } = req.body as Record<string, unknown>;
+
+  if (!businessName || !category || !city) {
+    res.status(400).json({ message: "يرجى ملء اسم النشاط، التصنيف، والمدينة" }); return;
+  }
+
+  const [created] = await db.insert(serviceProvidersTable).values({
+    userId: req.session.userId ?? null,
+    businessName: String(businessName),
+    category: String(category),
+    city: String(city),
+    coveredAreas: coveredAreas ? String(coveredAreas) : null,
+    description: description ? String(description) : null,
+    startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null,
+    contactPhone: contactPhone ? String(contactPhone) : null,
+    whatsapp: whatsapp ? String(whatsapp) : null,
+    workingHours: workingHours ? String(workingHours) : null,
+    portfolioImages: portfolioImages ? String(portfolioImages) : null,
+  }).returning();
+
+  res.status(201).json(created);
+});
+
+// ─── Get single provider ──────────────────────────────────────────────────────
+serviceProvidersRouter.get("/:id", async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
+
+  const [row] = await db
+    .select({
+      provider: serviceProvidersTable,
+      ownerName: usersTable.fullName,
+    })
+    .from(serviceProvidersTable)
+    .leftJoin(usersTable, eq(serviceProvidersTable.userId, usersTable.id))
+    .where(eq(serviceProvidersTable.id, id))
+    .limit(1);
+
+  if (!row) { res.status(404).json({ message: "مزوّد الخدمة غير موجود" }); return; }
+  res.json({ ...row.provider, ownerName: row.ownerName });
 });
 
 // ─── Update provider by ID (admin or owner) ───────────────────────────────────
@@ -204,12 +209,6 @@ serviceProvidersRouter.delete("/:id", async (req: Request, res: Response) => {
 
   await db.delete(serviceProvidersTable).where(eq(serviceProvidersTable.id, id));
   res.json({ message: "تم الحذف بنجاح" });
-});
-
-// ─── Get distinct categories ──────────────────────────────────────────────────
-serviceProvidersRouter.get("/meta/categories", async (_req: Request, res: Response) => {
-  const rows = await db.selectDistinct({ category: serviceProvidersTable.category }).from(serviceProvidersTable);
-  res.json(rows.map(r => r.category));
 });
 
 export default serviceProvidersRouter;

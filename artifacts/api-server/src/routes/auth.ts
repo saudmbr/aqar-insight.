@@ -41,6 +41,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       }
       res.json({
         success: true,
+        userId: null,
         username: ADMIN_USERNAME,
         fullName: "المدير",
         role: "admin",
@@ -456,6 +457,10 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(now + TOKEN_TTL);
+
+    // Invalidate any existing unused tokens before issuing a new one
+    await db.delete(passwordResetTokensTable)
+      .where(and(eq(passwordResetTokensTable.userId, userId), isNull(passwordResetTokensTable.usedAt)));
 
     await db.insert(passwordResetTokensTable).values({ userId, tokenHash, expiresAt });
 

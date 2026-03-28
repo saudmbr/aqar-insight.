@@ -1,0 +1,77 @@
+Fix the authentication and login issue across the entire platform.
+
+Current issue:
+I created multiple test accounts, and now I cannot log in to the site properly.
+
+Goal:
+Make login, signup, logout, and session handling work reliably for all account types.
+
+Requirements:
+
+1) Fix login flow:
+- Users must be able to log in using their correct email/username + password
+- Show clear Arabic error messages for:
+  - wrong password
+  - account not found
+  - inactive account
+  - server error
+
+2) Fix session persistence:
+- Ensure login session is saved correctly
+- User should stay logged in after page refresh
+- Cookies/session/auth token must be sent correctly with all requests
+- Fix any problems with credentials, CORS, sameSite, secure cookie settings, and auth middleware
+
+3) Support multiple accounts correctly:
+- Creating one test account must not break login for other accounts
+- Different users should be able to log in and out independently
+- Prevent account collisions or overwriting users in the database
+
+4) Check database/auth logic:
+- Verify users are stored correctly in the database
+- Verify password hashing and password comparison are working correctly
+- Ensure signup creates valid users
+- Ensure login reads the correct user record
+- Ensure duplicate username/email handling is correct
+
+5) Admin/user role logic:
+- Admin login should still work
+- Normal users should still work
+- Marketers and other account types should still work
+- Role checks must not block normal login
+
+6) Fix logout behavior:
+- Logging out should fully clear the session
+- Switching between accounts should work correctly
+- No stale session should remain
+
+7) Debug and test:
+- Test end-to-end with at least:
+  - account 1
+  - account 2
+  - admin account
+- Verify:
+  - signup works
+  - login works
+  - logout works
+  - switching accounts works
+  - refresh does not break auth
+
+8) Add admin visibility for debugging:
+- In admin users page, show registered users safely:
+  - full name
+  - username
+  - email
+  - role
+  - account status
+  - created date
+- Do NOT expose passwords
+
+9) Important:
+- Keep Arabic RTL
+- Keep current functionality working
+- Make the fix production-ready
+- After fixing, give me a summary of:
+  - what caused the login issue
+  - what was fixed
+  - which files/routes were updated

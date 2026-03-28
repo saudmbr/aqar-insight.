@@ -36,7 +36,7 @@ adminUsersRouter.put("/:id/role", async (req: Request, res: Response) => {
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const { role } = req.body as { role?: string };
-  const validRoles = ["user", "property_owner", "broker", "real_estate_office", "developer", "service_provider", "admin"];
+  const validRoles = ["user", "real_estate_marketer", "service_provider", "admin"];
   if (!role || !validRoles.includes(role)) {
     res.status(400).json({ message: "دور غير صحيح" }); return;
   }

@@ -21,6 +21,8 @@ export interface ListingCardData {
   furnishingStatus?: string | null;
   createdAt?: string | Date | null;
   userId?: number | null;
+  status?: string | null;
+  views?: number | null;
 }
 
 const LISTING_TYPE_LABELS: Record<string, string> = {

@@ -1,0 +1,95 @@
+Fix listing ownership and permissions across the entire platform.
+
+Current issue:
+Users who create property listings cannot edit or delete their own listings, regardless of account type.
+
+Goal:
+Any authenticated user who creates a listing must be able to manage ONLY their own listings.
+This must work for all allowed account types on the platform.
+
+Requirements:
+
+1) Ownership model:
+- Ensure every listing has a clear owner reference in the database
+- Add fields if missing:
+  - owner_user_id
+  - owner_role
+  - created_by_user_id
+  - created_at
+  - updated_at
+- When a user creates a listing, automatically save the logged-in user as the owner
+
+2) Edit/Delete permissions:
+- Allow the listing owner to:
+  - edit their own listing
+  - delete their own listing
+  - archive their own listing
+  - mark it as sold/rented if applicable
+- Prevent any user from editing or deleting listings they do not own
+- Admin can still manage all listings
+
+3) Works for all account types:
+- normal user
+- property owner
+- real estate marketer
+- broker
+- real estate office
+- developer
+- service provider (if they can create listings)
+- admin
+
+4) UI changes:
+- On listing cards and listing details pages:
+  - show "تعديل الإعلان" and "حذف الإعلان" only to the listing owner or admin
+- In user dashboards:
+  - create or fix a "إعلاناتي" page
+  - each user should see all listings they personally created
+  - each listing should have actions:
+    - edit
+    - delete
+    - archive
+    - view
+- Add clear Arabic success/error messages
+
+5) Backend/API:
+- Fix all listing update and delete endpoints to check ownership correctly
+- Never rely on frontend checks only
+- Validate ownership on the server before allowing update/delete
+- Return proper Arabic error if user is not authorized
+
+6) Data migration:
+- If existing listings are missing owner_user_id, create a safe migration strategy
+- For old listings, try to link them to the correct creator if possible
+- If not possible, mark them clearly for admin review
+- Do not break existing data
+
+7) Dashboard and profile integration:
+- Every logged-in user should have a working "إعلاناتي" section
+- Users must be able to open their listing, edit it, or delete it from there
+- Keep admin panel separate from personal listing management
+
+8) Security and logic:
+- Ownership must persist after page refresh and after republish
+- Fix session/auth issues that may block rightful owners from editing their own listings
+- Ensure cookies/session/authorization are correctly sent with edit/delete requests
+- Do not let users manage other users’ listings by changing URLs or IDs manually
+
+9) Testing:
+- Test this end-to-end with multiple account types
+- Verify:
+  - user A can edit/delete only their own listings
+  - user B cannot edit/delete user A listings
+  - admin can manage all
+- Test from:
+  - listing details page
+  - listings dashboard
+  - any public listing cards where edit/delete actions appear
+
+10) Important:
+- Keep all current functionality working
+- Keep Arabic RTL UI
+- Make this production-ready
+- After fixing, give me a summary of:
+  - what was broken
+  - what was fixed
+  - which files/routes/pages were updated

@@ -8,12 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@workspace/db";
 import {
   ArrowRight, MapPin, BedDouble, Bath, Maximize2, Phone, MessageSquare,
   Heart, Share2, Edit, Trash2, Building2, Calendar, CheckCircle2,
   Verified, Star, BadgeCheck, ChevronLeft, Wifi, Zap, TreePine, School,
-  Hospital, ShoppingBag, Bus, Home, Video,
+  Hospital, ShoppingBag, Bus, Home, Video, Archive, CheckCircle, Ban,
 } from "lucide-react";
 
 interface MarketerInfo {
@@ -61,6 +62,7 @@ export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [similar, setSimilar] = useState<ListingCardData[]>([]);
@@ -69,6 +71,8 @@ export default function ListingDetail() {
   const [favLoading, setFavLoading] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const listingId = parseInt(id ?? "");
 
@@ -100,11 +104,35 @@ export default function ListingDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
+    setConfirmDelete(false);
     setDeleting(true);
     const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) navigate("/listings");
-    else setDeleting(false);
+    if (res.ok) {
+      toast({ title: "تم حذف الإعلان بنجاح" });
+      navigate("/listings");
+    } else {
+      setDeleting(false);
+      toast({ title: "فشل الحذف", description: "حدث خطأ أثناء الحذف", variant: "destructive" });
+    }
+  };
+
+  const handleChangeStatus = async (status: string) => {
+    if (!listing) return;
+    setStatusLoading(true);
+    const res = await fetch(`/api/listings/${listingId}/status`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setListing(prev => prev ? { ...prev, status } : prev);
+      const labels: Record<string, string> = { sold: "مُباع", rented: "مُؤجّر", cancelled: "مؤرشف", active: "نشط" };
+      toast({ title: `تم تحديث حالة الإعلان`, description: `الحالة الجديدة: ${labels[status] ?? status}` });
+    } else {
+      toast({ title: "فشل التحديث", variant: "destructive" });
+    }
+    setStatusLoading(false);
   };
 
   const isOwner = listing && user
@@ -222,10 +250,30 @@ export default function ListingDetail() {
             </Button>
             {isOwner && (
               <>
-                <Button asChild variant="secondary" size="icon" className="rounded-xl w-12 h-12 shadow-sm" title="تعديل">
+                <Button asChild variant="secondary" size="icon" className="rounded-xl w-12 h-12 shadow-sm" title="تعديل الإعلان">
                   <Link href={`/listings/${listing.id}/edit`}><Edit className="w-5 h-5" /></Link>
                 </Button>
-                <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => void handleDelete()} disabled={deleting} title="حذف">
+                {listing.status !== "sold" && (
+                  <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => void handleChangeStatus("sold")} disabled={statusLoading} title="تحديد كمباع">
+                    <CheckCircle className="w-5 h-5" />
+                  </Button>
+                )}
+                {listing.status !== "rented" && (
+                  <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-purple-600 border-purple-200 hover:bg-purple-50" onClick={() => void handleChangeStatus("rented")} disabled={statusLoading} title="تحديد كمؤجّر">
+                    <CheckCircle className="w-5 h-5" />
+                  </Button>
+                )}
+                {listing.status !== "active" && (
+                  <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => void handleChangeStatus("active")} disabled={statusLoading} title="إعادة تفعيل">
+                    <CheckCircle className="w-5 h-5" />
+                  </Button>
+                )}
+                {listing.status !== "cancelled" && (
+                  <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-orange-500 border-orange-200 hover:bg-orange-50" onClick={() => void handleChangeStatus("cancelled")} disabled={statusLoading} title="أرشفة الإعلان">
+                    <Archive className="w-5 h-5" />
+                  </Button>
+                )}
+                <Button variant="outline" size="icon" className="rounded-xl w-12 h-12 shadow-sm text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => setConfirmDelete(true)} disabled={deleting} title="حذف الإعلان">
                   <Trash2 className="w-5 h-5" />
                 </Button>
               </>
@@ -574,6 +622,25 @@ export default function ListingDetail() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setConfirmDelete(false)}>
+          <div className="bg-card rounded-3xl border border-border shadow-2xl p-8 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-destructive/20">
+              <Trash2 className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-xl font-bold text-center text-foreground mb-2">حذف الإعلان</h3>
+            <p className="text-center text-muted-foreground mb-8 text-sm">هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setConfirmDelete(false)}>إلغاء</Button>
+              <Button variant="destructive" className="flex-1 rounded-xl gap-2" onClick={() => void handleDelete()} disabled={deleting}>
+                <Ban className="w-4 h-4" />نعم، احذف
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

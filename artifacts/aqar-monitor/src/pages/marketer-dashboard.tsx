@@ -9,10 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
-import { getImageSrc } from "@/lib/utils";
+import { getImageSrc, formatCurrency } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import {
   Building2, Save, Loader2, Plus, User, MapPin, Phone, Globe, Star,
-  BadgeCheck, Edit, Trash2, Eye,
+  BadgeCheck, Edit, Trash2, Eye, CheckCircle, Archive, Ban,
 } from "lucide-react";
 import { ImageUploader } from "@/components/image-uploader";
 
@@ -68,6 +69,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default function MarketerDashboard() {
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   const [profile, setProfile] = useState<MarketerProfile>({});
   const [listings, setListings] = useState<ListingCardData[]>([]);
@@ -76,6 +78,8 @@ export default function MarketerDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<"profile" | "listings">("profile");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [statusLoading, setStatusLoading] = useState<number | null>(null);
 
   // For specialties multi-select
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -143,9 +147,32 @@ export default function MarketerDashboard() {
   };
 
   const handleDeleteListing = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
+    setConfirmDeleteId(null);
     const res = await fetch(`/api/listings/${id}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setListings(prev => prev.filter(l => l.id !== id));
+    if (res.ok) {
+      setListings(prev => prev.filter(l => l.id !== id));
+      toast({ title: "تم حذف الإعلان بنجاح" });
+    } else {
+      toast({ title: "فشل الحذف", variant: "destructive" });
+    }
+  };
+
+  const handleChangeStatus = async (id: number, status: string) => {
+    setStatusLoading(id);
+    const res = await fetch(`/api/listings/${id}/status`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setListings(prev => prev.map(l => l.id === id ? { ...l, status } : l));
+      const labels: Record<string, string> = { sold: "مُباع", rented: "مُؤجّر", cancelled: "مؤرشف", active: "نشط" };
+      toast({ title: "تم تحديث الحالة", description: `الحالة: ${labels[status] ?? status}` });
+    } else {
+      toast({ title: "فشل تحديث الحالة", variant: "destructive" });
+    }
+    setStatusLoading(null);
   };
 
   const set = (k: keyof MarketerProfile, v: unknown) => setProfile(p => ({ ...p, [k]: v }));
@@ -390,16 +417,36 @@ export default function MarketerDashboard() {
                         <span className="text-xs text-muted-foreground">{listing.city}</span>
                       </div>
                       <h4 className="font-semibold text-foreground truncate">{listing.title}</h4>
-                      <p className="text-sm font-bold text-primary mt-0.5">{listing.price?.toLocaleString("en-US")} ريال</p>
+                      <p className="text-sm font-bold text-primary mt-0.5">{formatCurrency(listing.price ?? 0)}</p>
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button asChild size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0" title="معاينة">
+                    <div className="flex gap-1.5 shrink-0 flex-wrap justify-end">
+                      <Button asChild size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-muted-foreground" title="معاينة">
                         <Link href={`/listings/${listing.id}`}><Eye className="w-4 h-4" /></Link>
                       </Button>
                       <Button asChild size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-primary" title="تعديل">
                         <Link href={`/listings/${listing.id}/edit`}><Edit className="w-4 h-4" /></Link>
                       </Button>
-                      <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-destructive hover:bg-destructive/10" title="حذف" onClick={() => void handleDeleteListing(listing.id)}>
+                      {listing.status !== "sold" && (
+                        <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-blue-600 hover:bg-blue-50" title="تحديد كمباع" disabled={statusLoading === listing.id} onClick={() => void handleChangeStatus(listing.id, "sold")}>
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {listing.status !== "rented" && (
+                        <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-purple-600 hover:bg-purple-50" title="تحديد كمؤجّر" disabled={statusLoading === listing.id} onClick={() => void handleChangeStatus(listing.id, "rented")}>
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {listing.status !== "cancelled" && (
+                        <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-orange-500 hover:bg-orange-50" title="أرشفة" disabled={statusLoading === listing.id} onClick={() => void handleChangeStatus(listing.id, "cancelled")}>
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {listing.status !== "active" && (
+                        <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-emerald-600 hover:bg-emerald-50" title="إعادة تفعيل" disabled={statusLoading === listing.id} onClick={() => void handleChangeStatus(listing.id, "active")}>
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0 text-destructive hover:bg-destructive/10" title="حذف" onClick={() => setConfirmDeleteId(listing.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -410,6 +457,25 @@ export default function MarketerDashboard() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirm Modal */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setConfirmDeleteId(null)}>
+          <div className="bg-card rounded-3xl border border-border shadow-2xl p-8 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-destructive/20">
+              <Trash2 className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-xl font-bold text-center text-foreground mb-2">حذف الإعلان</h3>
+            <p className="text-center text-muted-foreground mb-8 text-sm">هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع.</p>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setConfirmDeleteId(null)}>إلغاء</Button>
+              <Button variant="destructive" className="flex-1 rounded-xl gap-2" onClick={() => void handleDeleteListing(confirmDeleteId)}>
+                <Ban className="w-4 h-4" />نعم، احذف
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

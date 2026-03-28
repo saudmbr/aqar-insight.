@@ -191,9 +191,11 @@ listingsRouter.get("/my/listings", async (req: Request, res: Response) => {
     .select()
     .from(listingsTable)
     .where(
-      req.session.userId
-        ? eq(listingsTable.userId, req.session.userId)
-        : sql`${listingsTable.userId} IS NULL`
+      req.session.isAdmin
+        ? undefined
+        : req.session.userId
+          ? eq(listingsTable.userId, req.session.userId)
+          : sql`false`
     )
     .orderBy(desc(listingsTable.createdAt));
 
@@ -452,6 +454,25 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
   await db.update(listingsTable).set(setObj).where(eq(listingsTable.id, id));
   const [updated] = await db.select().from(listingsTable).where(eq(listingsTable.id, id)).limit(1);
   res.json(updated);
+});
+
+// ─── Quick status change (owner/admin only) ───────────────────────────────────
+listingsRouter.patch("/:id/status", async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
+
+  const ALLOWED = ["active", "sold", "rented", "cancelled"] as const;
+  const { status } = req.body as { status?: string };
+  if (!status || !ALLOWED.includes(status as typeof ALLOWED[number])) {
+    res.status(400).json({ message: "الحالة غير صحيحة" }); return;
+  }
+
+  const existing = await db.select({ userId: listingsTable.userId }).from(listingsTable).where(eq(listingsTable.id, id)).limit(1);
+  if (!existing[0]) { res.status(404).json({ message: "الإعلان غير موجود" }); return; }
+  if (!canEditListing(req, existing[0])) { res.status(403).json({ message: "غير مصرح لك بتعديل هذا الإعلان" }); return; }
+
+  const [updated] = await db.update(listingsTable).set({ status: status as typeof ALLOWED[number], updatedAt: new Date() }).where(eq(listingsTable.id, id)).returning({ id: listingsTable.id, status: listingsTable.status });
+  res.json({ success: true, ...updated });
 });
 
 // ─── Delete listing ───────────────────────────────────────────────────────────

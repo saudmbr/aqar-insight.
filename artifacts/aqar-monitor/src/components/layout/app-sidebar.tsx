@@ -141,6 +141,7 @@ export function AppSidebar() {
         {isAuthenticated && (
           <NavGroup labelKey="myAccount" items={[
             { titleKey: "myDashboard", url: "/dashboard", icon: LayoutDashboard },
+            { titleKey: "myListings" as TranslationKey, url: "/my/listings", icon: Building2 },
             ...(isMarketer ? [{ titleKey: "marketerProfile" as TranslationKey, url: "/marketer/dashboard", icon: Star }] : []),
             ...(isServiceProvider ? [{ titleKey: "services" as TranslationKey, url: "/services/dashboard", icon: Wrench }] : []),
             { titleKey: "personalProfile", url: "/account", icon: UserCircle2 },

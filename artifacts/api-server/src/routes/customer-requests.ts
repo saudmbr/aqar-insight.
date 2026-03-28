@@ -36,6 +36,22 @@ customerRequestsRouter.get("/", async (req: Request, res: Response) => {
   res.json(rows);
 });
 
+// ─── My requests — MUST come before /:id wildcard ────────────────────────────
+customerRequestsRouter.get("/my/requests", async (req: Request, res: Response) => {
+  if (!req.session.isAuthenticated) {
+    res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
+  }
+  if (!req.session.userId) { res.json([]); return; }
+
+  const rows = await db
+    .select()
+    .from(customerRequestsTable)
+    .where(eq(customerRequestsTable.userId, req.session.userId))
+    .orderBy(desc(customerRequestsTable.createdAt));
+
+  res.json(rows);
+});
+
 // ─── Get single request ───────────────────────────────────────────────────────
 customerRequestsRouter.get("/:id", async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
@@ -81,22 +97,6 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
   }).returning();
 
   res.status(201).json(created);
-});
-
-// ─── My requests ──────────────────────────────────────────────────────────────
-customerRequestsRouter.get("/my/requests", async (req: Request, res: Response) => {
-  if (!req.session.isAuthenticated) {
-    res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
-  }
-  if (!req.session.userId) { res.json([]); return; }
-
-  const rows = await db
-    .select()
-    .from(customerRequestsTable)
-    .where(eq(customerRequestsTable.userId, req.session.userId))
-    .orderBy(desc(customerRequestsTable.createdAt));
-
-  res.json(rows);
 });
 
 // ─── Delete my request ────────────────────────────────────────────────────────

@@ -45,6 +45,7 @@ import LegalUsage from "@/pages/legal-usage";
 
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
+import MyListings from "@/pages/my-listings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,6 +103,11 @@ function Router() {
       <Route path="/marketers/:id" component={MarketerProfile} />
       <Route path="/services" component={Services} />
       <Route path="/requests" component={Requests} />
+
+      {/* My listings standalone page */}
+      <Route path="/my/listings">
+        {() => <UserRoute component={MyListings} />}
+      </Route>
 
       {/* User dashboard & account */}
       <Route path="/dashboard">

@@ -2,15 +2,16 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
-import { formatCurrency } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { formatCurrency, getImageSrc } from "@/lib/utils";
 import {
   Building2, Heart, FileText, PlusCircle, Edit, Trash2,
-  MapPin, Eye, LayoutDashboard,
+  MapPin, Eye, LayoutDashboard, CheckCircle, Archive, Ban,
 } from "lucide-react";
 import type { Listing } from "@workspace/db";
 
@@ -30,12 +31,15 @@ type Tab = "overview" | "listings" | "favorites" | "requests";
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("overview");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [favorites, setFavorites] = useState<{ favoriteId: number; listing: ListingCardData }[]>([]);
   const [myRequests, setMyRequests] = useState<{ id: number; title: string; category: string; city: string; status: string; createdAt: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusLoading, setStatusLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate("/login"); return; }
@@ -55,20 +59,46 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   const deleteMyListing = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
+    setConfirmDeleteId(null);
     const res = await fetch(`/api/listings/${id}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setMyListings(l => l.filter(x => x.id !== id));
+    if (res.ok) {
+      setMyListings(l => l.filter(x => x.id !== id));
+      toast({ title: "تم حذف الإعلان بنجاح", description: "لن يظهر الإعلان بعد الآن للزوار" });
+    } else {
+      toast({ title: "فشل الحذف", description: "حدث خطأ أثناء الحذف، يرجى المحاولة مجدداً", variant: "destructive" });
+    }
+  };
+
+  const changeStatus = async (id: number, status: string) => {
+    setStatusLoading(id);
+    const res = await fetch(`/api/listings/${id}/status`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setMyListings(l => l.map(x => x.id === id ? { ...x, status } : x));
+      const labels: Record<string, string> = { sold: "مُباع", rented: "مُؤجّر", cancelled: "مؤرشف", active: "نشط" };
+      toast({ title: `تم تحديث حالة الإعلان`, description: `الحالة الجديدة: ${labels[status] ?? status}` });
+    } else {
+      toast({ title: "فشل تحديث الحالة", variant: "destructive" });
+    }
+    setStatusLoading(null);
   };
 
   const removeFavorite = async (listingId: number) => {
     await fetch(`/api/favorites/${listingId}/toggle`, { method: "POST", credentials: "include" });
     setFavorites(f => f.filter(x => x.listing.id !== listingId));
+    toast({ title: "تم الإزالة من المفضلة" });
   };
 
   const deleteRequest = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الطلب؟")) return;
     const res = await fetch(`/api/customer-requests/${id}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setMyRequests(r => r.filter(x => x.id !== id));
+    if (res.ok) {
+      setMyRequests(r => r.filter(x => x.id !== id));
+      toast({ title: "تم حذف الطلب" });
+    }
   };
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
@@ -104,8 +134,8 @@ export default function Dashboard() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                tab === t.key 
-                  ? "bg-white text-primary shadow-sm border border-border/50" 
+                tab === t.key
+                  ? "bg-white text-primary shadow-sm border border-border/50"
                   : "text-muted-foreground hover:text-foreground hover:bg-black/5"
               }`}
             >
@@ -141,9 +171,21 @@ export default function Dashboard() {
 
                 {myListings.length > 0 && (
                   <div>
-                    <h3 className="text-2xl font-bold text-foreground mb-6">آخر إعلاناتي</h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold text-foreground">آخر إعلاناتي</h3>
+                      <Button variant="ghost" className="text-primary font-semibold rounded-xl" onClick={() => setTab("listings")}>
+                        عرض الكل ({myListings.length})
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {myListings.slice(0, 4).map(l => <ListingCard key={l.id} listing={l as ListingCardData} />)}
+                      {myListings.slice(0, 4).map(l => (
+                        <ListingCard
+                          key={l.id}
+                          listing={l as ListingCardData}
+                          canEdit
+                          onDelete={(id) => setConfirmDeleteId(id)}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -154,7 +196,7 @@ export default function Dashboard() {
             {tab === "listings" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
-                  <p className="font-semibold text-foreground">لديك {myListings.length} إعلان</p>
+                  <p className="font-semibold text-foreground">لديك <span className="text-primary font-bold">{myListings.length}</span> إعلان</p>
                   <Button asChild size="sm" className="gap-2 rounded-xl">
                     <Link href="/listings/new"><PlusCircle className="w-4 h-4" />إضافة</Link>
                   </Button>
@@ -166,38 +208,78 @@ export default function Dashboard() {
                     {myListings.map(l => (
                       <Card key={l.id} className="border-border hover-premium-shadow rounded-2xl transition-all">
                         <CardContent className="p-5">
-                          <div className="flex flex-col sm:flex-row items-start gap-6">
-                            <div className="w-full sm:w-32 sm:h-32 shrink-0 rounded-xl bg-muted/50 overflow-hidden relative border border-border/50">
+                          <div className="flex flex-col sm:flex-row items-start gap-5">
+                            {/* Thumbnail */}
+                            <div className="w-full sm:w-28 h-24 shrink-0 rounded-xl bg-muted/50 overflow-hidden relative border border-border/50">
                               {l.images ? (
-                                <img src={l.images.split("\n")[0].trim()} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                <img
+                                  src={getImageSrc(l.images.split("\n")[0].trim()) ?? ""}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-3xl opacity-20">🏠</div>
+                                <div className="w-full h-full flex items-center justify-center"><Building2 className="w-8 h-8 text-muted-foreground/25" /></div>
                               )}
-                              <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[l.status] ?? "bg-white text-black"}`}>
+                              <span className={`absolute top-1.5 right-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLORS[l.status] ?? "bg-white text-black"}`}>
                                 {STATUS_LABELS[l.status] ?? l.status}
                               </span>
                             </div>
+
+                            {/* Details */}
                             <div className="flex-1 min-w-0 w-full">
                               <Link href={`/listings/${l.id}`}>
-                                <h4 className="text-xl font-bold text-foreground hover:text-primary transition-colors truncate mb-2">{l.title}</h4>
+                                <h4 className="text-lg font-bold text-foreground hover:text-primary transition-colors line-clamp-1 mb-1">{l.title}</h4>
                               </Link>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                                <MapPin className="w-4 h-4 text-primary" />
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3 font-medium">
+                                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                                 {l.city}{l.district ? ` · ${l.district}` : ""}
                               </div>
-                              <div className="flex items-end justify-between mt-auto">
-                                <div>
-                                  <p className="text-2xl font-extrabold text-foreground">{formatCurrency(l.price)}</p>
-                                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-1 font-medium"><Eye className="w-4 h-4" />{l.views ?? 0} مشاهدة</p>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button asChild variant="secondary" className="rounded-xl px-4 gap-2">
-                                    <Link href={`/listings/${l.id}/edit`}><Edit className="w-4 h-4" />تعديل</Link>
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <p className="text-xl font-extrabold text-foreground">{formatCurrency(l.price)}</p>
+                                {/* Action Buttons */}
+                                <div className="flex flex-wrap gap-2">
+                                  {/* View */}
+                                  <Button asChild size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-muted-foreground hover:text-foreground" title="معاينة">
+                                    <Link href={`/listings/${l.id}`}><Eye className="w-4 h-4" /></Link>
                                   </Button>
-                                  <Button variant="outline" className="rounded-xl px-3 text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive" onClick={() => void deleteMyListing(l.id)}>
+                                  {/* Edit */}
+                                  <Button asChild size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-primary hover:bg-primary/5" title="تعديل">
+                                    <Link href={`/listings/${l.id}/edit`}><Edit className="w-4 h-4" /></Link>
+                                  </Button>
+                                  {/* Status actions */}
+                                  {l.status !== "sold" && (
+                                    <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-blue-600 hover:bg-blue-50" title="تحديد كمباع" disabled={statusLoading === l.id} onClick={() => void changeStatus(l.id, "sold")}>
+                                      <CheckCircle className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {l.status !== "rented" && (
+                                    <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-purple-600 hover:bg-purple-50" title="تحديد كمؤجّر" disabled={statusLoading === l.id} onClick={() => void changeStatus(l.id, "rented")}>
+                                      <CheckCircle className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {l.status !== "cancelled" && (
+                                    <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-orange-500 hover:bg-orange-50" title="أرشفة" disabled={statusLoading === l.id} onClick={() => void changeStatus(l.id, "cancelled")}>
+                                      <Archive className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {l.status !== "active" && (
+                                    <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-emerald-600 hover:bg-emerald-50" title="إعادة تفعيل" disabled={statusLoading === l.id} onClick={() => void changeStatus(l.id, "active")}>
+                                      <CheckCircle className="w-4 h-4" />
+                                    </Button>
+                                  )}
+                                  {/* Delete */}
+                                  <Button size="sm" variant="ghost" className="rounded-lg h-9 w-9 p-0 text-destructive hover:bg-destructive/10" title="حذف" onClick={() => setConfirmDeleteId(l.id)}>
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
+                              </div>
+                              {/* Status actions legend */}
+                              <div className="flex gap-3 mt-2 flex-wrap">
+                                {l.status !== "sold" && <span className="text-[11px] text-blue-600 font-medium">✓ بيع</span>}
+                                {l.status !== "rented" && <span className="text-[11px] text-purple-600 font-medium">✓ تأجير</span>}
+                                {l.status !== "cancelled" && <span className="text-[11px] text-orange-500 font-medium">📁 أرشفة</span>}
+                                {l.status !== "active" && <span className="text-[11px] text-emerald-600 font-medium">↑ تفعيل</span>}
                               </div>
                             </div>
                           </div>
@@ -237,7 +319,7 @@ export default function Dashboard() {
             {tab === "requests" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center bg-card p-4 rounded-2xl border border-border shadow-sm">
-                  <p className="font-semibold text-foreground">لديك {myRequests.length} طلب</p>
+                  <p className="font-semibold text-foreground">لديك <span className="text-primary font-bold">{myRequests.length}</span> طلب</p>
                   <Button asChild size="sm" className="gap-2 rounded-xl">
                     <Link href="/requests/new"><PlusCircle className="w-4 h-4" />طلب جديد</Link>
                   </Button>
@@ -274,6 +356,27 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      {/* Delete Confirm Dialog */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setConfirmDeleteId(null)}>
+          <div className="bg-card rounded-3xl border border-border shadow-2xl p-8 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-destructive/20">
+              <Trash2 className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-xl font-bold text-center text-foreground mb-2">حذف الإعلان</h3>
+            <p className="text-center text-muted-foreground mb-8 text-sm">هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setConfirmDeleteId(null)}>
+                إلغاء
+              </Button>
+              <Button variant="destructive" className="flex-1 rounded-xl gap-2" onClick={() => void deleteMyListing(confirmDeleteId)}>
+                <Ban className="w-4 h-4" />نعم، احذف
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

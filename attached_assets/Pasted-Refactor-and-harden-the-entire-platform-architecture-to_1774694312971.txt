@@ -1,0 +1,224 @@
+Refactor and harden the entire platform architecture to make it behave like a production-grade global marketplace platform.
+
+Goal:
+Make the platform highly logical, stable, scalable, maintainable, and safe for future feature additions without breaking existing functionality.
+
+Core objective:
+I want the platform to follow strong engineering principles similar to top global products, so future updates do not cause random bugs, broken flows, or inconsistent behavior.
+
+Requirements:
+
+1) Architecture and code quality
+- Refactor the codebase into a clean modular architecture
+- Separate concerns clearly:
+  - auth
+  - users
+  - roles/permissions
+  - listings
+  - service providers
+  - reviews
+  - favorites
+  - dashboard
+  - admin
+  - notifications
+  - file uploads
+- Remove duplicated logic
+- Centralize shared utilities, validation, constants, and permission rules
+- Use consistent naming across backend, frontend, database, and API
+
+2) Data model consistency
+- Review and normalize the database schema
+- Ensure all core entities have clear relationships:
+  - users
+  - listings
+  - service providers
+  - marketers
+  - reviews
+  - comments
+  - favorites
+  - requests
+  - roles
+- Add missing ownership fields, status fields, timestamps, and audit-friendly fields where needed
+- Prevent future schema conflicts
+- Make migrations safe and forward-compatible
+
+3) Authentication and authorization
+- Rebuild auth/permission logic in a robust way
+- Ensure:
+  - signup works
+  - login works
+  - logout works
+  - forgot/reset password works securely
+  - sessions persist correctly
+  - switching accounts works reliably
+- Use strong server-side authorization checks
+- Never rely on frontend-only permission checks
+- Make role-based access clean and centralized
+
+4) Role and permission system
+- Build a scalable permission system for:
+  - guest
+  - user
+  - property owner
+  - real estate marketer
+  - broker
+  - office
+  - developer
+  - service provider
+  - admin
+- Define exactly what each role can:
+  - view
+  - create
+  - edit
+  - delete
+  - publish
+  - review
+  - access in dashboard/admin
+- Make the permission logic easy to extend later without rewriting large parts
+
+5) Listing ownership and lifecycle
+- Make listing logic production-ready
+- Every listing must have:
+  - clear owner
+  - creator
+  - status
+  - timestamps
+  - moderation state if needed
+- Support proper lifecycle:
+  - draft
+  - pending
+  - active
+  - archived
+  - sold
+  - rented
+  - rejected
+- Ensure owners can manage only their own listings
+- Admin can manage all listings
+- Make listing edit/delete/archive/publish logic stable and predictable
+
+6) Frontend logic consistency
+- Refactor the frontend to have predictable state and page behavior
+- Make routing logical and safe
+- Prevent broken navigation, stale UI, or hidden permission bugs
+- Ensure actions always reflect backend truth
+- Add proper loading, empty, success, and error states
+- Make forms reusable and consistent across the app
+
+7) Validation and error handling
+- Add strong validation on both frontend and backend
+- Validate:
+  - required fields
+  - formats
+  - duplicate records
+  - invalid actions
+  - unauthorized access
+- Show clean Arabic error messages to users
+- Keep internal errors logged safely
+- Prevent silent failures
+
+8) File and image upload system
+- Make file/image upload architecture robust
+- Ensure uploads are linked correctly to listings and profiles
+- Add validation for:
+  - type
+  - size
+  - ownership
+- Keep it structured so cloud storage can be added later without major rewrite
+
+9) Reusable design system
+- Create a unified reusable component system
+- Standardize:
+  - buttons
+  - inputs
+  - dropdowns
+  - forms
+  - cards
+  - dialogs
+  - tables
+  - badges
+  - alerts
+- Make the UI consistent and easy to maintain when new features are added
+
+10) API and backend standards
+- Standardize all API routes and responses
+- Use consistent response format for:
+  - success
+  - validation error
+  - auth error
+  - not found
+  - server error
+- Add clear service/controller separation if missing
+- Make the API predictable and easier to extend later
+
+11) Performance and stability
+- Remove unnecessary rerenders, repeated API calls, and fragile logic
+- Add pagination where appropriate
+- Add caching/invalidation strategy where appropriate
+- Optimize queries and data fetching
+- Ensure large future datasets will not break the app
+
+12) Future-proofing
+- Prepare the platform for future additions without breaking core logic:
+  - subscriptions
+  - paid promotions
+  - verification
+  - maps
+  - chat
+  - notifications
+  - analytics
+  - service marketplace
+  - comments/reviews
+- Build extension points/placeholders where useful
+- Keep the codebase ready for scale
+
+13) Testing and QA
+- Add end-to-end verification for critical flows:
+  - signup
+  - login
+  - logout
+  - create listing
+  - edit listing
+  - delete listing
+  - own listing permissions
+  - admin management
+  - image upload
+- Test multiple account types
+- Test refresh behavior and navigation
+- Ensure future changes are less likely to break existing flows
+
+14) Admin and user dashboards
+- Separate clearly between:
+  - admin management
+  - personal user dashboard
+  - marketer dashboard
+  - service provider dashboard
+- Ensure each dashboard only shows relevant actions
+- Remove any confusing overlap between admin and user functions
+
+15) Arabic UX quality
+- Keep Arabic RTL as a first-class experience
+- Ensure wording is logical, professional, and consistent
+- Fix any awkward labels, weak copy, inconsistent buttons, or unclear messages
+- Improve the product language to feel polished and trustworthy
+
+16) Important engineering rules
+- Do NOT just patch the visible bug
+- Fix root causes
+- Do NOT break existing working features
+- Do NOT leave temporary hacks if a proper architectural solution is possible
+- Prefer long-term maintainable solutions over quick fixes
+- Keep the app production-ready
+
+17) Deliverables
+After the refactor, give me a complete summary of:
+- what was structurally wrong before
+- what was refactored
+- what core systems were stabilized
+- what permission/auth/ownership logic was improved
+- what modules are now future-ready
+- which files or folders were reorganized
+- what areas still need future work
+
+18) Final expectation
+I want the platform to feel like a real product built on solid logic, not a collection of fragile patches.
+Make it stable, scalable, and safe for continuous future development.

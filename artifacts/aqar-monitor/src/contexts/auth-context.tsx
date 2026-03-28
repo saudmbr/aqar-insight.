@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export type UserRole = "admin" | "user" | "real_estate_marketer" | "service_provider";
 
 export interface AuthUser {
-  id: number;
+  id: number | null;
   username: string;
   fullName: string;
   role: UserRole;
@@ -31,7 +31,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 type MeResponse = {
   isAuthenticated: boolean;
   isAdmin: boolean;
-  userId: number;
+  userId: number | null;
   username: string;
   fullName: string;
   role: UserRole;
@@ -39,7 +39,7 @@ type MeResponse = {
 
 type AuthResponse = {
   success: boolean;
-  userId: number;
+  userId: number | null;
   username: string;
   fullName: string;
   role: UserRole;
