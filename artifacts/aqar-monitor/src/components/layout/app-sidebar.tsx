@@ -119,8 +119,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar side="right" variant="inset" className="border-l-0 bg-sidebar shadow-2xl">
-      <SidebarHeader className="h-20 flex items-center justify-center px-5 border-b border-sidebar-border/30">
-        <LogoBrand variant="full" linkTo="/" light className="w-full" />
+      <SidebarHeader className="flex items-center justify-center px-5 py-4 border-b border-sidebar-border/30">
+        <LogoBrand variant="sidebar" linkTo="/" />
       </SidebarHeader>
 
       <SidebarContent className="pt-6 space-y-4">

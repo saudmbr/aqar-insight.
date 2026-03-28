@@ -117,7 +117,7 @@ export default function Signup() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center">
-          <LogoBrand variant="stacked" linkTo="/" light={false} />
+          <LogoBrand variant="hero" linkTo="/" />
         </div>
 
         {/* Card */}

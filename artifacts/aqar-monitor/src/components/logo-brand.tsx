@@ -1,129 +1,124 @@
-import { useState } from "react";
 import { Link } from "wouter";
 
 interface LogoBrandProps {
-  variant?: "full" | "compact" | "stacked";
+  variant?: "hero" | "sidebar" | "header" | "footer";
   className?: string;
   linkTo?: string;
-  light?: boolean;
 }
 
-export function LogoBrand({
-  variant = "full",
-  className = "",
-  linkTo = "/",
-  light = true,
-}: LogoBrandProps) {
-  const [imgError, setImgError] = useState(false);
+function LogoIcon({
+  size = 40,
+  mode = "gradient",
+}: {
+  size?: number;
+  mode?: "gradient" | "white" | "teal" | "navy";
+}) {
+  const gid = `lg-${mode}-${size}`;
 
-  const imgSrc = "/images/logo.png";
+  const fill = mode === "gradient" ? `url(#${gid})` : mode === "white" ? "#ffffff" : mode === "teal" ? "#0F7BA0" : "#0F1C3F";
+  const stroke = fill;
 
-  if (variant === "stacked") {
-    const content = (
-      <div className={`flex flex-col items-center gap-3 ${className}`}>
-        <div className="relative">
-          {!imgError ? (
-            <img
-              src={imgSrc}
-              alt="عقار إنسايت"
-              className="w-24 h-24 object-contain drop-shadow-xl"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-xl"
-              style={{ background: "linear-gradient(135deg, #0F1C3F, #0F7BA0)" }}
-            >
-              <svg viewBox="0 0 60 60" className="w-12 h-12" fill="none">
-                <rect x="8" y="42" width="44" height="3" rx="1.5" fill="white" opacity="0.95" />
-                <rect x="12" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-                <rect x="20" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-                <rect x="28" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-                <rect x="36" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-                <rect x="8" y="17" width="44" height="6" rx="2" fill="white" opacity="0.95" />
-                <path d="M14 17 Q30 5 46 17" stroke="white" strokeWidth="2" fill="none" opacity="0.55" strokeLinecap="round" />
-              </svg>
-            </div>
-          )}
-        </div>
+  return (
+    <svg
+      width={size}
+      height={Math.round(size * 0.875)}
+      viewBox="0 0 80 70"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block", flexShrink: 0 }}
+    >
+      {mode === "gradient" && (
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="80" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#0F1C3F" />
+            <stop offset="100%" stopColor="#0F7BA0" />
+          </linearGradient>
+        </defs>
+      )}
+      {/* Base platform */}
+      <rect x="10" y="57" width="60" height="6" rx="3" fill={fill} />
+      {/* Four columns */}
+      <rect x="13" y="29" width="10" height="29" rx="2.5" fill={fill} />
+      <rect x="27" y="29" width="10" height="29" rx="2.5" fill={fill} />
+      <rect x="41" y="29" width="10" height="29" rx="2.5" fill={fill} />
+      <rect x="55" y="29" width="10" height="29" rx="2.5" fill={fill} />
+      {/* Entablature */}
+      <rect x="10" y="22" width="60" height="8" rx="2.5" fill={fill} />
+      {/* Pediment */}
+      <path
+        d="M7 22 L40 5 L73 22"
+        stroke={stroke}
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
+export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: LogoBrandProps) {
+  let content: React.ReactNode;
+
+  if (variant === "hero") {
+    content = (
+      <div className={`flex flex-col items-center gap-3 select-none ${className}`}>
+        <LogoIcon size={72} mode="gradient" />
         <div className="text-center">
-          <p className={`text-2xl font-extrabold leading-tight tracking-tight ${light ? "text-white" : "text-foreground"}`}>
+          <p
+            className="text-3xl font-extrabold leading-tight"
+            style={{ color: "#0F1C3F", letterSpacing: "-0.01em" }}
+          >
             عقار إنسايت
           </p>
-          <p className={`text-sm font-medium mt-0.5 ${light ? "text-white/65" : "text-muted-foreground"}`}>
+          <p className="text-sm font-medium mt-1.5" style={{ color: "#0F7BA0" }}>
             منصة ذكية للعقار
           </p>
         </div>
       </div>
     );
-    if (linkTo) return <Link href={linkTo}>{content}</Link>;
-    return <>{content}</>;
-  }
-
-  if (variant === "compact") {
-    const content = (
-      <div className={`flex items-center justify-center ${className}`}>
-        {!imgError ? (
-          <img
-            src={imgSrc}
-            alt="عقار إنسايت"
-            className="w-full h-full object-contain"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <svg viewBox="0 0 60 60" className="w-full h-full" fill="none">
-            <rect x="8" y="42" width="44" height="3" rx="1.5" fill="white" opacity="0.95" />
-            <rect x="12" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-            <rect x="20" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-            <rect x="28" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-            <rect x="36" y="22" width="5" height="22" rx="1" fill="white" opacity="0.95" />
-            <rect x="8" y="17" width="44" height="6" rx="2" fill="white" opacity="0.95" />
-            <path d="M14 17 Q30 5 46 17" stroke="white" strokeWidth="2" fill="none" opacity="0.55" strokeLinecap="round" />
-          </svg>
-        )}
+  } else if (variant === "sidebar") {
+    content = (
+      <div className={`flex flex-col items-center gap-3 w-full select-none ${className}`}>
+        <LogoIcon size={56} mode="white" />
+        <div className="text-center">
+          <p className="text-lg font-extrabold text-white leading-tight">عقار إنسايت</p>
+          <p className="text-xs font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+            منصة ذكية للعقار
+          </p>
+        </div>
       </div>
     );
-    if (linkTo) return <Link href={linkTo}>{content}</Link>;
-    return <>{content}</>;
-  }
-
-  const content = (
-    <div className={`flex items-center gap-3 ${className}`}>
-      <div className="relative shrink-0 w-10 h-10">
-        {!imgError ? (
-          <img
-            src={imgSrc}
-            alt="عقار إنسايت"
-            className="w-full h-full object-contain drop-shadow-md"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
-            style={{ background: "linear-gradient(135deg, #0F1C3F, #0F7BA0)" }}
-          >
-            <svg viewBox="0 0 60 60" className="w-6 h-6" fill="none">
-              <rect x="8" y="42" width="44" height="3" rx="1.5" fill="white" />
-              <rect x="12" y="22" width="5" height="22" rx="1" fill="white" />
-              <rect x="20" y="22" width="5" height="22" rx="1" fill="white" />
-              <rect x="28" y="22" width="5" height="22" rx="1" fill="white" />
-              <rect x="36" y="22" width="5" height="22" rx="1" fill="white" />
-              <rect x="8" y="17" width="44" height="6" rx="2" fill="white" />
-            </svg>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col leading-none">
-        <span className={`font-extrabold text-lg leading-tight tracking-tight ${light ? "text-white" : "text-foreground"}`}>
+  } else if (variant === "header") {
+    content = (
+      <div className={`flex items-center gap-2.5 select-none shrink-0 ${className}`}>
+        <LogoIcon size={30} mode="teal" />
+        <span
+          className="font-extrabold text-base leading-tight hidden xs:block"
+          style={{ color: "#0F1C3F" }}
+        >
           عقار إنسايت
         </span>
-        <span className={`text-[11px] font-medium mt-0.5 ${light ? "text-white/60" : "text-muted-foreground"}`}>
-          منصة ذكية للعقار
-        </span>
       </div>
-    </div>
-  );
+    );
+  } else {
+    content = (
+      <div className={`flex items-center gap-2 select-none ${className}`}>
+        <LogoIcon size={28} mode="navy" />
+        <div>
+          <p className="font-extrabold text-sm leading-none" style={{ color: "#0F1C3F" }}>
+            عقار إنسايت
+          </p>
+          <p className="text-[10px] mt-0.5" style={{ color: "#0F7BA0" }}>
+            منصة ذكية للعقار
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  if (linkTo) return <Link href={linkTo}>{content}</Link>;
+  if (linkTo) {
+    return <Link href={linkTo}>{content}</Link>;
+  }
   return <>{content}</>;
 }

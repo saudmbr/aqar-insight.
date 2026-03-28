@@ -87,7 +87,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="flex flex-col items-center">
-          <LogoBrand variant="stacked" linkTo="/" light={false} />
+          <LogoBrand variant="hero" linkTo="/" />
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-lg shadow-black/5">

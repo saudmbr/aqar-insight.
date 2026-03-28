@@ -57,7 +57,7 @@ export default function ForgotPassword() {
 
         {/* Logo */}
         <div className="flex flex-col items-center">
-          <LogoBrand variant="stacked" linkTo="/" light={false} />
+          <LogoBrand variant="hero" linkTo="/" />
         </div>
 
         {/* Card */}

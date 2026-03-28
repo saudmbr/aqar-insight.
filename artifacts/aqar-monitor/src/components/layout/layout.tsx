@@ -50,9 +50,12 @@ export function Layout({ children }: LayoutProps) {
           <AppSidebar />
           <div className="flex flex-col flex-1 min-w-0">
             {/* Main header */}
-            <header className="h-16 flex items-center gap-4 px-5 bg-white/90 backdrop-blur-md z-10 border-b border-border shadow-sm shrink-0">
+            <header className="h-16 flex items-center gap-3 px-5 bg-white/90 backdrop-blur-md z-10 border-b border-border shadow-sm shrink-0">
               {/* Sidebar toggle */}
               <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 hover:bg-muted shrink-0" />
+
+              {/* Logo — always shown in header as brand anchor */}
+              <LogoBrand variant="header" linkTo="/" />
 
               {/* Search bar — takes all available space */}
               <form
@@ -142,7 +145,7 @@ export function Layout({ children }: LayoutProps) {
               <footer className="border-t border-border bg-muted/30 px-4 py-6 md:px-8 lg:px-12 mt-auto" dir="rtl">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="order-2 sm:order-1 flex flex-col items-center sm:items-start gap-1.5">
-                    <LogoBrand variant="full" linkTo="/" light={false} />
+                    <LogoBrand variant="footer" linkTo="/" />
                     <p className="text-xs text-muted-foreground">
                       © {new Date().getFullYear()} عقار إنسايت · جميع الحقوق محفوظة
                     </p>

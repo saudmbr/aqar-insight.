@@ -44,7 +44,7 @@ export default function Login() {
       <div className="w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="flex flex-col items-center">
-          <LogoBrand variant="stacked" linkTo="/" light={false} />
+          <LogoBrand variant="hero" linkTo="/" />
         </div>
 
         {/* Card */}
