@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useId } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Loader2, MapPin, Navigation, X, CheckCircle2 } from "lucide-react";
+import { Loader2, MapPin, Navigation, X, CheckCircle2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +19,19 @@ const SAUDI_CITIES: Record<string, [number, number]> = {
   "أبها": [18.2164, 42.5053],
   "الطائف": [21.2854, 40.4149],
   "بريدة": [26.3260, 43.9750],
+  "نجران": [17.4920, 44.1322],
+  "جازان": [16.8892, 42.5611],
+  "حائل": [27.5219, 41.6906],
+  "القصيم": [26.3260, 43.9750],
+  "الطائف": [21.2854, 40.4149],
+  "القطيف": [26.5569, 50.0073],
+  "ينبع": [24.0888, 38.0618],
+  "الجبيل": [27.0174, 49.6581],
+  "الأحساء": [25.3787, 49.5862],
+  "خميس مشيط": [18.3059, 42.7289],
+  "عرعر": [30.9753, 41.0381],
+  "سكاكا": [29.9708, 40.2064],
+  "الظهران": [26.2361, 50.0395],
 };
 
 function makePinIcon(confirmed: boolean): L.DivIcon {
@@ -55,15 +68,9 @@ async function reverseGeocode(lat: number, lng: number): Promise<{ city?: string
     if (!res.ok) return {};
     const data = await res.json() as {
       address?: {
-        city?: string;
-        town?: string;
-        village?: string;
-        suburb?: string;
-        neighbourhood?: string;
-        quarter?: string;
-        county?: string;
-        state?: string;
-        road?: string;
+        city?: string; town?: string; village?: string;
+        suburb?: string; neighbourhood?: string; quarter?: string;
+        county?: string; state?: string; road?: string;
       };
       display_name?: string;
     };
@@ -74,6 +81,29 @@ async function reverseGeocode(lat: number, lng: number): Promise<{ city?: string
     return { city, district, address };
   } catch {
     return {};
+  }
+}
+
+type NominatimResult = {
+  lat: string;
+  lon: string;
+  display_name: string;
+  address?: {
+    city?: string; town?: string; village?: string;
+    suburb?: string; neighbourhood?: string; quarter?: string;
+    county?: string; state?: string;
+  };
+};
+
+async function geocodeQuery(query: string): Promise<NominatimResult | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=3&accept-language=ar&countrycodes=sa`;
+    const res = await fetch(url, { headers: { "User-Agent": "AqarInsight/1.0" } });
+    if (!res.ok) return null;
+    const data = await res.json() as NominatimResult[];
+    return data[0] ?? null;
+  } catch {
+    return null;
   }
 }
 
@@ -89,9 +119,10 @@ type Props = {
   value: LocationValue | null;
   onChange: (v: LocationValue | null) => void;
   defaultCity?: string;
+  defaultDistrict?: string;
 };
 
-export default function LocationPicker({ value, onChange, defaultCity }: Props) {
+export default function LocationPicker({ value, onChange, defaultCity, defaultDistrict }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -100,6 +131,11 @@ export default function LocationPicker({ value, onChange, defaultCity }: Props) 
   const [manualLat, setManualLat] = useState("");
   const [manualLng, setManualLng] = useState("");
   const [showManual, setShowManual] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [districtGeoStatus, setDistrictGeoStatus] = useState<"idle" | "loading" | "found" | "notfound">("idle");
+  const lastAutoGeoRef = useRef<string>("");
+  const uid = useId();
 
   const updateMarker = useCallback((lat: number, lng: number) => {
     const map = mapInstanceRef.current;
@@ -129,8 +165,7 @@ export default function LocationPicker({ value, onChange, defaultCity }: Props) 
     try {
       const result = await reverseGeocode(lat, lng);
       onChange({
-        lat,
-        lng,
+        lat, lng,
         city: result.city ?? defaultCity,
         district: result.district,
         address: result.address,
@@ -177,14 +212,65 @@ export default function LocationPicker({ value, onChange, defaultCity }: Props) 
     };
   }, []);
 
+  // Fly to city when defaultCity changes (without placing a marker)
   useEffect(() => {
     if (defaultCity && mapInstanceRef.current && !value) {
       const coords = SAUDI_CITIES[defaultCity];
       if (coords) {
-        mapInstanceRef.current.setView(coords, 11, { animate: false });
+        mapInstanceRef.current.setView(coords, 11, { animate: true });
       }
     }
   }, [defaultCity]);
+
+  // Auto-geocode district+city when both are provided and no manual location is set
+  useEffect(() => {
+    const city = defaultCity?.trim() ?? "";
+    const district = defaultDistrict?.trim() ?? "";
+    if (!city || !district) return;
+    if (value) return; // user already set a location manually, don't override
+
+    const geoKey = `${city}::${district}`;
+    if (lastAutoGeoRef.current === geoKey) return; // already geocoded this combination
+    lastAutoGeoRef.current = geoKey;
+
+    const run = async () => {
+      setDistrictGeoStatus("loading");
+      // Try district + city + Saudi Arabia query
+      const result = await geocodeQuery(`${district}، ${city}، المملكة العربية السعودية`);
+      if (result) {
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const a = result.address ?? {};
+          const resolvedCity = a.city ?? a.town ?? a.village ?? city;
+          const resolvedDistrict = a.suburb ?? a.neighbourhood ?? a.quarter ?? district;
+          updateMarker(lat, lng);
+          onChange({ lat, lng, city: resolvedCity, district: resolvedDistrict, address: result.display_name });
+          setDistrictGeoStatus("found");
+          return;
+        }
+      }
+      // Fallback: city center
+      const cityCoords = SAUDI_CITIES[city];
+      if (cityCoords) {
+        updateMarker(cityCoords[0], cityCoords[1]);
+        onChange({ lat: cityCoords[0], lng: cityCoords[1], city, district });
+      }
+      setDistrictGeoStatus("notfound");
+    };
+
+    // Debounce slightly so rapid typing doesn't spam Nominatim
+    const timer = setTimeout(() => void run(), 800);
+    return () => clearTimeout(timer);
+  }, [defaultCity, defaultDistrict]);
+
+  // Reset auto-geo key if user clears location so it can re-trigger
+  useEffect(() => {
+    if (!value) {
+      lastAutoGeoRef.current = "";
+      setDistrictGeoStatus("idle");
+    }
+  }, [value]);
 
   useEffect(() => {
     if (value && mapInstanceRef.current) {
@@ -222,6 +308,32 @@ export default function LocationPicker({ value, onChange, defaultCity }: Props) 
     );
   };
 
+  const handleSearch = async () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    setSearching(true);
+    setGeoError(null);
+    // Append city context if available
+    const fullQuery = defaultCity ? `${q}، ${defaultCity}، السعودية` : `${q}، المملكة العربية السعودية`;
+    const result = await geocodeQuery(fullQuery);
+    if (result) {
+      const lat = parseFloat(result.lat);
+      const lng = parseFloat(result.lon);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const a = result.address ?? {};
+        const resolvedCity = a.city ?? a.town ?? a.village ?? defaultCity ?? "";
+        const resolvedDistrict = a.suburb ?? a.neighbourhood ?? a.quarter ?? "";
+        updateMarker(lat, lng);
+        onChange({ lat, lng, city: resolvedCity, district: resolvedDistrict, address: result.display_name });
+        lastAutoGeoRef.current = `${resolvedCity}::${resolvedDistrict}`; // prevent auto-re-geocode
+        setSearching(false);
+        return;
+      }
+    }
+    setGeoError("لم يُعثر على الموقع، جرّب عبارة أخرى");
+    setSearching(false);
+  };
+
   const handleManualApply = () => {
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
@@ -246,26 +358,70 @@ export default function LocationPicker({ value, onChange, defaultCity }: Props) 
     setManualLat("");
     setManualLng("");
     setGeoError(null);
+    setDistrictGeoStatus("idle");
+    lastAutoGeoRef.current = "";
   };
 
   return (
     <div className="space-y-3">
+      {/* Search bar */}
+      <div className="flex gap-2">
+        <Input
+          id={`${uid}-search`}
+          placeholder="ابحث عن حي أو شارع أو معلم… (مثال: حي الياسمين جدة)"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void handleSearch(); } }}
+          className="h-11 rounded-xl text-sm"
+        />
+        <Button
+          type="button"
+          onClick={() => void handleSearch()}
+          disabled={searching || !searchQuery.trim()}
+          size="sm"
+          className="h-11 px-4 rounded-xl gap-2 shrink-0"
+        >
+          {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          بحث
+        </Button>
+      </div>
+
+      {/* Auto-geocode status */}
+      {districtGeoStatus === "loading" && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-xl px-3 py-2">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+          جارٍ تحديد موقع الحي تلقائياً…
+        </div>
+      )}
+      {districtGeoStatus === "found" && (
+        <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          تم تحديد موقع الحي تلقائياً — يمكنك سحب الدبوس لضبط الموقع بدقة أكبر
+        </div>
+      )}
+      {districtGeoStatus === "notfound" && (
+        <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <MapPin className="w-3.5 h-3.5" />
+          لم يُعثر على الحي تلقائياً — تم تحديد مركز المدينة، يمكنك تحريك الدبوس أو البحث يدوياً
+        </div>
+      )}
+
       {/* Map */}
-      <div className="relative rounded-2xl overflow-hidden border-2 border-border" style={{ height: 320 }}>
+      <div className="relative rounded-2xl overflow-hidden border-2 border-border" style={{ height: 360 }}>
         <div ref={mapRef} style={{ height: "100%", width: "100%" }} className="z-0" />
 
         {/* Overlay hint when no pin set */}
-        {!value && (
+        {!value && districtGeoStatus === "idle" && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-[400]">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-md border border-border flex items-center gap-2 text-sm font-semibold text-foreground">
               <MapPin className="w-4 h-4 text-primary" />
-              انقر على الخريطة لتحديد الموقع
+              انقر على الخريطة لتحديد الموقع أو ابحث بالاسم
             </div>
           </div>
         )}
 
         {/* Geocoding indicator */}
-        {geocoding && (
+        {(geocoding || searching) && (
           <div className="absolute top-3 right-3 z-[500] bg-white rounded-xl px-3 py-1.5 shadow flex items-center gap-2 text-xs font-medium text-foreground">
             <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
             جارٍ تحديد العنوان…

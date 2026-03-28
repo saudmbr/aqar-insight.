@@ -298,6 +298,7 @@ export default function ListingForm() {
                 <LocationPicker
                   value={locationValue}
                   defaultCity={form.city ?? undefined}
+                  defaultDistrict={form.district ?? undefined}
                   onChange={(v) => {
                     setLocationValue(v);
                     if (v?.city && !form.city) set("city", v.city);

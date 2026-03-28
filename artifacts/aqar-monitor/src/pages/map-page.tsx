@@ -206,6 +206,16 @@ export default function MapPage() {
           <p className="text-white/60 text-sm">
             استعرض العقارات على الخريطة — انقر على أي عقار للتفاصيل
           </p>
+          <div className="flex items-center gap-4 mt-2">
+            <span className="flex items-center gap-1.5 text-[11px] text-white/50">
+              <span className="inline-block w-3 h-3 rounded-full bg-[#0F7BA0]" />
+              موقع دقيق
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-white/50">
+              <span className="inline-block w-3 h-3 rounded-full border-2 border-dashed border-[#0F7BA0]/60 bg-white/10" />
+              موقع تقريبي (حدّثه صاحب الإعلان)
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
