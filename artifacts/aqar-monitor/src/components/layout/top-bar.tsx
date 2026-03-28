@@ -58,6 +58,8 @@ export function TopBar() {
         </button>
       </div>
 
+      <div className="flex-1" />
+
       {/* Social media icons */}
       <div className="flex items-center gap-0.5">
         {socialLinks.map(s => (
@@ -67,19 +69,19 @@ export function TopBar() {
             target="_blank"
             rel="noopener noreferrer"
             title={s.title}
-            className="p-1.5 rounded-md transition-all duration-200 group"
+            className="p-1.5 rounded-md transition-all duration-200"
             style={{ color: "rgba(255,255,255,0.45)" }}
             onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = s.hoverColor; }}
             onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.45)"; }}
           >
-            <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current" aria-hidden>
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current" aria-hidden>
               <path d={s.path} />
             </svg>
           </a>
         ))}
       </div>
 
-      <div className="flex-1" />
+      <span className="text-white/20 text-xs">|</span>
 
       {/* Language toggle */}
       <button
