@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -18,7 +19,7 @@ const CATEGORIES = [
   "مطابخ", "مصاعد", "نظافة ومكافحة حشرات", "تصميم داخلي", "تصميم معماري", "تقييم عقاري",
   "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء",
 ];
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
+
 
 interface Provider {
   id: number;

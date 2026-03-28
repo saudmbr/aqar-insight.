@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect, type FormEvent } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -23,7 +24,7 @@ const LISTING_TYPES = [
   { value: "investment", label: "استثماري" },
   { value: "auction", label: "مزاد" },
 ];
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
+
 
 interface ListingsResponse {
   data: ListingCardData[];

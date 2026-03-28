@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -16,7 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, ArrowRight, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة"];
+
 const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
 const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 

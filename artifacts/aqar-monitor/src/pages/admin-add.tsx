@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { Layout } from "@/components/layout/layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -15,7 +16,7 @@ import { useLocation } from "wouter";
 import { Loader2, PlusCircle, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة"];
+
 const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
 const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 

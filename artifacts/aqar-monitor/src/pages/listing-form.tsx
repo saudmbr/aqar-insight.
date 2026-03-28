@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect, lazy, Suspense, type FormEvent } from "react";
 import { useParams, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -13,7 +14,7 @@ import type { LocationValue } from "@/components/location-picker";
 
 const LocationPicker = lazy(() => import("@/components/location-picker"));
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
+
 const PROPERTY_TYPES = ["شقة", "فيلا", "دور", "أرض", "عمارة", "مكتب", "محل", "مستودع", "مزرعة", "شاليه", "غرفة", "سكن عمالة", "عقار تجاري", "عقار صناعي", "مشروع تطويري"];
 const LISTING_TYPES = [
   { value: "sale", label: "للبيع" },

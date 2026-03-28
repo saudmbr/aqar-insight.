@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -46,7 +47,7 @@ import {
 import { motion } from "framer-motion";
 import { ImportDialog } from "@/components/import-dialog";
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة"];
+
 const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
 
 function formatPrice(price: number) {

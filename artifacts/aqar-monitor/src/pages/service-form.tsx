@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -9,7 +10,7 @@ import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText } fro
 import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
+
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
   "مطابخ", "مصاعد", "نظافة ومكافحة حشرات", "تصميم داخلي", "تصميم معماري", "تقييم عقاري",

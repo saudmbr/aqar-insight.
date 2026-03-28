@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -40,7 +41,7 @@ interface MarketerProfile {
   activeListingsCount?: number;
 }
 
-const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
+
 
 const SPECIALTIES_OPTIONS = [
   "شقق سكنية", "فلل وقصور", "أراضي", "مكاتب وتجاري", "مستودعات", "استثمار عقاري",

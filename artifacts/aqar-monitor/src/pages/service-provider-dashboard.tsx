@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -41,10 +42,6 @@ const CATEGORIES = [
   "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء",
 ];
 
-const CITIES = [
-  "الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة",
-  "الخبر", "تبوك", "أبها", "الطائف", "بريدة",
-];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

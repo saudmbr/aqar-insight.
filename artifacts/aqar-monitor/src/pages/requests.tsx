@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -52,10 +53,6 @@ const STATUS_META: Record<string, { label: string; style: string }> = {
   archived: { label: "مؤرشف",  style: "bg-yellow-100 text-yellow-800 border-yellow-200" },
 };
 
-const CITIES = [
-  "الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة",
-  "الخبر", "تبوك", "أبها", "الطائف", "بريدة",
-];
 
 interface CustomerRequest {
   id: number;

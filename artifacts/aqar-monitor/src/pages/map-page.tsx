@@ -1,3 +1,4 @@
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -26,10 +27,6 @@ const LISTING_TYPES = [
   { value: "rent", label: "للإيجار" },
   { value: "daily_rent", label: "إيجار يومي" },
   { value: "monthly_rent", label: "إيجار شهري" },
-];
-const CITIES = [
-  "الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة",
-  "الخبر", "تبوك", "أبها", "الطائف", "بريدة",
 ];
 const LISTING_TYPE_LABELS: Record<string, string> = {
   sale: "للبيع", rent: "للإيجار",

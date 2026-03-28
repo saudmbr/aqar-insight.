@@ -9,10 +9,7 @@ import { Loader2, Save, FileText, Banknote, Contact, Building2, Wrench, UserChec
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
-const CITIES = [
-  "الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة",
-  "الخبر", "تبوك", "أبها", "الطائف", "بريدة",
-];
+import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 const PROPERTY_TYPES = ["شقة", "فيلا", "دوبلكس", "أرض", "مكتب", "محل تجاري", "مستودع", "فندق", "أخرى"];
 const SERVICE_TYPES  = ["مقاول بناء", "تشطيبات", "سباكة وكهرباء", "تكييف", "دهانات", "تنظيف", "تصميم داخلي", "مساحة وتقييم", "صيانة عامة", "أخرى"];
 const CONTACT_METHODS = ["واتساب", "هاتف", "بريد إلكتروني", "داخل المنصة"];
