@@ -95,6 +95,11 @@ export default function Requests() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    document.title = "سوق الطلبات – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
+
   useEffect(() => { void fetchRequests(); }, [requestType, city]);
 
   const canDelete = (r: CustomerRequest) => {
