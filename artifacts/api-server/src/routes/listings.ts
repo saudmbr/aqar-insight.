@@ -232,7 +232,7 @@ listingsRouter.get("/meta/options", async (_req: Request, res: Response) => {
 
 // ─── Get single listing ───────────────────────────────────────────────────────
 listingsRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const rows = await db
@@ -276,7 +276,7 @@ listingsRouter.get("/:id", async (req: Request, res: Response) => {
 
 // ─── Similar listings ─────────────────────────────────────────────────────────
 listingsRouter.get("/:id/similar", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [source] = await db.select({ city: listingsTable.city, propertyType: listingsTable.propertyType })
@@ -400,7 +400,7 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
 
 // ─── Update listing ───────────────────────────────────────────────────────────
 listingsRouter.put("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const existing = await db.select({ userId: listingsTable.userId }).from(listingsTable).where(eq(listingsTable.id, id)).limit(1);
@@ -487,7 +487,7 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
 
 // ─── Quick status change (owner/admin only) ───────────────────────────────────
 listingsRouter.patch("/:id/status", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const ALLOWED = ["active", "sold", "rented", "cancelled"] as const;
@@ -506,7 +506,7 @@ listingsRouter.patch("/:id/status", async (req: Request, res: Response) => {
 
 // ─── Delete listing ───────────────────────────────────────────────────────────
 listingsRouter.delete("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const existing = await db.select({ userId: listingsTable.userId }).from(listingsTable).where(eq(listingsTable.id, id)).limit(1);

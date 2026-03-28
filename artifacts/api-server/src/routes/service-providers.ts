@@ -144,7 +144,7 @@ serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
 
 // ─── Get single provider ──────────────────────────────────────────────────────
 serviceProvidersRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [row] = await db
@@ -163,7 +163,7 @@ serviceProvidersRouter.get("/:id", async (req: Request, res: Response) => {
 
 // ─── Update provider by ID (admin or owner) ───────────────────────────────────
 serviceProvidersRouter.put("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [existing] = await db.select({ userId: serviceProvidersTable.userId }).from(serviceProvidersTable).where(eq(serviceProvidersTable.id, id)).limit(1);
@@ -198,7 +198,7 @@ serviceProvidersRouter.delete("/:id", async (req: Request, res: Response) => {
     res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
   }
 
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [existing] = await db.select({ userId: serviceProvidersTable.userId }).from(serviceProvidersTable).where(eq(serviceProvidersTable.id, id)).limit(1);

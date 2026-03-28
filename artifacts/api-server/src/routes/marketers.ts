@@ -122,7 +122,7 @@ marketersRouter.get("/", async (_req: Request, res: Response) => {
 
 // ─── Public: get one marketer profile ─────────────────────────────────────────
 marketersRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const rows = await db
@@ -162,7 +162,7 @@ marketersRouter.get("/:id", async (req: Request, res: Response) => {
 
 // ─── Public: get marketer's listings ─────────────────────────────────────────
 marketersRouter.get("/:id/listings", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [profile] = await db
@@ -224,7 +224,7 @@ marketersRouter.get("/:id/listings", async (req: Request, res: Response) => {
 // ─── Admin: verify or unverify a marketer ─────────────────────────────────────
 marketersRouter.put("/:id/verify", async (req: Request, res: Response) => {
   if (!req.session.isAdmin) { res.status(403).json({ message: "غير مصرح" }); return; }
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   const { verified } = req.body as { verified: boolean };
   const [updated] = await db
     .update(marketerProfilesTable)
@@ -237,7 +237,7 @@ marketersRouter.put("/:id/verify", async (req: Request, res: Response) => {
 // ─── Admin: delete a marketer profile ─────────────────────────────────────────
 marketersRouter.delete("/:id", async (req: Request, res: Response) => {
   if (!req.session.isAdmin) { res.status(403).json({ message: "غير مصرح" }); return; }
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   await db.delete(marketerProfilesTable).where(eq(marketerProfilesTable.id, id));
   res.json({ success: true });
 });

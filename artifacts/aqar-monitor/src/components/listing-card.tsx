@@ -124,6 +124,8 @@ export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
             <img
               src={firstImage}
               alt={listing.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />

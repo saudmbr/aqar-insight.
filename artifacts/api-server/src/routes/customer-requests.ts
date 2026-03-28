@@ -57,7 +57,7 @@ customerRequestsRouter.get("/my/requests", async (req: Request, res: Response) =
 
 // ─── Get single request ───────────────────────────────────────────────────────
 customerRequestsRouter.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [row] = await db
@@ -115,7 +115,7 @@ customerRequestsRouter.delete("/:id", async (req: Request, res: Response) => {
     res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
   }
 
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [existing] = await db

@@ -42,6 +42,11 @@ export default function Dashboard() {
   const [statusLoading, setStatusLoading] = useState<number | null>(null);
 
   useEffect(() => {
+    document.title = "لوحة التحكم – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
+
+  useEffect(() => {
     if (!isAuthenticated) { navigate("/login"); return; }
     const loadAll = async () => {
       setLoading(true);

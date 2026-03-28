@@ -248,6 +248,11 @@ export default function Districts() {
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
 
+  useEffect(() => {
+    document.title = "مقارنة الأحياء – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
+
   const qs = useMemo(() => {
     const p = new URLSearchParams();
     if (city) p.set("city", city);

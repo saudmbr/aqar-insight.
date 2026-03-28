@@ -124,6 +124,16 @@ export default function ListingDetail() {
   const listingId = parseInt(id ?? "");
 
   useEffect(() => {
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
+
+  useEffect(() => {
+    if (listing?.title) {
+      document.title = `${listing.title} – عقار إنسايت`;
+    }
+  }, [listing?.title]);
+
+  useEffect(() => {
     if (isNaN(listingId)) return;
     const load = async () => {
       setLoading(true);
@@ -304,7 +314,7 @@ export default function ListingDetail() {
                     className="flex-1 relative overflow-hidden group bg-muted"
                     onClick={() => { setCurrentImage(1); setGalleryOpen(true); }}
                   >
-                    <img src={img2} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <img src={img2} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   </button>
                 ) : (
                   <div className="flex-1 bg-muted/60 flex items-center justify-center">
@@ -317,7 +327,7 @@ export default function ListingDetail() {
                 >
                   {img3 ? (
                     <>
-                      <img src={img3} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <img src={img3} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       {extraCount > 0 && (
                         <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
                           <span className="text-white font-extrabold text-xl">+{extraCount}</span>
@@ -627,7 +637,7 @@ export default function ListingDetail() {
             {listing.floorPlan && (
               <div className="bg-card rounded-3xl border border-border p-7 shadow-sm">
                 <SectionTitle>المخطط الهندسي</SectionTitle>
-                <img src={getImageSrc(listing.floorPlan) ?? ""} alt="المخطط الهندسي" className="w-full rounded-2xl border border-border" />
+                <img src={getImageSrc(listing.floorPlan) ?? ""} alt="المخطط الهندسي" loading="lazy" decoding="async" className="w-full rounded-2xl border border-border" />
               </div>
             )}
 
@@ -729,7 +739,7 @@ export default function ListingDetail() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-border overflow-hidden flex items-center justify-center shrink-0">
                       {listing.marketer.photo ? (
-                        <img src={listing.marketer.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageSrc(listing.marketer.photo) ?? ""} alt="" loading="lazy" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-xl font-extrabold text-primary">{(listing.marketer.fullName ?? "م").charAt(0)}</span>
                       )}
@@ -882,7 +892,7 @@ export default function ListingDetail() {
                   <div className="rounded-2xl bg-muted/50 border border-border/60 p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-base font-extrabold text-primary shrink-0 overflow-hidden">
                       {listing.marketer?.photo ? (
-                        <img src={listing.marketer.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageSrc(listing.marketer.photo) ?? ""} alt="" loading="lazy" className="w-full h-full object-cover" />
                       ) : (
                         (listing.marketer?.fullName ?? listing.sellerName ?? "م").charAt(0)
                       )}
@@ -931,7 +941,7 @@ export default function ListingDetail() {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-border overflow-hidden flex items-center justify-center shrink-0">
                       {listing.marketer.photo ? (
-                        <img src={listing.marketer.photo} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageSrc(listing.marketer.photo) ?? ""} alt="" loading="lazy" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-xl font-extrabold text-primary">{(listing.marketer.fullName ?? "م").charAt(0)}</span>
                       )}
@@ -1024,7 +1034,7 @@ export default function ListingDetail() {
                     onClick={() => setCurrentImage(i)}
                     className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === currentImage ? "border-primary scale-110" : "border-white/20 opacity-60 hover:opacity-100"}`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

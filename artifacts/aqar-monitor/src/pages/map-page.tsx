@@ -81,7 +81,7 @@ function ListingMiniCard({
     >
       <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
         {img
-          ? <img src={img} alt="" className="w-full h-full object-cover" />
+          ? <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
               <Building2 className="w-6 h-6" />
             </div>
@@ -162,6 +162,11 @@ export default function MapPage() {
       setLoading(false);
     }
   }, [city, propertyType, listingType, minPrice, maxPrice]);
+
+  useEffect(() => {
+    document.title = "خريطة العقارات – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
 
   useEffect(() => { fetchPins(); }, [fetchPins]);
 
@@ -301,8 +306,7 @@ export default function MapPage() {
       <div className="flex" style={{ height: "calc(100vh - 170px)", minHeight: 500 }}>
         {/* Left panel: listing cards */}
         <div
-          className="flex-shrink-0 flex flex-col bg-muted/40 border-e border-border"
-          style={{ width: 300 }}
+          className="flex-shrink-0 flex flex-col bg-muted/40 border-e border-border w-[280px] min-w-[200px] max-w-xs"
         >
           {/* Panel header */}
           <div className="px-3 py-3 border-b border-border bg-white flex items-center justify-between">

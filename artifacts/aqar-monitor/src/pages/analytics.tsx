@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -131,6 +131,11 @@ export default function Analytics() {
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
   const [districtSort, setDistrictSort] = useState("activity");
+
+  useEffect(() => {
+    document.title = "تحليلات السوق – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
 
   const queryStr = useMemo(() => {
     const p = new URLSearchParams();

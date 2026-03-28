@@ -45,6 +45,24 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - **Backend coordinate validation** — `parseCoords()` in `listings.ts` validates `latitude`/`longitude` against Saudi Arabia bbox (lat 15.5–32.2, lng 34.5–55.8); out-of-bounds coordinates stored as `null`.
 - Both POST (create) and PUT (update) listing endpoints now handle `latitude`/`longitude` fields.
 
+**Performance & SEO:**
+- All `<img>` elements across the app include `loading="lazy"` and `decoding="async"` for improved page load performance.
+- `document.title` SEO is set via `useEffect` on all major pages: listings, dashboard, map, analytics, districts, admin reports, and listing detail (dynamic title from listing data, resets on unmount).
+- Admin Reports page (`/admin/reports`) has 8 tabs (overview, users, listings, requests, services, market, operational, alerts) with period filter, KPI cards, charts, and tables.
+- `records.tsx` uses direct `fetch()` to `/api/listings` (not legacy hooks); supports status filter and client-side CSV export.
+
+**TypeScript Quality:**
+- `lib/api-zod` rebuilt — `RequestUploadUrlBody`/`RequestUploadUrlResponse` now properly exported from dist.
+- All `parseInt(req.params.xxx)` calls wrapped with `String()` to satisfy strict Express param typings.
+- `objectStorage.ts` `signed_url` destructure cast to typed object.
+- API server achieves **0 TypeScript errors** as of current session.
+
+**Code Rules:**
+- Legacy hooks (`useGetCities`, `useGetPriceTrends`, `useGetPropertyTypes`, `useGetDistrictComparison`, `useGetYearlyComparison`) are BANNED — they depend on the empty `properties` table. Use direct `fetch()` against analytics endpoints instead.
+- Admin auth: session-based `req.session.isAdmin`; `AdminRoute` component in `protected-route.tsx`.
+- Number formatting: western/Latin digits via `en-US` locale throughout.
+- `getImageSrc(path)` helper used on all image fields for proper GCS URL resolution.
+
 ## External Dependencies
 
 - **Database:** PostgreSQL

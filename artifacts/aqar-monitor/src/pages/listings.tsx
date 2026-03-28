@@ -54,6 +54,11 @@ export default function Listings() {
   const [data, setData] = useState<ListingsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    document.title = "الإعلانات العقارية – عقار إنسايت";
+    return () => { document.title = "عقار إنسايت"; };
+  }, []);
+
   // Sync URL ?q= changes (e.g. from the top-bar search)
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("q") ?? "";

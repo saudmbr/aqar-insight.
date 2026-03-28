@@ -45,7 +45,7 @@ favoritesRouter.get("/:listingId/status", async (req: Request, res: Response) =>
     res.json({ isFavorite: false }); return;
   }
 
-  const listingId = parseInt(req.params.listingId);
+  const listingId = parseInt(String(req.params.listingId));
   if (isNaN(listingId)) { res.json({ isFavorite: false }); return; }
 
   const [row] = await db
@@ -63,7 +63,7 @@ favoritesRouter.post("/:listingId/toggle", async (req: Request, res: Response) =
     res.status(401).json({ message: "يرجى تسجيل الدخول لحفظ الإعلانات" }); return;
   }
 
-  const listingId = parseInt(req.params.listingId);
+  const listingId = parseInt(String(req.params.listingId));
   if (isNaN(listingId)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const [existing] = await db

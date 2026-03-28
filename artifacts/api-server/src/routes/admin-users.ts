@@ -32,7 +32,7 @@ adminUsersRouter.get("/", async (_req: Request, res: Response) => {
 
 // ─── Update user role ─────────────────────────────────────────────────────────
 adminUsersRouter.put("/:id/role", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   const { role } = req.body as { role?: string };
@@ -47,7 +47,7 @@ adminUsersRouter.put("/:id/role", async (req: Request, res: Response) => {
 
 // ─── Delete user ──────────────────────────────────────────────────────────────
 adminUsersRouter.delete("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
   await db.delete(usersTable).where(eq(usersTable.id, id));
