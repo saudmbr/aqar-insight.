@@ -51,6 +51,7 @@ const SECTION_TABS = [
 type SectionId = "A" | "B" | "C" | "D";
 
 const PERIOD_TABS = [
+  { value: "day",     label: "يوم" },
   { value: "week",    label: "أسبوع" },
   { value: "month",   label: "شهر" },
   { value: "quarter", label: "ربع سنة" },
