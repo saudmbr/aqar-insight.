@@ -115,22 +115,16 @@ export default function MarketerProfilePage() {
           </Link>
         </div>
 
-        {/* Profile hero card */}
-        <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
-          {/* Slim banner */}
-          <div className="h-16 relative" style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F7BA0 100%)" }}>
-            {profile.verified && (
-              <span className="absolute top-3 left-4 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-white border border-white/30">
-                <BadgeCheck className="w-3.5 h-3.5" />مسوّق موثّق
-              </span>
-            )}
-          </div>
+        {/* Profile hero card — clean side-by-side layout, no banner */}
+        <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
+          {/* Teal accent strip at top */}
+          <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
 
-          <div className="px-6 pb-6">
-            {/* Avatar row — small overlap of the slim banner */}
-            <div className="flex items-end gap-4 -mt-7">
-              {/* Avatar */}
-              <div className="w-14 h-14 rounded-xl border-2 border-card bg-primary/10 flex items-center justify-center shadow-md overflow-hidden shrink-0">
+          <div className="p-6">
+            {/* Main info row: avatar + details + CTAs */}
+            <div className="flex items-center gap-5 flex-wrap">
+              {/* Avatar — fixed size, no overlap tricks */}
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-border flex items-center justify-center overflow-hidden shrink-0">
                 {profile.photo ? (
                   <img
                     src={getImageSrc(profile.photo) ?? ""}
@@ -139,28 +133,31 @@ export default function MarketerProfilePage() {
                     onError={e => {
                       const img = e.currentTarget as HTMLImageElement;
                       img.style.display = "none";
-                      const span = img.parentElement?.querySelector("span");
-                      if (span) span.style.display = "";
+                      const fallback = img.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = "flex";
                     }}
                   />
                 ) : null}
                 <span
-                  className="text-xl font-bold text-primary"
-                  style={profile.photo ? { display: "none" } : {}}
+                  className="text-2xl font-bold text-primary"
+                  style={profile.photo ? { display: "none" } : { display: "flex" }}
                 >
                   {profile.fullName.charAt(0)}
                 </span>
               </div>
-              {/* Spacer to keep avatar aligned */}
-              <div className="flex-1" />
-            </div>
 
-            {/* Name / office / city / CTAs row */}
-            <div className="flex items-start justify-between gap-4 mt-3 flex-wrap">
-              <div className="min-w-0">
-                <h1 className="text-xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+              {/* Name, office, city, specialties */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+                  {profile.verified && (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      <BadgeCheck className="w-3.5 h-3.5" />موثّق
+                    </span>
+                  )}
+                </div>
                 {profile.officeName && (
-                  <p className="text-sm text-muted-foreground font-medium mt-0.5">{profile.officeName}</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">{profile.officeName}</p>
                 )}
                 {profile.city && (
                   <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
@@ -175,6 +172,8 @@ export default function MarketerProfilePage() {
                   </div>
                 )}
               </div>
+
+              {/* CTA buttons */}
               <div className="flex gap-2 flex-wrap shrink-0">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
@@ -196,29 +195,29 @@ export default function MarketerProfilePage() {
             {/* Stats row */}
             <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border/40">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-primary" />
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-foreground leading-none">{profile.activeListingsCount}</p>
+                  <p className="text-base font-bold text-foreground leading-none">{profile.activeListingsCount}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">إعلان نشط</p>
                 </div>
               </div>
               {profile.yearsExperience && (
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-accent" />
+                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-accent" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-foreground leading-none">{profile.yearsExperience}</p>
+                    <p className="text-base font-bold text-foreground leading-none">{profile.yearsExperience}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">سنة خبرة</p>
                   </div>
                 </div>
               )}
               {profile.licenseNumber && (
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                    <Award className="w-5 h-5 text-green-600" />
+                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                    <Award className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none font-mono">{profile.licenseNumber}</p>

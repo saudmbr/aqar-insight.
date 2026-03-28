@@ -115,51 +115,30 @@ export default function ServiceProviderProfile() {
           </Link>
         </div>
 
-        {/* Profile hero card */}
-        <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
-          {/* Slim banner — image thumbnail strip if available, otherwise gradient */}
-          <div className="h-16 relative overflow-hidden">
-            {images.length > 0 ? (
-              <>
-                <img
-                  src={images[0]}
-                  alt={provider.businessName}
-                  className="w-full h-full object-cover"
-                  onError={e => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
-              </>
-            ) : (
-              <div
-                className="w-full h-full"
-                style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 55%, #0F7BA0 100%)" }}
-              >
-                <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.04 }} />
-              </div>
-            )}
-            {provider.verified && (
-              <span className="absolute top-3 left-4 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-white border border-white/30 z-10">
-                <BadgeCheck className="w-3.5 h-3.5" />مزوّد موثّق
-              </span>
-            )}
-          </div>
+        {/* Profile hero card — clean side-by-side layout, no banner */}
+        <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
+          {/* Teal accent strip at top */}
+          <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
 
-          <div className="px-6 pb-6">
-            {/* Avatar row — slight overlap of slim banner */}
-            <div className="flex items-end gap-4 -mt-7">
-              <div className="w-14 h-14 rounded-xl border-2 border-card bg-primary/10 flex items-center justify-center shadow-md shrink-0">
-                <Wrench className="w-6 h-6 text-primary" />
+          <div className="p-6">
+            {/* Main info row: icon + details + CTAs */}
+            <div className="flex items-center gap-5 flex-wrap">
+              {/* Business icon */}
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-border flex items-center justify-center shrink-0">
+                <Wrench className="w-9 h-9 text-primary" />
               </div>
-              <div className="flex-1" />
-            </div>
 
-            {/* Business name / category / city + CTA */}
-            <div className="flex items-start justify-between gap-4 mt-3 flex-wrap">
-              <div className="min-w-0">
-                <h1 className="text-xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
-                <div className="flex items-center flex-wrap gap-2 mt-1">
+              {/* Business name, category, city */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
+                  {provider.verified && (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      <BadgeCheck className="w-3.5 h-3.5" />موثّق
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center flex-wrap gap-2 mt-1.5">
                   <Badge variant="outline" className="rounded-lg text-xs px-2.5 py-1 border-primary/20 text-primary bg-primary/5 font-semibold">
                     {provider.category}
                   </Badge>
@@ -170,6 +149,8 @@ export default function ServiceProviderProfile() {
                   )}
                 </div>
               </div>
+
+              {/* CTA buttons */}
               <div className="flex gap-2 flex-wrap shrink-0">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
@@ -192,30 +173,30 @@ export default function ServiceProviderProfile() {
             <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border/40">
               {(provider.ratingAvg ?? 0) > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                  <div className="w-9 h-9 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-foreground leading-none">{(provider.ratingAvg ?? 0).toFixed(1)}</p>
+                    <p className="text-base font-bold text-foreground leading-none">{(provider.ratingAvg ?? 0).toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">({provider.ratingCount} تقييم)</p>
                   </div>
                 </div>
               )}
               {provider.startingPrice && (
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary" />
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-foreground leading-none">{provider.startingPrice.toLocaleString("en-US")}</p>
+                    <p className="text-base font-bold text-foreground leading-none">{provider.startingPrice.toLocaleString("en-US")}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">ر.س تبدأ من</p>
                   </div>
                 </div>
               )}
               {provider.workingHours && (
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-green-600" />
+                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{provider.workingHours}</p>
