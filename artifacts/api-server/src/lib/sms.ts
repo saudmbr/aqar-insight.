@@ -22,15 +22,18 @@
  */
 
 const SMS_PROVIDER = process.env.SMS_PROVIDER ?? "";
-const IS_DEV_MODE = process.env.NODE_ENV !== "production" || !SMS_PROVIDER;
+
+export function isSmsProviderConfigured(): boolean {
+  return !!SMS_PROVIDER;
+}
 
 export async function sendSmsOtp(phoneNumber: string, otpCode: string): Promise<void> {
   const message = `رمز التحقق الخاص بك في عقار إنسايت هو: ${otpCode}\nصالح لمدة 10 دقائق. لا تشاركه مع أحد.`;
 
-  if (IS_DEV_MODE) {
+  if (!SMS_PROVIDER) {
     console.log("─────────────────────────────────────────");
-    console.log(`[SMS DEV MODE] إلى: ${phoneNumber}`);
-    console.log(`[SMS DEV MODE] رمز OTP: ${otpCode}`);
+    console.log(`[SMS TEST MODE] إلى: ${phoneNumber}`);
+    console.log(`[SMS TEST MODE] رمز OTP: ${otpCode}`);
     console.log("─────────────────────────────────────────");
     return;
   }

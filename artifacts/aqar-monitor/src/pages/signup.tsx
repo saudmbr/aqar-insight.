@@ -62,6 +62,7 @@ export default function Signup() {
   const [success, setSuccess]             = useState<string | null>(null);
   const [loading, setLoading]             = useState(false);
   const [sendingOtp, setSendingOtp]       = useState(false);
+  const [testOtp, setTestOtp]             = useState<string | null>(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -112,17 +113,20 @@ export default function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: phone.trim() }),
       });
-      const data = await res.json() as { success?: boolean; message?: string; phone?: string };
+      const data = await res.json() as { success?: boolean; message?: string; phone?: string; testMode?: boolean; testOtp?: string };
       if (!res.ok) {
         setError(data.message ?? "حدث خطأ أثناء إرسال الرمز");
         return;
       }
       setNormalizedPhone(data.phone ?? phone.trim());
       setOtpInputs(["", "", "", "", "", ""]);
+      setTestOtp(data.testMode && data.testOtp ? data.testOtp : null);
       setStep("otp");
       setCooldown(RESEND_COOLDOWN);
-      setSuccess("تم إرسال رمز التحقق إلى رقم الجوال");
-      setTimeout(() => setSuccess(null), 4000);
+      if (!data.testMode) {
+        setSuccess("تم إرسال رمز التحقق إلى رقم الجوال");
+        setTimeout(() => setSuccess(null), 4000);
+      }
       setTimeout(() => otpRefs[0].current?.focus(), 100);
     } catch {
       setError("حدث خطأ في الاتصال، يرجى المحاولة مجدداً");
@@ -142,12 +146,15 @@ export default function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: phone.trim() }),
       });
-      const data = await res.json() as { success?: boolean; message?: string };
+      const data = await res.json() as { success?: boolean; message?: string; testMode?: boolean; testOtp?: string };
       if (!res.ok) { setError(data.message ?? "خطأ في إرسال الرمز"); return; }
       setOtpInputs(["", "", "", "", "", ""]);
+      setTestOtp(data.testMode && data.testOtp ? data.testOtp : null);
       setCooldown(RESEND_COOLDOWN);
-      setSuccess("تم إعادة إرسال رمز التحقق");
-      setTimeout(() => setSuccess(null), 4000);
+      if (!data.testMode) {
+        setSuccess("تم إعادة إرسال رمز التحقق");
+        setTimeout(() => setSuccess(null), 4000);
+      }
       setTimeout(() => otpRefs[0].current?.focus(), 100);
     } catch {
       setError("حدث خطأ في الاتصال");
@@ -477,6 +484,31 @@ export default function Signup() {
                 <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{success}</span>
+                </div>
+              )}
+
+              {/* Test Mode OTP Banner */}
+              {testOtp && (
+                <div
+                  className="rounded-xl border-2 px-4 py-4 text-center space-y-1"
+                  style={{
+                    borderColor: "#f59e0b",
+                    background: "rgba(245,158,11,0.07)",
+                  }}
+                >
+                  <p className="text-xs font-semibold text-amber-700">وضع الاختبار — لا يوجد مزوّد SMS مُفعَّل</p>
+                  <p className="text-xs text-amber-600 mb-2">رمز التحقق الخاص بك:</p>
+                  <div
+                    className="text-3xl font-extrabold tracking-[0.35em] text-amber-700 font-mono select-all cursor-pointer"
+                    dir="ltr"
+                    title="انقر للنسخ"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(testOtp);
+                    }}
+                  >
+                    {testOtp}
+                  </div>
+                  <p className="text-[11px] text-amber-500 mt-1">انقر على الرمز لنسخه</p>
                 </div>
               )}
 

@@ -11,7 +11,7 @@ import {
   otpVerificationsTable,
 } from "@workspace/db";
 import { sendPasswordResetEmail } from "../lib/email.js";
-import { sendSmsOtp } from "../lib/sms.js";
+import { sendSmsOtp, isSmsProviderConfigured } from "../lib/sms.js";
 
 const authRouter = Router();
 
@@ -196,10 +196,16 @@ authRouter.post("/otp/send", async (req: Request, res: Response) => {
 
     await sendSmsOtp(normalized, otpCode);
 
+    const testMode = !isSmsProviderConfigured();
+
     res.json({
       success: true,
-      message: "تم إرسال رمز التحقق إلى رقم الجوال",
+      message: testMode
+        ? "وضع الاختبار: لم يُهيَّأ مزوّد SMS — الرمز معروض أدناه"
+        : "تم إرسال رمز التحقق إلى رقم الجوال",
       phone: normalized,
+      testMode,
+      ...(testMode ? { testOtp: otpCode } : {}),
     });
   } catch (err) {
     console.error("[otp/send]", err);
