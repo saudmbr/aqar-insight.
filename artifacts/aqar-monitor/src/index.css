@@ -65,7 +65,7 @@
   --secondary: #EDF1F7;
   --secondary-foreground: #1A2744;
 
-  --accent: #C9A84C;
+  --accent: #DB2777;
   --accent-foreground: #FFFFFF;
 
   --sidebar: #0F1C3F;
@@ -103,7 +103,7 @@
   --primary-foreground: #FFFFFF;
   --secondary: #1E293B;
   --secondary-foreground: #F8F7F4;
-  --accent: #C9A84C;
+  --accent: #DB2777;
   --accent-foreground: #FFFFFF;
   --sidebar: #050B14;
   --sidebar-foreground: #C5D0E6;
@@ -226,7 +226,7 @@
 
   /* Premium gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #0F7BA0 0%, #C9A84C 100%);
+    background: linear-gradient(135deg, #0F7BA0 0%, #DB2777 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

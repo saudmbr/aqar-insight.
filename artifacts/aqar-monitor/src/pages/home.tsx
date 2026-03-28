@@ -26,7 +26,7 @@ const PropertyMap = lazy(() => import("@/components/property-map"));
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
-const COLORS = ["#0F7BA0", "#0F1C3F", "#C9A84C", "#64748B", "#34D399", "#F97316", "#8B5CF6"];
+const COLORS = ["#0F7BA0", "#0F1C3F", "#DB2777", "#64748B", "#34D399", "#F97316", "#8B5CF6"];
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -389,7 +389,7 @@ export default function Home() {
 
             {/* Floating mini analytics card — top-left corner accent */}
             <div className="absolute top-6 left-6 hidden xl:flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-2xl px-4 py-2.5 backdrop-blur-sm pointer-events-none">
-              <TrendingUp className="w-4 h-4 text-[#C9A84C]" />
+              <TrendingUp className="w-4 h-4 text-[#DB2777]" />
               <div>
                 <p className="text-[10px] text-white/60 leading-none mb-0.5">متوسط أسعار الرياض</p>
                 <p className="text-xs font-extrabold text-white leading-none">
@@ -406,7 +406,7 @@ export default function Home() {
             <div className="relative px-8 py-12 md:px-14 md:py-16">
               {/* Eyebrow badge */}
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6">
-                <BarChart3 className="w-3.5 h-3.5 text-[#C9A84C]" />
+                <BarChart3 className="w-3.5 h-3.5 text-[#DB2777]" />
                 عقار إنسايت — بيانات لا أوهام
               </div>
 
@@ -414,7 +414,7 @@ export default function Home() {
               <h1 className="text-[2.4rem] md:text-[3.2rem] font-extrabold leading-[1.08] tracking-tight mb-4 text-white max-w-2xl">
                 خذ القرار الصح
                 <br />
-                <span className="text-[#C9A84C]">في عقارك</span>
+                <span className="text-[#DB2777]">في عقارك</span>
               </h1>
 
               {/* Subtitle */}
@@ -473,10 +473,10 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link href="/listings/new">
                   <button
-                    className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white border border-[#C9A84C]/60 bg-[#C9A84C]/15 hover:bg-[#C9A84C]/25 transition-all"
+                    className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white border border-[#DB2777]/60 bg-[#DB2777]/15 hover:bg-[#DB2777]/25 transition-all"
                     style={{ boxShadow: "0 2px 12px rgba(201,168,76,0.2)" }}
                   >
-                    <PlusCircle className="w-4 h-4 text-[#C9A84C]" />
+                    <PlusCircle className="w-4 h-4 text-[#DB2777]" />
                     أضف عقارك الآن
                   </button>
                 </Link>
@@ -821,7 +821,7 @@ export default function Home() {
                   <KpiCard highlight icon={<Building2 className="w-5 h-5" />} title="إجمالي الإعلانات النشطة" color="#0F7BA0"
                     value={loadingInsights ? <Skeleton className="h-8 w-16" /> : formatNumber(kpis?.totalListings)}
                     sub="إعلان مدرج حالياً في المنصة" />
-                  <KpiCard icon={<Banknote className="w-5 h-5" />} title="متوسط سعر العقار" color="#C9A84C"
+                  <KpiCard icon={<Banknote className="w-5 h-5" />} title="متوسط سعر العقار" color="#DB2777"
                     value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPrice)}
                     sub={mkt_new30 > 0 ? `↑ ${mkt_new30} إعلان جديد هذا الشهر` : "متوسط إجمالي للسوق"} />
                   <KpiCard icon={<TrendingUp className="w-5 h-5" />} title="الوسيط السعري" color="#0F1C3F"
@@ -836,7 +836,7 @@ export default function Home() {
               {/* ── B: ذكاء الأسعار ─────────────────────────────────── */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-5 rounded-full" style={{ background: "#C9A84C" }} />
+                  <div className="w-1 h-5 rounded-full" style={{ background: "#DB2777" }} />
                   <span className="text-sm font-extrabold text-foreground">ب — ذكاء الأسعار</span>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -855,14 +855,14 @@ export default function Home() {
 
                   {/* Price Distribution */}
                   <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
-                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #C9A84C, #C9A84C44)" }} />
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #DB2777, #DB277744)" }} />
                     <p className="text-[12px] text-muted-foreground mb-2">نطاق الأسعار (ر.س)</p>
                     {(kpis?.p25Price ?? 0) > 0 ? (
                       <>
                         <div className="text-[11px] text-muted-foreground">الشريحة المنخفضة</div>
                         <div className="text-base font-bold text-foreground mb-1.5">{loadingInsights ? <Skeleton className="h-5 w-24" /> : formatCurrency(kpis?.p25Price)}</div>
                         <div className="text-[11px] text-muted-foreground">الشريحة العالية</div>
-                        <div className="text-base font-bold" style={{ color: "#C9A84C" }}>{loadingInsights ? <Skeleton className="h-5 w-24" /> : formatCurrency(kpis?.p75Price)}</div>
+                        <div className="text-base font-bold" style={{ color: "#DB2777" }}>{loadingInsights ? <Skeleton className="h-5 w-24" /> : formatCurrency(kpis?.p75Price)}</div>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground mt-3">سيظهر التوزيع مع تراكم الإعلانات</p>
@@ -1066,7 +1066,7 @@ export default function Home() {
                           tickFormatter={v => `${(v / 1000).toFixed(0)}k`} dx={8} />
                         <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}
                           formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "عدد الإعلانات" : "متوسط السعر"]} />
-                        <Line yAxisId="l" type="monotone" dataKey="count" stroke="#C9A84C" strokeWidth={2.5} dot={{ r: 4, fill: "#C9A84C", strokeWidth: 0 }} name="count" />
+                        <Line yAxisId="l" type="monotone" dataKey="count" stroke="#DB2777" strokeWidth={2.5} dot={{ r: 4, fill: "#DB2777", strokeWidth: 0 }} name="count" />
                         <Line yAxisId="r" type="monotone" dataKey="avgPrice" stroke="#0F7BA0" strokeWidth={2.5} dot={{ r: 4, fill: "#0F7BA0", strokeWidth: 0 }} name="avgPrice" />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1074,7 +1074,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center justify-center gap-6 mt-2">
                   <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                    <span className="w-5 h-0.5 bg-[#C9A84C] rounded-full inline-block" />
+                    <span className="w-5 h-0.5 bg-[#DB2777] rounded-full inline-block" />
                     عدد الإعلانات
                   </div>
                   <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
@@ -1196,7 +1196,7 @@ export default function Home() {
                         <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid var(--border)" }}
                           formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "الإعلانات" : "متوسط السعر"]} />
                         <Bar yAxisId="l" dataKey="count" fill="#0F7BA0" radius={[5, 5, 0, 0]} name="count" />
-                        <Bar yAxisId="r" dataKey="avgPrice" fill="#C9A84C" radius={[5, 5, 0, 0]} name="avgPrice" />
+                        <Bar yAxisId="r" dataKey="avgPrice" fill="#DB2777" radius={[5, 5, 0, 0]} name="avgPrice" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

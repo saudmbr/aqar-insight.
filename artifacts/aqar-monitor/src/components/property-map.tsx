@@ -37,7 +37,7 @@ const LISTING_TYPE_LABELS: Record<string, string> = {
 };
 
 const LISTING_TYPE_COLORS: Record<string, string> = {
-  sale: "#0F7BA0", rent: "#C9A84C",
+  sale: "#0F7BA0", rent: "#DB2777",
   daily_rent: "#f97316", monthly_rent: "#0d9488",
   investment: "#7c3aed", auction: "#e11d48",
 };

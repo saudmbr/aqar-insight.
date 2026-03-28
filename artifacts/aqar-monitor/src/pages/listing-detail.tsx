@@ -300,7 +300,7 @@ export default function ListingDetail() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 {listing.featured && (
                   <div className="absolute top-4 right-4">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-[#C9A84C] text-white shadow-md">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-[#DB2777] text-white shadow-md">
                       <Star className="w-3.5 h-3.5 fill-white" />إعلان مميز
                     </span>
                   </div>
@@ -682,7 +682,7 @@ export default function ListingDetail() {
               <div className="p-7">
                 <div className="flex items-center gap-2.5 mb-6">
                   <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
-                    <TrendingUp className="w-4.5 h-4.5 text-[#C9A84C]" />
+                    <TrendingUp className="w-4.5 h-4.5 text-[#DB2777]" />
                   </div>
                   <div>
                     <h2 className="text-lg font-extrabold text-white leading-none">مؤشرات المنطقة</h2>
@@ -710,7 +710,7 @@ export default function ListingDetail() {
                       label: "الطلب الحالي",
                       value: "مرتفع",
                       note: "إقبال على هذا النوع",
-                      color: "#C9A84C",
+                      color: "#DB2777",
                     },
                   ].map(item => (
                     <div key={item.label} className="bg-white/6 border border-white/10 rounded-2xl p-4">
@@ -935,7 +935,7 @@ export default function ListingDetail() {
               <Card className="border-border rounded-3xl overflow-hidden shadow-sm">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Star className="w-4 h-4 text-[#C9A84C]" />
+                    <Star className="w-4 h-4 text-[#DB2777]" />
                     <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-wide">المسوّق العقاري المعتمد</p>
                   </div>
                   <div className="flex items-center gap-3 mb-4">

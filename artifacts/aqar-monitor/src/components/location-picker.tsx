@@ -22,7 +22,7 @@ const SAUDI_CITIES: Record<string, [number, number]> = {
 };
 
 function makePinIcon(confirmed: boolean): L.DivIcon {
-  const color = confirmed ? "#0F7BA0" : "#C9A84C";
+  const color = confirmed ? "#0F7BA0" : "#DB2777";
   return L.divIcon({
     className: "",
     iconAnchor: [16, 40],
