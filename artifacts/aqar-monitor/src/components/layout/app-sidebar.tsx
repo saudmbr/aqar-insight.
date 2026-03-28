@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   Star,
+  Info,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { LogoBrand } from "@/components/logo-brand";
@@ -47,6 +48,7 @@ const marketplaceNavItems: NavItemDef[] = [
   { titleKey: "services", url: "/services", icon: Wrench },
   { titleKey: "requests", url: "/requests", icon: FileText },
   { titleKey: "futureProjects", url: "/future", icon: Sparkles },
+  { titleKey: "about", url: "/about", icon: Info },
 ];
 
 const analyticsNavItems: NavItemDef[] = [

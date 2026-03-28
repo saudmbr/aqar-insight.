@@ -40,6 +40,7 @@ import AdminEdit from "@/pages/admin-edit";
 import AdminUsers from "@/pages/admin-users";
 import AdminReports from "@/pages/admin-reports";
 
+import About from "@/pages/about";
 import LegalTerms from "@/pages/legal-terms";
 import LegalPrivacy from "@/pages/legal-privacy";
 import LegalUsage from "@/pages/legal-usage";
@@ -135,6 +136,9 @@ function Router() {
       <Route path="/admin/reports">
         {() => <AdminRoute component={AdminReports} />}
       </Route>
+
+      {/* About */}
+      <Route path="/about" component={About} />
 
       {/* Legal pages */}
       <Route path="/terms" component={LegalTerms} />
