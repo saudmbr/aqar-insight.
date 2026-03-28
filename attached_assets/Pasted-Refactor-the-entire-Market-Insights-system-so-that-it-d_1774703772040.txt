@@ -1,0 +1,263 @@
+Refactor the entire "Market Insights / مؤشرات السوق العقاري" system so that it depends ONLY on internal platform data and platform-generated analysis.
+
+Main rule:
+- Remove any metric, indicator, insight, score, chart, or recommendation that depends on external data sources, third-party data, government data, or assumptions not supported by the platform database
+- Keep the entire analytics system based only on actual data موجودة داخل المنصة نفسها
+
+Goal:
+Make all market indicators logical, consistent, data-driven, and fully explainable based only on platform data.
+
+==================================================
+1) REMOVE ALL EXTERNAL-DATA-DEPENDENT INDICATORS
+==================================================
+
+Delete or disable any indicator that requires external data, such as:
+- population-based insights
+- macroeconomic indicators
+- government transaction feeds
+- mortgage market data
+- infrastructure/public projects data
+- any score that cannot be explained using only platform listings, platform prices, platform dates, and platform activity
+
+Do not show any insight unless it can be calculated directly from platform data.
+
+==================================================
+2) KEEP ONLY PLATFORM-DATA-BASED INDICATORS
+==================================================
+
+Use only these internal fields and derived values:
+- listing price
+- area_sqm
+- city
+- district / neighborhood
+- property type
+- listing purpose (sale / rent / etc.)
+- listing created date
+- listing updated date
+- listing status
+- number of listings
+- user activity if already available inside the platform
+- any other actual internal platform field already stored in the database
+
+==================================================
+3) REBUILD THE ANALYTICS INTO 4 SECTIONS
+==================================================
+
+Create or update these 4 exact sections:
+
+A) تحليل السوق
+B) مقارنة الأحياء
+C) مؤشرات السوق
+D) التحليل الكامل
+
+Each section must contain only indicators that can be calculated from platform data.
+
+==================================================
+4) SECTION A — تحليل السوق
+==================================================
+
+Keep and implement these indicators only:
+
+- اتجاه السوق
+  Based on change in average prices over time
+
+- معدل تغير الأسعار
+  Based on platform historical listing prices
+
+- متوسط سعر العقارات
+  Based on all relevant listings
+
+- متوسط سعر المتر
+  Based on price / area
+
+- تذبذب الأسعار
+  Based on dispersion between high and low prices
+
+- استقرار السوق
+  Based on consistency or volatility in listing prices over time
+
+For each metric:
+- show value
+- show change %
+- show a clear label
+- if time-based, support historical performance periods:
+  - يوم
+  - أسبوع
+  - شهر
+  - ربع سنة
+  - سنة
+
+==================================================
+5) SECTION B — مقارنة الأحياء
+==================================================
+
+Keep and implement these indicators only:
+
+- متوسط السعر لكل حي
+- متوسط سعر المتر لكل حي
+- فرق السعر بين الأحياء (%)
+- ترتيب الأحياء حسب السعر
+- ترتيب الأحياء حسب النشاط (عدد الإعلانات)
+- تباين الأسعار داخل الحي
+
+Requirements:
+- allow comparison between multiple neighborhoods
+- make comparison visual and clear
+- only compare neighborhoods with enough internal data
+- if data is too weak, show a clear Arabic message instead of misleading output
+
+==================================================
+6) SECTION C — مؤشرات السوق
+==================================================
+
+Keep and implement these indicators only:
+
+- مؤشر القيمة العادلة
+  Compare listing price or area average against platform neighborhood average only
+
+- مؤشر فرصة الاستثمار
+  Based only on internal logic such as:
+  - price below local average
+  - reasonable activity
+  - relative pricing advantage
+
+- مؤشر قوة الطلب
+  Based only on available internal platform behavior/data
+  If user activity data is not available, do not fake this metric
+
+- مؤشر العرض
+  Based on number of active listings
+
+- مؤشر المخاطرة
+  Based on:
+  - price volatility
+  - weak data density
+  - inconsistent pricing
+
+- اتجاه السوق العام
+  Based only on platform historical data
+
+Important:
+- Every indicator must be explainable
+- No black-box fake scores
+- Show logic-friendly labels such as:
+  - مرتفع
+  - متوسط
+  - منخفض
+  - مستقر
+  - متذبذب
+  - فرصة جيدة
+  - يحتاج حذر
+
+==================================================
+7) SECTION D — التحليل الكامل
+==================================================
+
+Keep and implement these indicators only:
+
+- ملخص السوق
+  Based on average price + trend + stability
+
+- أكثر الأحياء نشاطًا
+  Based on listing count
+
+- أقل وأعلى الأسعار في السوق
+- المناطق ذات الأسعار المنخفضة
+- المناطق ذات الأسعار المرتفعة
+- توزيع الأسعار
+  منخفض / متوسط / مرتفع
+
+- توصية مبنية على البيانات
+  Based only on internal platform metrics and rules
+  Examples:
+  - السوق مستقر نسبيًا
+  - الأسعار أعلى من المتوسط
+  - النشاط محدود
+  - توجد فرصة سعرية في هذا الحي
+  - البيانات الحالية غير كافية لحكم دقيق
+
+==================================================
+8) HISTORICAL PERFORMANCE / TIME FILTERS
+==================================================
+
+For all time-based charts and metrics, add historical performance controls:
+- يوم
+- أسبوع
+- شهر
+- ربع سنة
+- سنة
+
+Requirements:
+- all period filters must work consistently
+- values and charts must update correctly
+- no fake historical values
+- if not enough historical data exists, show a truthful message
+
+==================================================
+9) RIGHT-SIDE NAVIGATION / ENTRY POINT
+==================================================
+
+Add a dedicated item on the right sidebar navigation:
+
+"مؤشرات السوق العقاري"
+
+Requirements:
+- this should open a separate dedicated page/section for market indicators
+- keep it clearly separated from general browsing
+- make it easy for users to access directly
+- keep Arabic RTL layout
+- ensure it appears in a logical position in the sidebar
+
+==================================================
+10) LOGIC AND DATA QUALITY RULES
+==================================================
+
+Very important:
+- Do NOT show any misleading metric
+- Do NOT show any impossible value
+- Do NOT repeat useless KPIs
+- Do NOT generate insights without data support
+- Do NOT display charts with meaningless single-point visuals unless clearly labeled
+- Do NOT use placeholder logic as if it were real analysis
+
+Instead:
+- if data is weak, say so clearly in Arabic
+- if calculation is not possible, hide the metric or show a proper "data not sufficient" message
+- every metric must feel logical to a real user
+
+==================================================
+11) UI / UX REQUIREMENTS
+==================================================
+
+- Arabic RTL only
+- Premium, clean, calm analytics design
+- Large readable KPI values
+- Clear chart labels
+- Strong visual hierarchy
+- Use only meaningful indicators
+- Remove visual clutter
+- Add tooltips or short descriptions where needed
+- Keep the experience professional and decision-oriented
+
+==================================================
+12) FINAL VALIDATION
+==================================================
+
+Before finishing:
+- review every metric and chart
+- verify that each one depends only on platform data
+- verify labels are logical and accurate
+- verify no external-data assumptions remain
+- verify no broken states or misleading empty states remain
+
+==================================================
+13) FINAL DELIVERABLE
+==================================================
+
+After implementation, provide a complete summary of:
+- which old indicators were removed
+- which indicators now remain under each of the 4 sections
+- how each indicator is calculated from platform data
+- what historical period filters were added
+- where the new sidebar entry was added
+- what logic/data-quality fixes were made

@@ -138,6 +138,7 @@ router.get("/listings-insights", async (req, res) => {
       medianPrice: sql<number>`percentile_cont(0.5) within group (order by price)`,
       p25: sql<number>`percentile_cont(0.25) within group (order by price)`,
       p75: sql<number>`percentile_cont(0.75) within group (order by price)`,
+      priceStddev: sql<number>`stddev(price)`,
     }).from(listingsTable).where(where),
 
     db.select({
@@ -192,6 +193,7 @@ router.get("/listings-insights", async (req, res) => {
     medianPrice: Math.round(parseFloat(String(k?.medianPrice ?? "0"))),
     p25Price: Math.round(parseFloat(String(k?.p25 ?? "0"))),
     p75Price: Math.round(parseFloat(String(k?.p75 ?? "0"))),
+    priceStddev: Math.round(parseFloat(String(k?.priceStddev ?? "0"))),
     saleCount: Number(k?.saleCount ?? 0),
     rentCount: Number(k?.rentCount ?? 0),
     newLast7Days: trend7[0]?.count ?? 0,
@@ -236,30 +238,61 @@ router.get("/listings-insights", async (req, res) => {
 
 router.get("/listings-trends", async (req, res) => {
   const f = parseFilters(req.query as Record<string, string>);
+  const period = (req.query.period as string) ?? "month";
   const where = buildListingConditions(f);
 
+  const monthNames = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+  // Build the grouping expression based on period
+  const groupExpr =
+    period === "day"     ? sql<string>`to_char(created_at, 'YYYY-MM-DD')` :
+    period === "week"    ? sql<string>`to_char(date_trunc('week', created_at::timestamptz), 'YYYY-MM-DD')` :
+    period === "quarter" ? sql<string>`to_char(created_at, 'YYYY-"Q"Q')` :
+    period === "year"    ? sql<string>`to_char(created_at, 'YYYY')` :
+                           sql<string>`to_char(created_at, 'YYYY-MM')`;
+
+  const orderExpr =
+    period === "day"     ? sql`to_char(created_at, 'YYYY-MM-DD')` :
+    period === "week"    ? sql`to_char(date_trunc('week', created_at::timestamptz), 'YYYY-MM-DD')` :
+    period === "quarter" ? sql`to_char(created_at, 'YYYY-"Q"Q')` :
+    period === "year"    ? sql`to_char(created_at, 'YYYY')` :
+                           sql`to_char(created_at, 'YYYY-MM')`;
+
   const results = await db.select({
-    yearMonth: sql<string>`to_char(created_at, 'YYYY-MM')`,
+    bucket: groupExpr,
     count: count(),
     avgPrice: avg(listingsTable.price),
     avgPricePerSqm: avg(listingsTable.pricePerSqm),
   }).from(listingsTable).where(where)
-    .groupBy(sql`to_char(created_at, 'YYYY-MM')`)
-    .orderBy(sql`to_char(created_at, 'YYYY-MM')`);
+    .groupBy(groupExpr)
+    .orderBy(orderExpr);
 
-  const monthNames = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  const makeLabel = (bucket: string): string => {
+    if (period === "day") {
+      const parts = bucket.split("-");
+      return `${parts[2]}/${parts[1]}`;
+    }
+    if (period === "week") {
+      const d = new Date(bucket);
+      return `${d.getDate()}/${d.getMonth() + 1}`;
+    }
+    if (period === "quarter") {
+      const [yr, q] = bucket.split("Q");
+      return `ر${q?.trim() ?? ""} ${yr?.trim() ?? ""}`;
+    }
+    if (period === "year") return bucket;
+    // month: YYYY-MM
+    const [, mm] = bucket.split("-");
+    return monthNames[parseInt(mm ?? "1") - 1] ?? bucket;
+  };
 
-  res.json(results.map(r => {
-    const [, mm] = (r.yearMonth ?? "2024-01").split("-");
-    const monthLabel = monthNames[parseInt(mm ?? "1") - 1] ?? mm;
-    return {
-      period: r.yearMonth ?? "",
-      label: monthLabel,
-      count: r.count,
-      avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
-      avgPricePerSqm: Math.round(parseFloat(String(r.avgPricePerSqm ?? "0"))),
-    };
-  }));
+  res.json(results.map(r => ({
+    period: r.bucket ?? "",
+    label: makeLabel(r.bucket ?? ""),
+    count: r.count,
+    avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
+    avgPricePerSqm: Math.round(parseFloat(String(r.avgPricePerSqm ?? "0"))),
+  })));
 });
 
 router.get("/listings-filter-options", async (req, res) => {
