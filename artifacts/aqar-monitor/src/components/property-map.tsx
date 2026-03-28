@@ -65,10 +65,6 @@ function makePinIcon(listing: MapPin, isActive: boolean): L.DivIcon {
   const shadow = isActive
     ? `0 6px 20px rgba(0,0,0,0.4), 0 0 0 3px ${color}66`
     : "0 3px 12px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.15)";
-  // Approximate (geocoded) pins get a dashed border and muted color
-  const isApprox = listing.geocoded;
-  const borderStyle = isApprox ? `2px dashed ${color}99` : `2px solid ${color}`;
-  const bgColor = isApprox ? "#f8f9fa" : "#ffffff";
 
   return L.divIcon({
     className: "",
@@ -83,18 +79,17 @@ function makePinIcon(listing: MapPin, isActive: boolean): L.DivIcon {
         display:inline-block;
       ">
         <div style="
-          background:${bgColor};
+          background:#ffffff;
           border-radius:12px;
           padding:5px 11px 5px 9px;
           font-family:'Cairo',Arial,sans-serif;
           white-space:nowrap;
           box-shadow:${shadow};
-          border:${borderStyle};
+          border:2px solid ${color};
           display:flex;
           align-items:center;
           gap:6px;
           direction:rtl;
-          opacity:${isApprox ? 0.82 : 1};
         ">
           <span style="
             display:inline-block;
@@ -115,13 +110,13 @@ function makePinIcon(listing: MapPin, isActive: boolean): L.DivIcon {
             background:${color}18;
             border-radius:6px;
             padding:1px 5px;
-          ">${isApprox ? "تقريبي" : label}</span>
+          ">${label}</span>
         </div>
         <div style="
           width:0;height:0;
           border-left:7px solid transparent;
           border-right:7px solid transparent;
-          border-top:9px solid ${isApprox ? color + "99" : color};
+          border-top:9px solid ${color};
           margin:0 auto;
           margin-top:-1px;
         "></div>
@@ -158,8 +153,7 @@ function makePopupHtml(pin: MapPin): string {
           <span style="font-size:11px;color:#666;">${pin.propertyType}</span>
         </div>
         <div style="font-size:16px;font-weight:800;color:#0F1C3F;margin-bottom:4px;line-height:1.3;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pin.title}</div>
-        <div style="font-size:12px;color:#666;margin-bottom:${pin.geocoded ? "4px" : "8px"};">📍 ${pin.city}${pin.district ? ` · ${pin.district}` : ""}</div>
-        ${pin.geocoded ? `<div style="font-size:10px;color:#b45309;background:#fef3c7;border-radius:6px;padding:2px 8px;margin-bottom:8px;display:inline-block;">📌 موقع تقريبي — حدّد الموقع بدقة عند إضافة الإعلان</div>` : ""}
+        <div style="font-size:12px;color:#666;margin-bottom:8px;">📍 ${pin.city}${pin.district ? ` · ${pin.district}` : ""}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="font-size:17px;font-weight:900;color:${color};">ر.س ${pin.price.toLocaleString("en-US")}</div>
           ${pin.areaSqm ? `<div style="font-size:11px;color:#888;">${pin.areaSqm} م²</div>` : ""}

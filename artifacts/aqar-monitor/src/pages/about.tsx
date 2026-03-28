@@ -279,7 +279,7 @@ export default function About() {
               <div className="flex-1 px-8 py-14 md:px-14 md:py-16 text-white">
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-xs font-bold mb-6 tracking-wide">
                   <Sparkles className="w-3.5 h-3.5 text-[#94A3B8]" />
-                  عقار إنسايت — بيانات لا أوهام
+                  بيانات لا أوهام
                 </div>
                 <h1 className="text-[3rem] md:text-[3.6rem] font-extrabold leading-[1.08] tracking-tight mb-5">
                   من{" "}
