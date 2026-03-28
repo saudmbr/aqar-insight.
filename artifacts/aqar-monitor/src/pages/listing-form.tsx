@@ -273,6 +273,10 @@ export default function ListingForm() {
                   onChange={e => set("district", e.target.value)}
                   className="h-12 rounded-xl"
                 />
+                <p className="text-xs text-primary/80 mt-1.5 flex items-center gap-1">
+                  <span>📍</span>
+                  <span>تعبئة الحي ضرورية لظهور إعلانك في تحليلات الأحياء ومقارنة الأسعار</span>
+                </p>
               </FieldGroup>
               <FieldGroup label="الحي الفرعي">
                 <Input
