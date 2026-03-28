@@ -297,6 +297,30 @@ export default function Home() {
   const kpis = insights?.kpis;
   const hasData = (kpis?.totalListings ?? 0) > 0;
 
+  // ── Derived market analytics ──────────────────────────────────────────────
+  const mkt_avgP   = kpis?.avgPrice ?? 0;
+  const mkt_medP   = kpis?.medianPrice ?? 0;
+  const mkt_new7   = kpis?.newLast7Days ?? 0;
+  const mkt_new30  = kpis?.newLast30Days ?? 0;
+  const mkt_tot    = kpis?.totalListings ?? 0;
+  const mkt_saleC  = kpis?.saleCount ?? 0;
+
+  const mkt_fairRatio  = mkt_avgP > 0 ? mkt_medP / mkt_avgP : 1;
+  const mkt_fairLabel  = mkt_fairRatio > 1.12 ? "مرتفع" : mkt_fairRatio < 0.88 ? "منخفض" : "عادل";
+  const mkt_fairColor  = mkt_fairRatio > 1.12 ? "#EF4444" : mkt_fairRatio < 0.88 ? "#22C55E" : "#0F7BA0";
+  const mkt_fairBg     = mkt_fairRatio > 1.12 ? "rgba(239,68,68,0.07)" : mkt_fairRatio < 0.88 ? "rgba(34,197,94,0.07)" : "rgba(15,123,160,0.07)";
+
+  const weeklyRate     = mkt_new30 > 0 ? mkt_new30 / 4 : 0;
+  const mkt_demandRate = weeklyRate > 0 ? mkt_new7 / weeklyRate : 0;
+  const mkt_demandLabel = mkt_demandRate > 1.2 ? "مرتفع 🔥" : mkt_demandRate < 0.8 ? "منخفض" : "متوسط";
+  const mkt_demandColor = mkt_demandRate > 1.2 ? "#22C55E" : mkt_demandRate < 0.8 ? "#EF4444" : "#0F7BA0";
+
+  const mkt_saleRatio  = mkt_tot > 0 ? Math.round((mkt_saleC / mkt_tot) * 100) : 0;
+  const mkt_rentRatio  = 100 - mkt_saleRatio;
+
+  const mkt_supplyTrend = mkt_new7 > weeklyRate * 1.1 ? "متزايد ↑" : mkt_new7 < weeklyRate * 0.9 ? "متناقص ↓" : "مستقر →";
+  const mkt_supplyColor = mkt_new7 > weeklyRate * 1.1 ? "#22C55E" : mkt_new7 < weeklyRate * 0.9 ? "#EF4444" : "#0F7BA0";
+
   const filteredDistricts = applied.city
     ? (filterOpts?.districts ?? []).filter(d => d.city === applied.city)
     : (filterOpts?.districts ?? []);
@@ -772,7 +796,7 @@ export default function Home() {
             )}
           </AnimatePresence>
 
-          {/* KPIs */}
+          {/* ── Market Insights Dashboard ─────────────────────────────── */}
           {!hasData && !loadingInsights ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 bg-card rounded-2xl border border-dashed border-border/60">
               <BarChart3 className="w-12 h-12 opacity-20" />
@@ -785,72 +809,183 @@ export default function Home() {
               </Link>
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <KpiCard highlight icon={<Building2 className="w-5 h-5" />} title="إجمالي الإعلانات النشطة" color="#0F7BA0"
-                  value={loadingInsights ? <Skeleton className="h-8 w-16" /> : formatNumber(kpis?.totalListings)} />
-                <KpiCard icon={<Banknote className="w-5 h-5" />} title="متوسط سعر المتر المربع" color="#C9A84C"
-                  value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPricePerSqm)} />
-                <KpiCard icon={<TrendingUp className="w-5 h-5" />} title="الوسيط السعري للعقارات" color="#0F1C3F"
-                  value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.medianPrice)} />
-                <KpiCard icon={<Activity className="w-5 h-5" />} title="متوسط السعر الكلي" color="#34D399"
-                  value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPrice)} />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <KpiCard icon={<ArrowUpRight className="w-4 h-4" />} title="أعلى سعر مدرج" color="#F97316"
-                  value={loadingInsights ? <Skeleton className="h-6 w-20" /> : formatCurrency(kpis?.maxPrice)} />
-                <KpiCard icon={<ArrowDownRight className="w-4 h-4" />} title="أدنى سعر مدرج" color="#8B5CF6"
-                  value={loadingInsights ? <Skeleton className="h-6 w-20" /> : formatCurrency(kpis?.minPrice)} />
-                <KpiCard icon={<Building2 className="w-4 h-4" />} title="إعلانات للبيع" color="#0F7BA0"
-                  value={loadingInsights ? <Skeleton className="h-6 w-14" /> : formatNumber(kpis?.saleCount)}
-                  sub={kpis?.totalListings ? `${Math.round(((kpis.saleCount ?? 0) / kpis.totalListings) * 100)}% من الإجمالي` : undefined} />
-                <KpiCard icon={<HomeIcon className="w-4 h-4" />} title="إعلانات للإيجار" color="#64748B"
-                  value={loadingInsights ? <Skeleton className="h-6 w-14" /> : formatNumber(kpis?.rentCount)}
-                  sub={kpis?.totalListings ? `${Math.round(((kpis.rentCount ?? 0) / kpis.totalListings) * 100)}% من الإجمالي` : undefined} />
-                <KpiCard icon={<TrendingUp className="w-4 h-4" />} title="جديد في 7 أيام" color="#34D399"
-                  value={loadingInsights ? <Skeleton className="h-6 w-10" /> : formatNumber(kpis?.newLast7Days)} />
-                <KpiCard icon={<Activity className="w-4 h-4" />} title="جديد في 30 يوماً" color="#0F7BA0"
-                  value={loadingInsights ? <Skeleton className="h-6 w-10" /> : formatNumber(kpis?.newLast30Days)} />
-              </div>
-              {(kpis?.p25Price ?? 0) > 0 && (
-                <div className="mt-3 flex items-center gap-2 text-[12px] text-muted-foreground bg-muted/40 rounded-xl px-4 py-2.5 w-fit">
-                  <BarChart3 className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>توزيع الأسعار: الربع الأول <strong className="text-foreground">{formatCurrency(kpis?.p25Price)}</strong> — الربع الثالث <strong className="text-foreground">{formatCurrency(kpis?.p75Price)}</strong></span>
+            <div className="space-y-6">
+
+              {/* ── A: نظرة عامة على السوق ───────────────────────────── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-5 bg-primary rounded-full" />
+                  <span className="text-sm font-extrabold text-foreground">أ — نظرة عامة على السوق</span>
                 </div>
-              )}
-            </>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <KpiCard highlight icon={<Building2 className="w-5 h-5" />} title="إجمالي الإعلانات النشطة" color="#0F7BA0"
+                    value={loadingInsights ? <Skeleton className="h-8 w-16" /> : formatNumber(kpis?.totalListings)}
+                    sub="إعلان مدرج حالياً في المنصة" />
+                  <KpiCard icon={<Banknote className="w-5 h-5" />} title="متوسط سعر العقار" color="#C9A84C"
+                    value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPrice)}
+                    sub={mkt_new30 > 0 ? `↑ ${mkt_new30} إعلان جديد هذا الشهر` : "متوسط إجمالي للسوق"} />
+                  <KpiCard icon={<TrendingUp className="w-5 h-5" />} title="الوسيط السعري" color="#0F1C3F"
+                    value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.medianPrice)}
+                    sub="50% من العقارات أقل من هذا السعر" />
+                  <KpiCard icon={<Activity className="w-5 h-5" />} title="متوسط سعر المتر" color="#34D399"
+                    value={loadingInsights ? <Skeleton className="h-8 w-24" /> : formatCurrency(kpis?.avgPricePerSqm)}
+                    sub="ريال سعودي / م²" />
+                </div>
+              </div>
+
+              {/* ── B: ذكاء الأسعار ─────────────────────────────────── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-5 rounded-full" style={{ background: "#C9A84C" }} />
+                  <span className="text-sm font-extrabold text-foreground">ب — ذكاء الأسعار</span>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Fair Value */}
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300" style={{ borderColor: mkt_fairColor + "30" }}>
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_fairColor}, ${mkt_fairColor}44)` }} />
+                    <p className="text-[12px] text-muted-foreground mb-2">مستوى السعر في السوق</p>
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <div className="text-2xl font-extrabold" style={{ color: mkt_fairColor }}>{loadingInsights ? <Skeleton className="h-7 w-14" /> : mkt_fairLabel}</div>
+                    </div>
+                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: loadingInsights ? "0%" : `${Math.min(100, Math.round(mkt_fairRatio * 50))}%`, background: mkt_fairColor }} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">مقارنةً بمتوسط السوق العام</p>
+                  </div>
+
+                  {/* Price Distribution */}
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #C9A84C, #C9A84C44)" }} />
+                    <p className="text-[12px] text-muted-foreground mb-2">نطاق الأسعار (ر.س)</p>
+                    {(kpis?.p25Price ?? 0) > 0 ? (
+                      <>
+                        <div className="text-[11px] text-muted-foreground">الشريحة المنخفضة</div>
+                        <div className="text-base font-bold text-foreground mb-1.5">{loadingInsights ? <Skeleton className="h-5 w-24" /> : formatCurrency(kpis?.p25Price)}</div>
+                        <div className="text-[11px] text-muted-foreground">الشريحة العالية</div>
+                        <div className="text-base font-bold" style={{ color: "#C9A84C" }}>{loadingInsights ? <Skeleton className="h-5 w-24" /> : formatCurrency(kpis?.p75Price)}</div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-3">سيظهر التوزيع مع تراكم الإعلانات</p>
+                    )}
+                  </div>
+
+                  {/* Max / Min */}
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #F97316, #F9731644)" }} />
+                    <p className="text-[12px] text-muted-foreground mb-3">نطاق إعلانات السوق</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <ArrowUpRight className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      <div className="text-sm font-bold text-foreground">{loadingInsights ? <Skeleton className="h-4 w-20" /> : formatCurrency(kpis?.maxPrice)}</div>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mb-3">أعلى سعر مدرج</div>
+                    <div className="flex items-center gap-1.5">
+                      <ArrowDownRight className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                      <div className="text-sm font-bold text-foreground">{loadingInsights ? <Skeleton className="h-4 w-20" /> : formatCurrency(kpis?.minPrice)}</div>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1">أدنى سعر مدرج</div>
+                  </div>
+
+                  {/* Sale vs Rent */}
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #0F7BA0, #0F7BA044)" }} />
+                    <p className="text-[12px] text-muted-foreground mb-2">نسبة بيع / إيجار</p>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <div className="text-2xl font-extrabold text-primary">{loadingInsights ? <Skeleton className="h-7 w-10" /> : `${mkt_saleRatio}%`}</div>
+                      <div className="text-sm text-muted-foreground">للبيع</div>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
+                      <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${mkt_saleRatio}%` }} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">{mkt_rentRatio}% إعلانات للإيجار</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── C: العرض والطلب ──────────────────────────────────── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-1 h-5 rounded-full bg-green-500" />
+                  <span className="text-sm font-extrabold text-foreground">ج — العرض والطلب</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <KpiCard icon={<TrendingUp className="w-4 h-4" />} title="جديد خلال 7 أيام" color="#22C55E"
+                    value={loadingInsights ? <Skeleton className="h-7 w-14" /> : formatNumber(mkt_new7)}
+                    sub="إعلان أضيف هذا الأسبوع" />
+                  <KpiCard icon={<Activity className="w-4 h-4" />} title="جديد خلال 30 يوماً" color="#0F7BA0"
+                    value={loadingInsights ? <Skeleton className="h-7 w-14" /> : formatNumber(mkt_new30)}
+                    sub="إعلان أضيف هذا الشهر" />
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_supplyColor}, ${mkt_supplyColor}44)` }} />
+                    <div className="text-[12px] text-muted-foreground mb-2">اتجاه العرض</div>
+                    <div className="text-xl font-extrabold mt-1" style={{ color: mkt_supplyColor }}>{loadingInsights ? <Skeleton className="h-6 w-20" /> : mkt_supplyTrend}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2">مقارنة بمعدل الشهر الماضي</div>
+                  </div>
+                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
+                    <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_demandColor}, ${mkt_demandColor}44)` }} />
+                    <div className="text-[12px] text-muted-foreground mb-2">مستوى الطلب</div>
+                    <div className="text-xl font-extrabold mt-1" style={{ color: mkt_demandColor }}>{loadingInsights ? <Skeleton className="h-6 w-20" /> : mkt_demandLabel}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2">بناءً على نشاط الإعلانات الأسبوعي</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           )}
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            SMART INSIGHTS + TYPE BREAKDOWN
+            BLOCK D: الفرص والتوصيات + توزيع أنواع العقارات
         ══════════════════════════════════════════════════════════════ */}
         {hasData && (
           <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {(insights?.smartInsights?.length ?? 0) > 0 && (
-              <Card className="lg:col-span-3 rounded-2xl border-border/60 shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Lightbulb className="w-4.5 h-4.5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">ملخص ذكي من السوق</CardTitle>
-                      <CardDescription className="text-[12px] mt-0.5">استنتاجات من بيانات الإعلانات الفعلية</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-2.5">
-                  {insights?.smartInsights.map((ins, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-xl px-3.5 py-3 bg-muted/40 hover:bg-muted/70 transition-colors">
-                      <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                      <p className="text-[13px] text-foreground leading-relaxed">{ins}</p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
 
+            {/* D: الفرص والتوصيات */}
+            <div className="lg:col-span-3">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1 h-5 rounded-full" style={{ background: "#8B5CF6" }} />
+                <span className="text-sm font-extrabold text-foreground">د — الفرص والتوصيات</span>
+                <span className="text-[11px] text-muted-foreground font-medium">مبني على بيانات الإعلانات الفعلية</span>
+              </div>
+
+              {(insights?.smartInsights?.length ?? 0) === 0 ? (
+                <div className="flex items-center justify-center py-10 rounded-2xl border border-dashed border-border/60 bg-card text-muted-foreground text-sm gap-2">
+                  <Lightbulb className="w-5 h-5 opacity-30" />
+                  ستظهر التوصيات مع تراكم بيانات السوق
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {(insights?.smartInsights ?? []).map((ins, i) => {
+                    const isPositive = /فرصة|نمو|منخفض|مناسب|طلب عالٍ|مستقر/.test(ins);
+                    const isWarning  = /مرتفع|انخفاض|تحذير|مخاطر|احتراز/.test(ins);
+                    const color  = isPositive ? "#22C55E" : isWarning ? "#EF4444" : "#0F7BA0";
+                    const bg     = isPositive ? "rgba(34,197,94,0.06)" : isWarning ? "rgba(239,68,68,0.06)" : "rgba(15,123,160,0.06)";
+                    const icon   = isPositive ? "💡" : isWarning ? "⚠️" : "📊";
+                    const badge  = isPositive ? "فرصة" : isWarning ? "تنبيه" : "بيانات";
+                    const badgeBg = isPositive ? "rgba(34,197,94,0.12)" : isWarning ? "rgba(239,68,68,0.12)" : "rgba(15,123,160,0.12)";
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 rounded-2xl px-4 py-3.5 border transition-all hover:-translate-y-0.5 duration-200 cursor-default"
+                        style={{ background: bg, borderColor: color + "20" }}
+                      >
+                        <span className="text-base shrink-0 mt-0.5">{icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] text-foreground leading-relaxed">{ins}</p>
+                        </div>
+                        <span
+                          className="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 mt-0.5"
+                          style={{ background: badgeBg, color }}
+                        >
+                          {badge}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* أنواع العقارات */}
             <Card className="lg:col-span-2 rounded-2xl border-border/60 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">أنواع العقارات</CardTitle>

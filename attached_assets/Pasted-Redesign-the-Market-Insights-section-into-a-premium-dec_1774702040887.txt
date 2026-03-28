@@ -1,0 +1,167 @@
+Redesign the "Market Insights / مؤشرات السوق العقاري" section into a premium, decision-driven analytics dashboard.
+
+Goal:
+Transform this section from basic numbers into a powerful real estate decision tool that helps users understand the market, evaluate prices, and identify opportunities.
+
+IMPORTANT:
+- Current numbers are placeholders → redesign structure, not values
+- Remove any repetitive or meaningless metrics
+- Focus only on high-impact, decision-relevant insights
+
+----------------------------------
+
+1) STRUCTURE (REBUILD THE SECTION)
+
+Divide the section into 4 clear blocks:
+
+A) Market Overview (نظرة عامة)
+B) Price Intelligence (تحليل الأسعار)
+C) Supply & Demand (العرض والطلب)
+D) Opportunities & Insights (الفرص والتوصيات)
+
+----------------------------------
+
+2) BLOCK A – MARKET OVERVIEW
+
+Keep only 3–4 strong KPIs:
+
+- Average Property Price
+- Median Price
+- Average Price per sqm
+- Total Active Listings
+
+Each KPI must include:
+- value
+- change vs last 30 days (↑ ↓ %)
+- small insight text
+
+Example:
+"↑ 12% خلال آخر 30 يوم – زيادة في الطلب"
+
+----------------------------------
+
+3) BLOCK B – PRICE INTELLIGENCE (MOST IMPORTANT)
+
+Add decision-based metrics:
+
+- Fair Value Indicator:
+  - Cheap / Fair / Expensive
+  - based on market average
+
+- Price vs Area Average:
+  - "أعلى من متوسط الحي بـ 15%"
+  - "أقل من السوق بـ 8%"
+
+- Price Trend:
+  - Rising / Stable / Falling
+
+- Price Distribution:
+  - Low / Average / High range
+
+----------------------------------
+
+4) BLOCK C – SUPPLY & DEMAND
+
+Replace weak counters with meaningful insights:
+
+- New listings (last 7 days)
+- New listings (last 30 days)
+- Supply trend:
+  - increasing / decreasing
+
+- Demand indicator:
+  - High / Medium / Low
+
+- Sale vs Rent ratio
+
+----------------------------------
+
+5) BLOCK D – OPPORTUNITIES & INSIGHTS (KEY DIFFERENTIATOR)
+
+This is the most important part:
+
+Add a smart insight panel:
+
+- "فرصة استثمار":
+  - area with high growth
+
+- "منطقة نشطة":
+  - high demand
+
+- "سعر مرتفع":
+  - overpriced zone warning
+
+- "سوق مستقر":
+  - low volatility
+
+Each insight must:
+- be short
+- actionable
+- easy to understand
+
+----------------------------------
+
+6) REMOVE THESE
+
+- Duplicate numbers
+- Metrics without meaning
+- Any KPI without comparison or context
+- Repetitive price cards
+
+----------------------------------
+
+7) VISUAL IMPROVEMENTS
+
+- Add trend arrows (↑ ↓)
+- Add color system:
+  - green = good opportunity
+  - red = risk/high price
+  - blue = neutral
+- Add mini charts (sparklines) inside cards
+- Make numbers large and dominant
+- Keep layout clean and premium
+
+----------------------------------
+
+8) UX IMPROVEMENTS
+
+- Add hover tooltip for each metric:
+  explain what it means
+
+- Add filter:
+  - city
+  - district
+  - property type
+
+- Add toggle:
+  - weekly / monthly view
+
+----------------------------------
+
+9) LANGUAGE & STYLE
+
+- Arabic RTL only
+- Use clear, non-technical language
+- Avoid complex financial jargon
+- Make it understandable for normal users
+
+----------------------------------
+
+10) FINAL RESULT
+
+The section must:
+- Help user answer:
+  - Is this area expensive?
+  - Is this a good time to buy?
+  - Is this a good investment?
+- Feel like a smart decision tool
+- Look like a premium analytics platform (not just cards)
+
+----------------------------------
+
+11) AFTER IMPLEMENTATION
+
+Provide:
+- what was removed
+- what new insights were added
+- how the dashboard now helps decision making
