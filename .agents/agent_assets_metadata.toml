@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Vt5hqw10aMkahLXwNEI9K"
+uri = "file://attached_assets/generated_images/aqar-insight-logo-dark.png"
+type = "image"
+title = "لوقو عقار إنسايت — خلفية داكنة"
+
+[[outputs]]
+id = "llO2hk9TUHoTZ3trnIb80"
+uri = "file://attached_assets/generated_images/aqar-insight-icon-white.png"
+type = "image"
+title = "أيقونة عقار إنسايت — خلفية بيضاء"
