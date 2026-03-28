@@ -1,0 +1,191 @@
+Redesign the property details page to have a premium layout inspired by top global real estate platforms like Redfin, but fully adapted to my platform branding, Arabic RTL, and current color palette.
+
+Goal:
+Create a world-class property details page that feels rich, clear, trustworthy, and conversion-focused, while matching the visual identity of Aqar Insight.
+
+Design direction:
+- Use the same high-end structural feel as premium international real estate listing pages
+- Do NOT copy Redfin colors or branding
+- Use my platform colors only:
+  - deep navy
+  - teal / blue-teal
+  - soft gray
+  - off-white
+  - subtle premium accents
+- Keep the page modern, elegant, calm, and highly readable
+- Arabic RTL must be first-class
+
+Requirements:
+
+1) Overall page structure
+Build a premium property details page with the following sections:
+
+- Top navigation / breadcrumb / back action
+- Large media gallery hero section
+- Main property summary section
+- Sticky side contact/action card
+- About the property section
+- Property facts and features
+- Location/map section
+- Similar properties section
+- Advertiser/owner/marketer card
+- Optional market insights section
+
+2) Hero media gallery
+Create a large media gallery at the top inspired by premium real estate websites:
+- one large main image
+- 2 or more smaller supporting images
+- image count badge
+- smooth hover effects
+- open gallery/lightbox on click
+- support future media types with placeholders:
+  - video
+  - virtual tour
+  - street view
+- add premium action buttons below or over the gallery, such as:
+  - "عرض الصور"
+  - "فيديو"
+  - "جولة افتراضية"
+  - "مشاركة"
+
+3) Main property summary
+Below the gallery, design a strong property summary area including:
+- listing status badge (للبيع / للإيجار / محجوز / مؤجر / مباع)
+- title
+- full location text
+- price in a very clear visual hierarchy
+- basic facts in elegant statistic style:
+  - bedrooms
+  - bathrooms
+  - area
+  - property type
+- if relevant:
+  - price per sqm
+  - advertiser type
+  - published date
+- keep spacing polished and premium
+
+4) Sticky action/contact card
+Create a sticky side card similar to global marketplaces, but adapted to my product:
+- advertiser name
+- advertiser type
+- verification badge placeholder
+- short trust line
+- contact buttons:
+  - "تواصل الآن"
+  - "واتساب"
+  - "طلب زيارة"
+  - "حفظ الإعلان"
+- optional schedule/request viewing card style
+- make the card visually elegant and conversion-focused
+
+5) About section
+Add a clean “About this property” equivalent in Arabic:
+- title: "نبذة عن العقار"
+- elegant paragraph styling
+- strong readability
+- good spacing
+- allow long descriptions without making the page messy
+
+6) Property facts and features
+Create a well-designed features/facts section:
+- structured cards or rows
+- include all important fields if available:
+  - bedrooms
+  - bathrooms
+  - living rooms
+  - kitchens
+  - property age
+  - furnishing
+  - floor number
+  - total floors
+  - parking
+  - elevator
+  - garden
+  - roof
+  - pool
+  - maid room
+  - driver room
+  - facade
+  - street width
+  - electricity meter
+  - water meter
+  - deed status
+  - finishing type
+- use refined icons and consistent visual language
+
+7) Map and location
+Add a location section:
+- clean embedded map block
+- marker for the real listing location
+- location summary text
+- button: "فتح في الخرائط"
+- keep map styling elegant and integrated with page design
+
+8) Similar properties section
+Add a section for similar properties:
+- horizontally scrollable or responsive grid
+- elegant cards
+- image + title + location + price + area
+- button: "عرض التفاصيل"
+
+9) Advertiser block
+Add a dedicated advertiser/marketer/owner profile block:
+- photo/logo placeholder
+- name
+- role
+- city
+- badge placeholder
+- total listings placeholder
+- contact button
+- button: "عرض جميع إعلاناته"
+
+10) Market insight block
+Add an optional premium section called:
+- "مؤشرات المنطقة"
+Include placeholders or data if available:
+- average price per sqm
+- price trend
+- comparison with district average
+- simple visual KPI cards
+This should visually reinforce my platform’s analytics strength
+
+11) Page behavior and UX
+- Make the page feel premium and easy to scan
+- Keep strong hierarchy
+- Add subtle motion
+- Add refined hover states
+- Make sticky areas smooth
+- Ensure no visual clutter
+- Maintain excellent Arabic readability
+
+12) Mobile responsiveness
+- Make the page fully responsive
+- On mobile:
+  - stack sections cleanly
+  - keep gallery attractive
+  - keep CTA buttons easy to tap
+  - keep contact card accessible
+
+13) Design rules
+- Do NOT copy Redfin branding or colors
+- Use only my platform’s design language
+- The page should feel inspired by top-tier platforms, but clearly belong to Aqar Insight
+- Keep it premium, polished, and production-ready
+
+14) Important
+- Do NOT break current listing data logic
+- Reuse existing data structure where possible
+- Make it easy to extend later with:
+  - mortgage tools
+  - booking visits
+  - analytics
+  - verification
+  - 3D tours
+
+15) Final deliverable
+After implementing, provide a summary of:
+- what layout was redesigned
+- which sections were added
+- how the design was adapted to my platform colors and RTL
+- what placeholders are future-ready

@@ -315,42 +315,98 @@ export default function Home() {
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-14 pb-16">
 
         {/* ══════════════════════════════════════════════════════════════
-            HERO — Marketplace First
+            HERO — Value-driven smart real estate platform
         ══════════════════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
-          <div className="relative rounded-[2rem] overflow-hidden bg-sidebar text-white shadow-2xl" style={{ boxShadow: "0 24px 64px rgba(15,28,63,0.35), 0 4px 16px rgba(15,28,63,0.2)" }}>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_top_right,rgba(15,123,160,0.35),transparent)] pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_bottom_left,rgba(201,168,76,0.08),transparent)] pointer-events-none" />
-            <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-              style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
-            <div className="absolute left-0 bottom-0 top-0 w-72 opacity-[0.04] pointer-events-none overflow-hidden hidden md:block">
-              <svg viewBox="0 0 300 400" className="h-full w-auto" fill="white" xmlns="http://www.w3.org/2000/svg">
-                <rect x="20" y="200" width="50" height="200" />
-                <rect x="80" y="150" width="60" height="250" />
-                <rect x="150" y="100" width="40" height="300" />
-                <rect x="200" y="170" width="55" height="230" />
-                <rect x="260" y="220" width="40" height="180" />
+          <div
+            className="relative rounded-[2rem] overflow-hidden text-white"
+            style={{
+              background: "linear-gradient(140deg, #0F1C3F 0%, #0F1C3F 45%, #0a2a4a 75%, #0F7BA0 100%)",
+              boxShadow: "0 32px 80px rgba(15,28,63,0.45), 0 8px 24px rgba(15,28,63,0.25)",
+            }}
+          >
+            {/* Layered background atmosphere */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_90%_at_top_right,rgba(15,123,160,0.4),transparent)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_50%_at_bottom_left,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
+
+            {/* Subtle dot grid */}
+            <div
+              className="absolute inset-0 opacity-[0.035] pointer-events-none"
+              style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "26px 26px" }}
+            />
+
+            {/* Analytics chart lines — right side decoration */}
+            <div className="absolute left-0 top-0 bottom-0 w-[52%] pointer-events-none overflow-hidden hidden lg:block opacity-[0.07]">
+              <svg viewBox="0 0 520 320" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Rising trend line */}
+                <polyline points="0,240 60,210 120,195 180,160 240,130 300,100 360,80 420,55 520,30"
+                  stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                {/* Area fill under the line */}
+                <polygon points="0,240 60,210 120,195 180,160 240,130 300,100 360,80 420,55 520,30 520,320 0,320"
+                  fill="white" fillOpacity="0.25" />
+                {/* Second subtle line */}
+                <polyline points="0,280 80,265 160,250 240,230 320,200 400,175 520,145"
+                  stroke="white" strokeWidth="1.5" strokeDasharray="6 4" strokeLinecap="round" />
+                {/* Data points */}
+                <circle cx="180" cy="160" r="4" fill="white" fillOpacity="0.7" />
+                <circle cx="300" cy="100" r="4" fill="white" fillOpacity="0.7" />
+                <circle cx="420" cy="55" r="5" fill="white" />
+                {/* Horizontal guide lines */}
+                <line x1="0" y1="80"  x2="520" y2="80"  stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
+                <line x1="0" y1="160" x2="520" y2="160" stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
+                <line x1="0" y1="240" x2="520" y2="240" stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
+                {/* Bar chart hints at bottom left */}
+                <rect x="20"  y="270" width="28" height="50" rx="3" fill="white" fillOpacity="0.3" />
+                <rect x="56"  y="250" width="28" height="70" rx="3" fill="white" fillOpacity="0.3" />
+                <rect x="92"  y="240" width="28" height="80" rx="3" fill="white" fillOpacity="0.35" />
+                <rect x="128" y="255" width="28" height="65" rx="3" fill="white" fillOpacity="0.3" />
               </svg>
             </div>
 
-            <div className="relative px-8 py-12 md:px-14 md:py-16">
-              <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-medium mb-5">
-                <HomeIcon className="w-3.5 h-3.5" />
-                سوق العقارات السعودي
+            {/* Floating mini analytics card — top-left corner accent */}
+            <div className="absolute top-6 left-6 hidden xl:flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-2xl px-4 py-2.5 backdrop-blur-sm pointer-events-none">
+              <TrendingUp className="w-4 h-4 text-[#C9A84C]" />
+              <div>
+                <p className="text-[10px] text-white/60 leading-none mb-0.5">متوسط أسعار الرياض</p>
+                <p className="text-xs font-extrabold text-white leading-none">
+                  {kpis ? formatCurrency(kpis.avgPricePerSqm) + " / م²" : "جارٍ التحميل…"}
+                </p>
               </div>
-              <h1 className="text-[2.2rem] md:text-[2.9rem] font-extrabold leading-[1.1] tracking-tight mb-3 text-white">
-                ابحث عن عقارك المثالي
+              <div className="flex items-center gap-0.5 text-green-400 text-[10px] font-bold">
+                <ArrowUpRight className="w-3 h-3" />
+                <span>حي</span>
+              </div>
+            </div>
+
+            {/* Main content */}
+            <div className="relative px-8 py-12 md:px-14 md:py-16">
+              {/* Eyebrow badge */}
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6">
+                <BarChart3 className="w-3.5 h-3.5 text-[#C9A84C]" />
+                منصة عقار إنسايت — السوق السعودي
+              </div>
+
+              {/* Headline */}
+              <h1 className="text-[2.4rem] md:text-[3.2rem] font-extrabold leading-[1.08] tracking-tight mb-4 text-white max-w-2xl">
+                اعرف السعر الحقيقي
+                <br />
+                <span className="text-[#C9A84C]">لعقارك</span>
               </h1>
-              <p className="text-[16px] text-white/75 leading-relaxed mb-8 max-w-2xl">
-                آلاف الإعلانات العقارية — شقق، فلل، أراضي، مكاتب — للبيع والإيجار في مدن المملكة
+
+              {/* Subtitle */}
+              <p className="text-[16px] md:text-[17px] text-white/75 leading-relaxed mb-8 max-w-xl font-medium">
+                تصفح العقارات، قارن الأسعار، واكتشف أفضل الفرص في السوق السعودي
               </p>
 
-              {/* Quick Search Bar */}
-              <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row gap-3 max-w-3xl">
+              {/* Search bar — visually dominant */}
+              <div
+                className="bg-white/12 backdrop-blur-md border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row gap-3 max-w-3xl mb-6"
+                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)" }}
+              >
                 <select
                   value={quickListingType}
                   onChange={e => setQuickListingType(e.target.value)}
-                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 md:w-36 shrink-0"
+                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 md:w-40 shrink-0 cursor-pointer"
                   style={{ color: "white" }}
                 >
                   <option value="" style={{ color: "#0F1C3F" }}>بيع وإيجار</option>
@@ -360,7 +416,7 @@ export default function Home() {
                 <select
                   value={quickType}
                   onChange={e => setQuickType(e.target.value)}
-                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1"
+                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 flex-1 cursor-pointer"
                   style={{ color: "white" }}
                 >
                   <option value="" style={{ color: "#0F1C3F" }}>كل أنواع العقارات</option>
@@ -371,7 +427,7 @@ export default function Home() {
                 <select
                   value={quickCity}
                   onChange={e => setQuickCity(e.target.value)}
-                  className="bg-white/15 border border-white/20 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1"
+                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 flex-1 cursor-pointer"
                   style={{ color: "white" }}
                 >
                   <option value="" style={{ color: "#0F1C3F" }}>كل المدن</option>
@@ -381,24 +437,49 @@ export default function Home() {
                 </select>
                 <button
                   onClick={handleQuickSearch}
-                  className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-7 py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/40 transition-all shrink-0"
+                  className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shrink-0"
+                  style={{ boxShadow: "0 4px 18px rgba(15,123,160,0.55)" }}
                 >
-                  <Search className="w-4 h-4" />
+                  <Search className="w-4.5 h-4.5" />
                   بحث
                 </button>
               </div>
 
-              {/* Stats row (desktop) */}
+              {/* CTA row */}
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href="/listings/new">
+                  <button
+                    className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white border border-[#C9A84C]/60 bg-[#C9A84C]/15 hover:bg-[#C9A84C]/25 transition-all"
+                    style={{ boxShadow: "0 2px 12px rgba(201,168,76,0.2)" }}
+                  >
+                    <PlusCircle className="w-4 h-4 text-[#C9A84C]" />
+                    أضف عقارك الآن
+                  </button>
+                </Link>
+                <Link href="/listings">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white/75 hover:text-white transition-colors">
+                    تصفح جميع العقارات
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                </Link>
+              </div>
+
+              {/* Stats strip */}
               {hasData && (
-                <div className="hidden md:flex items-center gap-6 mt-6 pt-6 border-t border-white/10">
+                <div className="hidden md:flex items-center gap-8 mt-8 pt-6 border-t border-white/10">
                   {[
-                    { label: "إعلان نشط", value: formatNumber(kpis?.totalListings) },
-                    { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm) },
-                    { label: "إعلانات جديدة هذا الشهر", value: formatNumber(kpis?.newLast30Days) },
+                    { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2 },
+                    { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm), icon: Banknote },
+                    { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity },
                   ].map(s => (
-                    <div key={s.label} className="flex items-center gap-2">
-                      <div className="text-lg font-extrabold text-white">{s.value}</div>
-                      <div className="text-[12px] text-white/60">{s.label}</div>
+                    <div key={s.label} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                        <s.icon className="w-4 h-4 text-white/70" />
+                      </div>
+                      <div>
+                        <div className="text-lg font-extrabold text-white leading-none">{s.value}</div>
+                        <div className="text-[11px] text-white/55 mt-0.5">{s.label}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
