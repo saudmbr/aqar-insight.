@@ -37,9 +37,12 @@ const LISTING_TYPE_LABELS: Record<string, string> = {
 };
 
 const LISTING_TYPE_COLORS: Record<string, string> = {
-  sale: "#0F7BA0", rent: "#94A3B8",
-  daily_rent: "#f97316", monthly_rent: "#0d9488",
-  investment: "#7c3aed", auction: "#e11d48",
+  sale:         "#16A34A",
+  rent:         "#7C3AED",
+  daily_rent:   "#EA580C",
+  monthly_rent: "#0891B2",
+  investment:   "#CA8A04",
+  auction:      "#DC2626",
 };
 
 function formatPrice(n: number): string {
