@@ -43,8 +43,8 @@ const LISTING_TYPE_COLORS: Record<string, string> = {
 };
 
 function formatPrice(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}ألف`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
   return `${n}`;
 }
 
@@ -58,50 +58,64 @@ function makePinIcon(listing: MapPin, isActive: boolean): L.DivIcon {
   const color = LISTING_TYPE_COLORS[listing.listingType] ?? "#0F7BA0";
   const label = LISTING_TYPE_LABELS[listing.listingType] ?? listing.listingType;
   const priceText = formatPrice(listing.price);
-  const scale = isActive ? 1.15 : 1;
+  const scale = isActive ? 1.18 : 1;
   const shadow = isActive
-    ? `0 4px 16px rgba(0,0,0,0.35), 0 0 0 3px ${color}55`
-    : "0 2px 8px rgba(0,0,0,0.22)";
+    ? `0 6px 20px rgba(0,0,0,0.4), 0 0 0 3px ${color}66`
+    : "0 3px 12px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.15)";
 
   return L.divIcon({
     className: "",
-    iconAnchor: [0, 40],
-    popupAnchor: [0, -44],
+    iconAnchor: [44, 48],
+    popupAnchor: [0, -52],
     html: `
       <div style="
         position:relative;
         transform:scale(${scale});
         transform-origin:bottom center;
-        transition:transform 0.2s ease;
+        transition:transform 0.18s ease;
+        display:inline-block;
       ">
         <div style="
-          background:${color};
-          color:#fff;
-          border-radius:20px;
-          padding:5px 10px;
+          background:#ffffff;
+          border-radius:12px;
+          padding:5px 11px 5px 9px;
           font-family:'Cairo',Arial,sans-serif;
-          font-size:12px;
-          font-weight:700;
           white-space:nowrap;
           box-shadow:${shadow};
-          border:2px solid #fff;
+          border:2px solid ${color};
           display:flex;
           align-items:center;
-          gap:5px;
+          gap:6px;
           direction:rtl;
-          min-width:60px;
-          justify-content:center;
         ">
-          <span style="font-size:10px;opacity:0.9;">${label}</span>
-          <span style="font-size:13px;">ر.س ${priceText}</span>
+          <span style="
+            display:inline-block;
+            width:8px;height:8px;border-radius:50%;
+            background:${color};
+            flex-shrink:0;
+          "></span>
+          <span style="
+            font-size:13.5px;
+            font-weight:800;
+            color:#0F1C3F;
+            letter-spacing:-0.3px;
+          ">ر.س ${priceText}</span>
+          <span style="
+            font-size:10px;
+            font-weight:600;
+            color:${color};
+            background:${color}18;
+            border-radius:6px;
+            padding:1px 5px;
+          ">${label}</span>
         </div>
         <div style="
           width:0;height:0;
-          border-left:6px solid transparent;
-          border-right:6px solid transparent;
-          border-top:8px solid ${color};
+          border-left:7px solid transparent;
+          border-right:7px solid transparent;
+          border-top:9px solid ${color};
           margin:0 auto;
-          filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));
+          margin-top:-1px;
         "></div>
       </div>`,
   });
