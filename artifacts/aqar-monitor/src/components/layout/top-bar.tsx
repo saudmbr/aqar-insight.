@@ -47,7 +47,9 @@ export function TopBar() {
       }}
       dir="rtl"
     >
-      {/* Post property button */}
+      <div className="flex-1" />
+
+      {/* Post property button — placed left of social icons so it stays in main content area (not hidden by right sidebar) */}
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={handlePostProperty}
@@ -58,7 +60,7 @@ export function TopBar() {
         </button>
       </div>
 
-      <div className="flex-1" />
+      <span className="text-white/20 text-xs">|</span>
 
       {/* Social media icons */}
       <div className="flex items-center gap-0.5">
