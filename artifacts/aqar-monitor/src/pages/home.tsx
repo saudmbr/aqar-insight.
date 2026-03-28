@@ -407,7 +407,7 @@ export default function Home() {
               {/* Eyebrow badge */}
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6">
                 <BarChart3 className="w-3.5 h-3.5 text-[#94A3B8]" />
-                عقار إنسايت — بيانات لا أوهام
+                عقار إنسايت
               </div>
 
               {/* Headline */}
