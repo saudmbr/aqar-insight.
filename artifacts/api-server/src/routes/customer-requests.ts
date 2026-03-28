@@ -7,15 +7,17 @@ const customerRequestsRouter = Router();
 
 // ─── List requests ────────────────────────────────────────────────────────────
 customerRequestsRouter.get("/", async (req: Request, res: Response) => {
-  const { category, city, status = "open" } = req.query as Record<string, string>;
+  const { requestType, city, status = "open" } = req.query as Record<string, string>;
 
   const conditions = [eq(customerRequestsTable.status, status)];
-  if (category) conditions.push(eq(customerRequestsTable.category, category));
+  if (requestType) conditions.push(eq(customerRequestsTable.requestType, requestType));
   if (city) conditions.push(eq(customerRequestsTable.city, city));
 
   const rows = await db
     .select({
       id: customerRequestsTable.id,
+      userId: customerRequestsTable.userId,
+      requestType: customerRequestsTable.requestType,
       title: customerRequestsTable.title,
       category: customerRequestsTable.category,
       city: customerRequestsTable.city,
@@ -23,6 +25,7 @@ customerRequestsRouter.get("/", async (req: Request, res: Response) => {
       budgetMin: customerRequestsTable.budgetMin,
       budgetMax: customerRequestsTable.budgetMax,
       details: customerRequestsTable.details,
+      marketerName: customerRequestsTable.marketerName,
       contactMethod: customerRequestsTable.contactMethod,
       status: customerRequestsTable.status,
       createdAt: customerRequestsTable.createdAt,
@@ -77,21 +80,28 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
     res.status(401).json({ message: "يرجى تسجيل الدخول لنشر طلب" }); return;
   }
 
-  const { title, category, city, district, budgetMin, budgetMax, details, contactMethod, contactInfo } = req.body as Record<string, unknown>;
+  const { requestType, title, category, city, district, budgetMin, budgetMax, details, marketerName, contactMethod, contactInfo } = req.body as Record<string, unknown>;
 
-  if (!title || !category || !city) {
-    res.status(400).json({ message: "يرجى ملء العنوان، التصنيف، والمدينة" }); return;
+  if (!requestType || !title || !city) {
+    res.status(400).json({ message: "يرجى ملء العنوان، نوع الطلب، والمدينة" }); return;
+  }
+
+  const validTypes = ["property", "service", "marketer"];
+  if (!validTypes.includes(String(requestType))) {
+    res.status(400).json({ message: "نوع الطلب غير صحيح" }); return;
   }
 
   const [created] = await db.insert(customerRequestsTable).values({
     userId: req.session.userId ?? null,
+    requestType: String(requestType),
     title: String(title),
-    category: String(category),
+    category: category ? String(category) : null,
     city: String(city),
     district: district ? String(district) : null,
     budgetMin: budgetMin ? parseFloat(String(budgetMin)) : null,
     budgetMax: budgetMax ? parseFloat(String(budgetMax)) : null,
     details: details ? String(details) : null,
+    marketerName: marketerName ? String(marketerName) : null,
     contactMethod: contactMethod ? String(contactMethod) : null,
     contactInfo: contactInfo ? String(contactInfo) : null,
   }).returning();
@@ -99,16 +109,27 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
   res.status(201).json(created);
 });
 
-// ─── Delete my request ────────────────────────────────────────────────────────
+// ─── Delete request — owner or admin only ─────────────────────────────────────
 customerRequestsRouter.delete("/:id", async (req: Request, res: Response) => {
+  if (!req.session.isAuthenticated) {
+    res.status(401).json({ message: "يرجى تسجيل الدخول" }); return;
+  }
+
   const id = parseInt(req.params.id);
   if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
 
-  const [existing] = await db.select({ userId: customerRequestsTable.userId }).from(customerRequestsTable).where(eq(customerRequestsTable.id, id)).limit(1);
+  const [existing] = await db
+    .select({ userId: customerRequestsTable.userId })
+    .from(customerRequestsTable)
+    .where(eq(customerRequestsTable.id, id))
+    .limit(1);
+
   if (!existing) { res.status(404).json({ message: "الطلب غير موجود" }); return; }
 
-  const isOwner = req.session.userId && existing.userId === req.session.userId;
-  if (!req.session.isAdmin && !isOwner) { res.status(403).json({ message: "غير مصرح لك" }); return; }
+  const isOwner = req.session.userId != null && existing.userId === req.session.userId;
+  if (!req.session.isAdmin && !isOwner) {
+    res.status(403).json({ message: "غير مصرح لك بحذف هذا الطلب" }); return;
+  }
 
   await db.delete(customerRequestsTable).where(eq(customerRequestsTable.id, id));
   res.json({ success: true });
