@@ -131,7 +131,7 @@ export default function Dashboard() {
               <div className="space-y-8">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   <StatCard icon={<Building2 className="w-7 h-7" />} label="إجمالي إعلاناتي" value={String(myListings.length)} color="text-primary" bg="bg-primary/10" border="border-primary/20" />
-                  <StatCard icon={<Eye className="w-7 h-7" />} label="إجمالي المشاهدات" value={myListings.reduce((s, l) => s + (l.views ?? 0), 0).toLocaleString("ar-SA")} color="text-accent" bg="bg-accent/10" border="border-accent/20" />
+                  <StatCard icon={<Eye className="w-7 h-7" />} label="إجمالي المشاهدات" value={myListings.reduce((s, l) => s + (l.views ?? 0), 0).toLocaleString("en-US")} color="text-accent" bg="bg-accent/10" border="border-accent/20" />
                   <StatCard icon={<Heart className="w-7 h-7" />} label="العقارات المفضّلة" value={String(favorites.length)} color="text-destructive" bg="bg-destructive/10" border="border-destructive/20" />
                 </div>
 

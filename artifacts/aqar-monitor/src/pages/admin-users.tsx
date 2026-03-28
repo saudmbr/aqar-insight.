@@ -109,7 +109,7 @@ export default function AdminUsers() {
                           </span>
                         </td>
                         <td className="px-5 py-3 text-muted-foreground text-xs">
-                          {new Date(u.createdAt).toLocaleDateString("ar-SA")}
+                          {new Date(u.createdAt).toLocaleDateString("en-GB")}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">

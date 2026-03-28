@@ -134,7 +134,7 @@ function makePopupHtml(pin: MapPin): string {
         <div style="font-size:16px;font-weight:800;color:#0F1C3F;margin-bottom:4px;line-height:1.3;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pin.title}</div>
         <div style="font-size:12px;color:#666;margin-bottom:8px;">📍 ${pin.city}${pin.district ? ` · ${pin.district}` : ""}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:17px;font-weight:900;color:${color};">ر.س ${pin.price.toLocaleString("ar-SA")}</div>
+          <div style="font-size:17px;font-weight:900;color:${color};">ر.س ${pin.price.toLocaleString("en-US")}</div>
           ${pin.areaSqm ? `<div style="font-size:11px;color:#888;">${pin.areaSqm} م²</div>` : ""}
         </div>
         <a href="${href}" style="

@@ -50,9 +50,9 @@ export default function Requests() {
 
   const formatBudget = (min?: number | null, max?: number | null) => {
     if (!min && !max) return null;
-    if (min && max) return `${min.toLocaleString("ar-SA")} – ${max.toLocaleString("ar-SA")} ر.س`;
-    if (min) return `من ${min.toLocaleString("ar-SA")} ر.س`;
-    return `حتى ${max!.toLocaleString("ar-SA")} ر.س`;
+    if (min && max) return `${min.toLocaleString("en-US")} – ${max.toLocaleString("en-US")} ر.س`;
+    if (min) return `من ${min.toLocaleString("en-US")} ر.س`;
+    return `حتى ${max!.toLocaleString("en-US")} ر.س`;
   };
 
   return (
@@ -149,7 +149,7 @@ export default function Requests() {
                           <MessageSquare className="w-7 h-7" />
                         </div>
                         <span className="text-xs font-semibold text-muted-foreground text-center">
-                          {new Date(r.createdAt).toLocaleDateString("ar-SA")}
+                          {new Date(r.createdAt).toLocaleDateString("en-GB")}
                         </span>
                       </div>
 

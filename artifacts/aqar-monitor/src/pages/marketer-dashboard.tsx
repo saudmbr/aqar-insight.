@@ -390,7 +390,7 @@ export default function MarketerDashboard() {
                         <span className="text-xs text-muted-foreground">{listing.city}</span>
                       </div>
                       <h4 className="font-semibold text-foreground truncate">{listing.title}</h4>
-                      <p className="text-sm font-bold text-primary mt-0.5">{listing.price?.toLocaleString("ar-SA")} ريال</p>
+                      <p className="text-sm font-bold text-primary mt-0.5">{listing.price?.toLocaleString("en-US")} ريال</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <Button asChild size="sm" variant="ghost" className="rounded-lg w-9 h-9 p-0" title="معاينة">

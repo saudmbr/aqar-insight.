@@ -161,7 +161,7 @@ export default function Records() {
                           <td className="px-4 py-3 font-medium">{formatCurrency(item.price)}</td>
                           <td className="px-4 py-3 text-muted-foreground">{item.area} م²</td>
                           <td className="px-4 py-3 text-muted-foreground">{formatCurrency(item.pricePerSqm)}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{new Date(item.recordedAt).toLocaleDateString('ar-SA')}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{new Date(item.recordedAt).toLocaleDateString('en-GB')}</td>
                         </tr>
                       ))
                     )}

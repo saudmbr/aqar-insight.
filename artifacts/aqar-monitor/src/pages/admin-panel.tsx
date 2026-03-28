@@ -52,7 +52,7 @@ const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب"
 function formatPrice(price: number) {
   if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(2)} م.ر`;
   if (price >= 1_000) return `${(price / 1_000).toFixed(0)} ألف`;
-  return `${price.toLocaleString("ar-SA")} ر.س`;
+  return `${price.toLocaleString("en-US")} ر.س`;
 }
 
 export default function AdminPanel() {
@@ -171,9 +171,9 @@ export default function AdminPanel() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "إجمالي السجلات", value: total.toLocaleString("ar-SA"), color: "text-primary" },
+            { label: "إجمالي السجلات", value: total.toLocaleString("en-US"), color: "text-primary" },
             { label: "الصفحة الحالية", value: `${page} / ${totalPages}`, color: "text-foreground" },
-            { label: "النتائج في هذه الصفحة", value: properties.length.toLocaleString("ar-SA"), color: "text-foreground" },
+            { label: "النتائج في هذه الصفحة", value: properties.length.toLocaleString("en-US"), color: "text-foreground" },
             { label: "المرشحات النشطة", value: [city, propertyType, listingType, districtSearch].filter(Boolean).length.toString(), color: hasFilters ? "text-amber-600" : "text-muted-foreground" },
           ].map((s) => (
             <Card key={s.label} className="border-border/50">
@@ -304,9 +304,9 @@ export default function AdminPanel() {
                           <TableCell className="font-bold text-sm text-primary">
                             {formatPrice(p.price)}
                           </TableCell>
-                          <TableCell className="text-sm">{p.area.toLocaleString("ar-SA")}</TableCell>
+                          <TableCell className="text-sm">{p.area.toLocaleString("en-US")}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {p.pricePerSqm.toLocaleString("ar-SA", { maximumFractionDigits: 0 })}
+                            {p.pricePerSqm.toLocaleString("en-US", { maximumFractionDigits: 0 })}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {p.bedrooms ?? "—"}
@@ -346,7 +346,7 @@ export default function AdminPanel() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-border/40">
                 <p className="text-xs text-muted-foreground">
-                  عرض {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, total)} من {total.toLocaleString("ar-SA")} سجل
+                  عرض {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, total)} من {total.toLocaleString("en-US")} سجل
                 </p>
                 <div className="flex items-center gap-2">
                   <Button

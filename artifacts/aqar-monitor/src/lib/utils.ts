@@ -7,16 +7,14 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(value: number | undefined | null): string {
   if (value === undefined || value === null) return "0 ر.س";
-  return new Intl.NumberFormat("ar-SA", {
-    style: "currency",
-    currency: "SAR",
+  return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value) + " ر.س";
 }
 
 export function formatNumber(value: number | undefined | null): string {
   if (value === undefined || value === null) return "0";
-  return new Intl.NumberFormat("ar-SA").format(value);
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 /**

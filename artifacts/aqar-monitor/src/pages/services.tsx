@@ -224,7 +224,7 @@ export default function Services() {
                       {p.startingPrice ? (
                         <div>
                           <p className="text-xs text-muted-foreground mb-0.5">تبدأ الأسعار من</p>
-                          <p className="text-lg font-extrabold text-foreground">{p.startingPrice.toLocaleString("ar-SA")} <span className="text-sm font-medium text-muted-foreground">ر.س</span></p>
+                          <p className="text-lg font-extrabold text-foreground">{p.startingPrice.toLocaleString("en-US")} <span className="text-sm font-medium text-muted-foreground">ر.س</span></p>
                         </div>
                       ) : (
                         <p className="text-sm font-medium text-muted-foreground">السعر حسب الطلب</p>

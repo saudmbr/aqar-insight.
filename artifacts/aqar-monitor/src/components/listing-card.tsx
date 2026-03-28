@@ -142,7 +142,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
               {listing.areaSqm && (
                 <span className="flex items-center gap-1 bg-muted/70 px-2.5 py-1 rounded-lg">
                   <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  {listing.areaSqm.toLocaleString("ar-SA")} م²
+                  {listing.areaSqm.toLocaleString("en-US")} م²
                 </span>
               )}
               {listing.bedrooms && (

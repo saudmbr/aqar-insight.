@@ -207,7 +207,7 @@ export default function ServiceProviderProfile() {
                     <Building2 className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-foreground leading-none">{provider.startingPrice.toLocaleString("ar-SA")}</p>
+                    <p className="text-lg font-bold text-foreground leading-none">{provider.startingPrice.toLocaleString("en-US")}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">ر.س تبدأ من</p>
                   </div>
                 </div>

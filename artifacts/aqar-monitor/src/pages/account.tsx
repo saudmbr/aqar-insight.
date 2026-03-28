@@ -145,7 +145,7 @@ export default function Account() {
 
   const isAdmin = user?.role === "admin";
   const createdDate = profile?.createdAt
-    ? new Date(profile.createdAt).toLocaleDateString("ar-SA", {
+    ? new Date(profile.createdAt).toLocaleDateString("en-GB", {
         year: "numeric",
         month: "long",
         day: "numeric",

@@ -299,7 +299,7 @@ export default function ListingDetail() {
             {/* Key stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {listing.areaSqm && (
-                <StatBox icon={<Maximize2 className="w-6 h-6" />} label="المساحة" value={`${listing.areaSqm.toLocaleString("ar-SA")} م²`} />
+                <StatBox icon={<Maximize2 className="w-6 h-6" />} label="المساحة" value={`${listing.areaSqm.toLocaleString("en-US")} م²`} />
               )}
               {listing.bedrooms != null && (
                 <StatBox icon={<BedDouble className="w-6 h-6" />} label="غرف النوم" value={String(listing.bedrooms)} />
@@ -520,7 +520,7 @@ export default function ListingDetail() {
                 )}
 
                 {listing.views != null && (
-                  <p className="text-xs text-muted-foreground mt-4 text-center">{listing.views.toLocaleString("ar-SA")} مشاهدة</p>
+                  <p className="text-xs text-muted-foreground mt-4 text-center">{listing.views.toLocaleString("en-US")} مشاهدة</p>
                 )}
               </CardContent>
             </Card>

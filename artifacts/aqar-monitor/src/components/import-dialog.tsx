@@ -226,7 +226,7 @@ export function ImportDialog({ open, onOpenChange }: Props) {
 
       toast({
         title: data.imported > 0 ? "تم الاستيراد بنجاح" : "لم يُستورد أي سجل",
-        description: `تم إضافة ${data.imported.toLocaleString("ar-SA")} سجلاً من أصل ${data.total.toLocaleString("ar-SA")}`,
+        description: `تم إضافة ${data.imported.toLocaleString("en-US")} سجلاً من أصل ${data.total.toLocaleString("en-US")}`,
         variant: data.imported > 0 ? "default" : "destructive",
       });
     } catch (err) {
@@ -469,21 +469,21 @@ export function ImportDialog({ open, onOpenChange }: Props) {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 rounded-xl bg-muted/20 border border-border/40 text-center">
                     <p className="text-xs text-muted-foreground mb-1">إجمالي الصفوف</p>
-                    <p className="text-2xl font-bold">{result.total.toLocaleString("ar-SA")}</p>
+                    <p className="text-2xl font-bold">{result.total.toLocaleString("en-US")}</p>
                   </div>
                   <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       <p className="text-xs text-emerald-700">تم استيرادها</p>
                     </div>
-                    <p className="text-2xl font-bold text-emerald-700">{result.imported.toLocaleString("ar-SA")}</p>
+                    <p className="text-2xl font-bold text-emerald-700">{result.imported.toLocaleString("en-US")}</p>
                   </div>
                   <div className={`p-4 rounded-xl border text-center ${result.skipped.length > 0 ? "bg-red-50 border-red-200" : "bg-muted/20 border-border/40"}`}>
                     <div className="flex items-center justify-center gap-1 mb-1">
                       {result.skipped.length > 0 ? <XCircle className="w-4 h-4 text-red-600" /> : <CheckCircle2 className="w-4 h-4 text-muted-foreground" />}
                       <p className={`text-xs ${result.skipped.length > 0 ? "text-red-700" : "text-muted-foreground"}`}>تم تخطيها</p>
                     </div>
-                    <p className={`text-2xl font-bold ${result.skipped.length > 0 ? "text-red-700" : "text-foreground"}`}>{result.skipped.length.toLocaleString("ar-SA")}</p>
+                    <p className={`text-2xl font-bold ${result.skipped.length > 0 ? "text-red-700" : "text-foreground"}`}>{result.skipped.length.toLocaleString("en-US")}</p>
                   </div>
                 </div>
 
@@ -492,7 +492,7 @@ export function ImportDialog({ open, onOpenChange }: Props) {
                   <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
                     <CheckCircle2 className="w-5 h-5 shrink-0" />
                     <p className="text-sm font-medium">
-                      تم إضافة {result.imported.toLocaleString("ar-SA")} سجلاً إلى قاعدة البيانات. ستظهر البيانات في لوحة التحكم والمخططات والفلاتر فوراً.
+                      تم إضافة {result.imported.toLocaleString("en-US")} سجلاً إلى قاعدة البيانات. ستظهر البيانات في لوحة التحكم والمخططات والفلاتر فوراً.
                     </p>
                   </div>
                 )}

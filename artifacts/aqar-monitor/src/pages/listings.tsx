@@ -110,7 +110,7 @@ export default function Listings() {
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">تصفح العقارات</h1>
             <p className="text-white/80 mt-2 text-base font-medium">
-              {data ? `${data.total.toLocaleString("ar-SA")} عقار متاح حالياً` : "جارٍ تحميل العقارات…"}
+              {data ? `${data.total.toLocaleString("en-US")} عقار متاح حالياً` : "جارٍ تحميل العقارات…"}
             </p>
           </div>
           {isAuthenticated && (
