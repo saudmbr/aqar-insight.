@@ -407,19 +407,19 @@ export default function Home() {
               {/* Eyebrow badge */}
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6">
                 <BarChart3 className="w-3.5 h-3.5 text-[#C9A84C]" />
-                منصة عقار إنسايت — السوق السعودي
+                عقار إنسايت — بيانات لا أوهام
               </div>
 
               {/* Headline */}
               <h1 className="text-[2.4rem] md:text-[3.2rem] font-extrabold leading-[1.08] tracking-tight mb-4 text-white max-w-2xl">
-                اعرف السعر الحقيقي
+                خذ القرار الصح
                 <br />
-                <span className="text-[#C9A84C]">لعقارك</span>
+                <span className="text-[#C9A84C]">في عقارك</span>
               </h1>
 
               {/* Subtitle */}
               <p className="text-[16px] md:text-[17px] text-white/75 leading-relaxed mb-8 max-w-xl font-medium">
-                تصفح العقارات، قارن الأسعار، واكتشف أفضل الفرص في السوق السعودي
+                قارن الأسعار في مئات الأحياء، تابع المشاريع المستقبلية، وتواصل مع أفضل المسوّقين
               </p>
 
               {/* Search bar — visually dominant */}
