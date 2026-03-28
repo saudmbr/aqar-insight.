@@ -10,6 +10,7 @@ const authRouter = Router();
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "AqarInsight2025";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 authRouter.post("/login", async (req: Request, res: Response) => {
@@ -25,8 +26,9 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 
   const id = identifier.trim();
 
-  // 1. Check hardcoded admin
-  if (id === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  // 1. Check hardcoded admin (by username or email)
+  const isAdminLogin = id === ADMIN_USERNAME || (ADMIN_EMAIL && id.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  if (isAdminLogin && password === ADMIN_PASSWORD) {
     req.session.isAuthenticated = true;
     req.session.isAdmin = true;
     req.session.userId = null;
@@ -44,6 +46,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
         userId: null,
         username: ADMIN_USERNAME,
         fullName: "المدير",
+        email: ADMIN_EMAIL || null,
         role: "admin",
       });
     });
@@ -257,7 +260,7 @@ authRouter.get("/profile", async (req: Request, res: Response) => {
     res.json({
       fullName: req.session.fullName ?? "المدير",
       username: req.session.username,
-      email: null,
+      email: ADMIN_EMAIL || null,
       role: "admin",
       createdAt: null,
     });
