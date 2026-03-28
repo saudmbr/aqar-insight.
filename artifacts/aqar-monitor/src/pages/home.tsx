@@ -677,7 +677,7 @@ export default function Home() {
                 <div className="relative">
                   <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
-                  <p className="text-[13px] text-white/80 mb-4">انشر إعلانك وتواصل مع آلاف المهتمين على المنصة</p>
+                  <p className="text-[13px] text-white/80 mb-4">انشر إعلانك واعرضه على المهتمين والباحثين عن عقار</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90 group-hover:text-white transition-colors">
                     ابدأ الآن <ArrowLeft className="w-4 h-4" />
                   </div>
@@ -690,7 +690,7 @@ export default function Home() {
                 <div className="relative">
                   <Users className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   <h3 className="font-bold text-lg mb-1.5">المسوّقون العقاريون</h3>
-                  <p className="text-[13px] text-white/85 mb-4">تواصل مع أفضل المسوّقين المعتمدين وذوي الخبرة</p>
+                  <p className="text-[13px] text-white/85 mb-4">تصفّح ملفات المسوّقين العقاريين المسجّلين وتواصل معهم مباشرةً</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90">
                     استعرض الملفات <ArrowLeft className="w-4 h-4" />
                   </div>

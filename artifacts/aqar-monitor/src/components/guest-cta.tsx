@@ -97,9 +97,9 @@ export function GuestCTA() {
           </Button>
         </div>
 
-        {/* Trust line */}
-        <p className="relative mt-6 text-xs text-white/70">
-          أكثر من ٣٣٠٠ سجل عقاري حقيقي من المملكة العربية السعودية
+        {/* Value line */}
+        <p className="relative mt-6 text-xs text-white/60">
+          بيانات السوق الحقيقية تُمكّنك من فهم الأسعار قبل أي قرار عقاري
         </p>
       </div>
 
