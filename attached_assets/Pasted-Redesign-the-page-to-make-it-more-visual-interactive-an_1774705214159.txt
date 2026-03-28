@@ -1,0 +1,94 @@
+Redesign the "مقارنة الأحياء" page to make it more visual, interactive, and useful.
+
+Goal:
+Transform the neighborhood comparison page from a basic chart into a premium comparison experience using:
+1) Pie / donut chart
+2) Interactive map
+3) Heatmap based on prices
+
+Requirements:
+
+1) Replace the current comparison chart
+- Remove the current simple horizontal bar chart
+- Replace it with a premium pie chart or donut chart at the top of the page
+- The chart should compare neighborhoods based on:
+  - average price
+  - or average price per sqm
+- Make labels clean and readable in Arabic RTL
+- Show values and percentages clearly
+- Use elegant colors consistent with the platform identity
+
+2) Add an interactive map under the chart
+- Add a real interactive map section below the pie/donut chart
+- Display neighborhoods on the map
+- The map should support zoom and pan
+- The map should feel modern and smooth
+
+3) Add neighborhood heatmap
+- Overlay a heatmap on the map based on neighborhood prices
+- Highest-price areas must appear in red
+- Then gradually change colors based on price level, for example:
+  - red = highest prices
+  - orange = high
+  - yellow = medium
+  - light green = below average
+  - green = lower prices
+- Make the color scale logical and visually clear
+
+4) Heatmap logic
+- Heat intensity must be based only on internal platform data
+- Use neighborhood average price or average price per sqm
+- Make sure the heatmap updates based on:
+  - city filter
+  - property type filter
+  - sale/rent filter
+- No fake values
+
+5) Add legend / scale
+- Add a visible heatmap legend explaining the colors
+- Example:
+  - الأحمر = أسعار مرتفعة جدًا
+  - البرتقالي = أسعار مرتفعة
+  - الأصفر = أسعار متوسطة
+  - الأخضر = أسعار أقل
+- Keep it clean and professional
+
+6) Add neighborhood interaction
+- When user clicks a neighborhood on the map:
+  - show neighborhood name
+  - average price
+  - average price per sqm
+  - number of listings
+  - short comparison insight
+- Example:
+  - "أعلى من متوسط المدينة بـ 12%"
+  - "نشاط مرتفع"
+  - "سعر ضمن النطاق المتوسط"
+
+7) UI/UX
+- Keep Arabic RTL
+- Make the page premium, modern, and visually rich
+- The donut/pie chart and map should feel like one connected analytics experience
+- Add smooth hover states and interactions
+- Keep all text readable and well spaced
+
+8) Layout
+- Suggested layout:
+  - top hero/filter area
+  - donut/pie chart section
+  - interactive heatmap map section
+  - optional details/insights cards below
+- Make spacing clean and balanced
+
+9) Data quality
+- If there is not enough neighborhood data, show a truthful Arabic message
+- Do NOT show misleading map coloring if data is weak
+- Only use real platform data
+
+10) Final deliverable
+After implementation, provide a summary of:
+- what chart was replaced
+- how the heatmap works
+- what price metric is used
+- how color levels are assigned
+- what filters affect the map

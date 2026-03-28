@@ -295,6 +295,40 @@ router.get("/listings-trends", async (req, res) => {
   })));
 });
 
+router.get("/listings-districts-map", async (req, res) => {
+  const f = parseFilters(req.query as Record<string, string>);
+  const where = buildListingConditions(f);
+
+  const results = await db.select({
+    district: listingsTable.district,
+    city: listingsTable.city,
+    count: count(),
+    avgPrice: avg(listingsTable.price),
+    avgPricePerSqm: avg(listingsTable.pricePerSqm),
+    avgLat: sql<number | null>`avg(latitude)`,
+    avgLng: sql<number | null>`avg(longitude)`,
+  }).from(listingsTable)
+    .where(and(
+      where,
+      sql`district is not null`,
+      sql`district != ''`,
+      sql`latitude is not null`,
+      sql`longitude is not null`,
+    ))
+    .groupBy(listingsTable.district, listingsTable.city)
+    .orderBy(desc(count()));
+
+  res.json(results.map(r => ({
+    district: r.district ?? "",
+    city: r.city,
+    count: r.count,
+    avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
+    avgPricePerSqm: Math.round(parseFloat(String(r.avgPricePerSqm ?? "0"))),
+    lat: r.avgLat ? parseFloat(String(r.avgLat)) : null,
+    lng: r.avgLng ? parseFloat(String(r.avgLng)) : null,
+  })));
+});
+
 router.get("/listings-filter-options", async (req, res) => {
   const [cities, districts, types] = await Promise.all([
     db.selectDistinct({ city: listingsTable.city })
