@@ -55,9 +55,10 @@ const analyticsNavItems: NavItemDef[] = [
 ];
 
 const adminNavItems: NavItemDef[] = [
-  { titleKey: "adminPanel", url: "/admin", icon: LayoutDashboard },
-  { titleKey: "addRecord", url: "/admin/add", icon: PlusCircle },
-  { titleKey: "users", url: "/admin/users", icon: Users },
+  { titleKey: "adminPanel",   url: "/admin",          icon: LayoutDashboard },
+  { titleKey: "addRecord",    url: "/admin/add",       icon: PlusCircle },
+  { titleKey: "users",        url: "/admin/users",     icon: Users },
+  { titleKey: "adminReports", url: "/admin/reports",   icon: BarChart3 },
 ];
 
 function NavItem({ item, location }: { item: NavItemDef; location: string }) {

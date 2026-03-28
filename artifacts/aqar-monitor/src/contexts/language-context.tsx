@@ -24,6 +24,7 @@ export const translations = {
     administration: "الإدارة",
     adminPanel: "لوحة الإدارة",
     addRecord: "إضافة سجل",
+    adminReports: "التقارير وأداء المنصة",
     users: "المستخدمون",
     // Header
     login: "تسجيل الدخول",
@@ -70,6 +71,7 @@ export const translations = {
     administration: "Administration",
     adminPanel: "Admin Panel",
     addRecord: "Add Record",
+    adminReports: "Reports & Platform Performance",
     users: "Users",
     // Header
     login: "Sign In",

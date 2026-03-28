@@ -1,0 +1,187 @@
+Create a dedicated admin-only section called:
+
+"التقارير وأداء المنصة"
+
+Goal:
+Give the admin a private dashboard that provides a complete reporting and performance view of the entire platform in one place.
+
+Requirements:
+
+1) Access control
+- This section must be visible ONLY to admin accounts
+- Normal users, marketers, service providers, and other roles must not see it
+- Add it as a separate item in the admin area / sidebar:
+  "التقارير وأداء المنصة"
+
+2) Main purpose
+This page should show the admin a complete overview of all important platform activity, performance, and growth using real internal platform data only.
+
+3) Sections inside the page
+Create the page with these main sections:
+
+A) نظرة عامة على المنصة
+B) تقارير المستخدمين
+C) تقارير العقارات
+D) تقارير الطلبات
+E) تقارير الخدمات
+F) تقارير السوق والتحليلات
+G) الأداء التشغيلي
+H) التقارير المالية (if platform data exists)
+I) التنبيهات والمشكلات
+
+4) A) نظرة عامة على المنصة
+Show top KPI cards such as:
+- إجمالي المستخدمين
+- إجمالي العقارات
+- إجمالي الطلبات
+- إجمالي الخدمات
+- إجمالي الإعلانات النشطة
+- عدد الحسابات الجديدة
+- عدد الإعلانات الجديدة
+- عدد الطلبات الجديدة
+- عدد الخدمات الجديدة
+
+Allow time filters:
+- اليوم
+- الأسبوع
+- الشهر
+- ربع سنة
+- السنة
+
+5) B) تقارير المستخدمين
+Show:
+- إجمالي عدد المستخدمين
+- المستخدمون الجدد حسب الفترة
+- عدد المستخدمين النشطين
+- توزيع المستخدمين حسب الدور:
+  - مستخدم عادي
+  - مسوق عقاري
+  - وسيط
+  - مكتب
+  - مطور
+  - مقدم خدمة
+  - مدير
+- الحسابات الموقوفة أو غير المفعلة
+- أكثر المستخدمين نشاطًا إذا كانت البيانات موجودة
+
+6) C) تقارير العقارات
+Show:
+- إجمالي عدد العقارات
+- عدد العقارات النشطة
+- عدد العقارات المؤرشفة
+- عدد العقارات المباعة
+- عدد العقارات المؤجرة
+- العقارات الجديدة حسب الفترة
+- توزيع العقارات حسب:
+  - المدينة
+  - الحي
+  - النوع
+  - البيع / الإيجار
+- متوسط السعر
+- متوسط سعر المتر
+- أكثر المدن نشاطًا
+- أكثر الأحياء نشاطًا
+
+7) D) تقارير الطلبات
+Show:
+- إجمالي الطلبات
+- الطلبات الجديدة
+- الطلبات النشطة
+- الطلبات المغلقة
+- الطلبات المؤرشفة
+- توزيع الطلبات حسب النوع:
+  - طلب عقار
+  - طلب خدمة
+  - طلب مسوق عقاري
+- أكثر المدن نشاطًا في الطلبات
+
+8) E) تقارير الخدمات
+Show:
+- إجمالي الخدمات
+- الخدمات النشطة
+- الخدمات الجديدة
+- توزيع الخدمات حسب التصنيف
+- أكثر مقدمي الخدمات نشاطًا
+- أكثر المدن نشاطًا في الخدمات
+
+9) F) تقارير السوق والتحليلات
+Show summary of internal platform analytics:
+- متوسط الأسعار
+- اتجاه السوق
+- متوسط سعر المتر
+- الأحياء الأعلى سعرًا
+- الأحياء الأقل سعرًا
+- أكثر المناطق نشاطًا
+- توزيع الأسعار
+- أي مؤشرات داخلية أخرى مبنية فقط على بيانات المنصة
+
+10) G) الأداء التشغيلي
+Show operational/admin metrics if available:
+- عدد عمليات تسجيل الدخول
+- عدد الأخطاء أو الأعطال المسجلة
+- عدد البلاغات أو المشاكل
+- متوسط وقت الاستجابة
+- حالة الأنظمة الرئيسية
+Only show metrics that actually exist in platform data/logs
+
+11) H) التقارير المالية
+If platform financial data exists, show:
+- عدد الإعلانات المدفوعة
+- إيرادات الإعلانات المميزة
+- الاشتراكات
+- العمولات
+- الإيراد حسب الفترة
+If no financial data exists yet, hide this section or show:
+"لا توجد بيانات مالية كافية حاليًا"
+
+12) I) التنبيهات والمشكلات
+Add an admin alerts area for things like:
+- انخفاض البيانات في قسم معين
+- نشاط غير طبيعي
+- قلة الإعلانات في مدينة أو حي
+- بيانات غير كافية للتحليل
+- عناصر تحتاج مراجعة
+Keep alerts useful and based on real platform conditions
+
+13) Visuals and charts
+Use professional admin analytics visuals:
+- KPI cards
+- line charts
+- bar charts
+- pie/donut charts
+- tables where needed
+
+Keep the page clean, premium, and highly readable in Arabic RTL.
+
+14) Filters
+Add filters across the reports page:
+- المدة الزمنية
+- المدينة
+- نوع العقار
+- نوع المستخدم
+Apply filters consistently where relevant
+
+15) Data rules
+- Use only real internal platform data
+- Do NOT show fake placeholder numbers as real admin insights
+- If a metric has no data, show a truthful empty state
+- Do NOT generate unsupported conclusions
+
+16) Export
+If possible, add export options for admin:
+- Excel
+- PDF
+for key reports
+
+17) Security
+- Ensure only admins can access this page and its data
+- Protect all report endpoints on the backend
+- Do not expose admin reports to any other role
+
+18) Final deliverable
+After implementation, provide a summary of:
+- what sections were added
+- what metrics each section shows
+- what filters were added
+- what charts were used
+- how admin-only access was enforced

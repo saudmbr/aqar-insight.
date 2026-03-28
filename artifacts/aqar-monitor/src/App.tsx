@@ -38,6 +38,7 @@ import AdminPanel from "@/pages/admin-panel";
 import AdminAdd from "@/pages/admin-add";
 import AdminEdit from "@/pages/admin-edit";
 import AdminUsers from "@/pages/admin-users";
+import AdminReports from "@/pages/admin-reports";
 
 import LegalTerms from "@/pages/legal-terms";
 import LegalPrivacy from "@/pages/legal-privacy";
@@ -129,6 +130,9 @@ function Router() {
       </Route>
       <Route path="/admin/users">
         {() => <AdminRoute component={AdminUsers} />}
+      </Route>
+      <Route path="/admin/reports">
+        {() => <AdminRoute component={AdminReports} />}
       </Route>
 
       {/* Legal pages */}

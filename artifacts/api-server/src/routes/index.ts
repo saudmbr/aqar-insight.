@@ -10,6 +10,7 @@ import favoritesRouter from "./favorites";
 import serviceProvidersRouter from "./service-providers";
 import customerRequestsRouter from "./customer-requests";
 import adminUsersRouter from "./admin-users";
+import adminReportsRouter from "./admin-reports";
 import marketersRouter from "./marketers";
 import storageRouter from "./storage";
 
@@ -26,6 +27,7 @@ router.use("/favorites", favoritesRouter);
 router.use("/service-providers", serviceProvidersRouter);
 router.use("/customer-requests", customerRequestsRouter);
 router.use("/admin/users", adminUsersRouter);
+router.use("/admin/reports", adminReportsRouter);
 router.use("/marketers", marketersRouter);
 router.use(storageRouter);
 
