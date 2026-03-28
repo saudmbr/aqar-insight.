@@ -46,12 +46,12 @@ const marketplaceNavItems: NavItemDef[] = [
   { titleKey: "marketers", url: "/marketers", icon: Star },
   { titleKey: "services", url: "/services", icon: Wrench },
   { titleKey: "requests", url: "/requests", icon: FileText },
+  { titleKey: "futureProjects", url: "/future", icon: Sparkles },
 ];
 
 const analyticsNavItems: NavItemDef[] = [
   { titleKey: "marketAnalysis", url: "/analytics", icon: BarChart3 },
   { titleKey: "districtComparison", url: "/districts", icon: Map },
-  { titleKey: "futureProjects", url: "/future", icon: Sparkles },
 ];
 
 const adminNavItems: NavItemDef[] = [
