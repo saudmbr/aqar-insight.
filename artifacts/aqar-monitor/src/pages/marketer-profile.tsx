@@ -117,20 +117,20 @@ export default function MarketerProfilePage() {
 
         {/* Profile hero card */}
         <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
-          {/* Banner */}
-          <div className="h-28 relative" style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F7BA0 100%)" }}>
+          {/* Slim banner */}
+          <div className="h-16 relative" style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F7BA0 100%)" }}>
             {profile.verified && (
-              <span className="absolute top-4 left-4 flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full bg-white/20 backdrop-blur text-white border border-white/30">
-                <BadgeCheck className="w-4 h-4" />مسوّق موثّق
+              <span className="absolute top-3 left-4 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-white border border-white/30">
+                <BadgeCheck className="w-3.5 h-3.5" />مسوّق موثّق
               </span>
             )}
           </div>
 
           <div className="px-6 pb-6">
-            {/* Single flex row: avatar straddles banner, name+CTA pushed to card body level */}
-            <div className="flex items-start gap-4 -mt-10 flex-wrap">
-              {/* Avatar — sits at -mt-10, straddling the banner/card boundary */}
-              <div className="w-20 h-20 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center shadow-lg overflow-hidden shrink-0">
+            {/* Avatar row — small overlap of the slim banner */}
+            <div className="flex items-end gap-4 -mt-7">
+              {/* Avatar */}
+              <div className="w-14 h-14 rounded-xl border-2 border-card bg-primary/10 flex items-center justify-center shadow-md overflow-hidden shrink-0">
                 {profile.photo ? (
                   <img
                     src={getImageSrc(profile.photo) ?? ""}
@@ -145,22 +145,26 @@ export default function MarketerProfilePage() {
                   />
                 ) : null}
                 <span
-                  className="text-3xl font-bold text-primary"
+                  className="text-xl font-bold text-primary"
                   style={profile.photo ? { display: "none" } : {}}
                 >
                   {profile.fullName.charAt(0)}
                 </span>
               </div>
+              {/* Spacer to keep avatar aligned */}
+              <div className="flex-1" />
+            </div>
 
-              {/* Name / office / city — mt-10 cancels parent -mt-10, placing text at card body */}
-              <div className="flex-1 min-w-0 mt-10 pt-1.5">
-                <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+            {/* Name / office / city / CTAs row */}
+            <div className="flex items-start justify-between gap-4 mt-3 flex-wrap">
+              <div className="min-w-0">
+                <h1 className="text-xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
                 {profile.officeName && (
-                  <p className="text-base text-muted-foreground font-medium mt-0.5">{profile.officeName}</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-0.5">{profile.officeName}</p>
                 )}
                 {profile.city && (
-                  <div className="flex items-center gap-1 mt-1.5 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 shrink-0" />{profile.city}
+                  <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />{profile.city}
                   </div>
                 )}
                 {specialties.length > 0 && (
@@ -171,9 +175,7 @@ export default function MarketerProfilePage() {
                   </div>
                 )}
               </div>
-
-              {/* CTA buttons — mt-10 same as name div, appears at card body level */}
-              <div className="flex gap-3 flex-wrap shrink-0 mt-10">
+              <div className="flex gap-2 flex-wrap shrink-0">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
                     <a href={whatsappLink} target="_blank" rel="noopener noreferrer">

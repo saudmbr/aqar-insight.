@@ -117,8 +117,8 @@ export default function ServiceProviderProfile() {
 
         {/* Profile hero card */}
         <div className="bg-card rounded-3xl border border-border/60 overflow-hidden shadow-sm">
-          {/* Banner — use first portfolio image as cover, fallback to gradient */}
-          <div className="h-40 relative overflow-hidden">
+          {/* Slim banner — image thumbnail strip if available, otherwise gradient */}
+          <div className="h-16 relative overflow-hidden">
             {images.length > 0 ? (
               <>
                 <img
@@ -129,7 +129,7 @@ export default function ServiceProviderProfile() {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
               </>
             ) : (
               <div
@@ -140,37 +140,37 @@ export default function ServiceProviderProfile() {
               </div>
             )}
             {provider.verified && (
-              <span className="absolute top-4 left-4 flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full bg-white/20 backdrop-blur text-white border border-white/30 z-10">
-                <BadgeCheck className="w-4 h-4" />مزوّد موثّق
+              <span className="absolute top-3 left-4 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur text-white border border-white/30 z-10">
+                <BadgeCheck className="w-3.5 h-3.5" />مزوّد موثّق
               </span>
             )}
           </div>
 
           <div className="px-6 pb-6">
-            {/* Row: business icon + name/info + CTA — same pattern as marketer profile */}
-            <div className="flex items-start gap-4 -mt-10 flex-wrap">
-              {/* Business avatar icon */}
-              <div className="w-20 h-20 rounded-2xl border-4 border-card bg-primary/10 flex items-center justify-center shadow-lg shrink-0">
-                <Wrench className="w-8 h-8 text-primary" />
+            {/* Avatar row — slight overlap of slim banner */}
+            <div className="flex items-end gap-4 -mt-7">
+              <div className="w-14 h-14 rounded-xl border-2 border-card bg-primary/10 flex items-center justify-center shadow-md shrink-0">
+                <Wrench className="w-6 h-6 text-primary" />
               </div>
+              <div className="flex-1" />
+            </div>
 
-              {/* Business name / category / city — mt-10 cancels parent -mt-10 */}
-              <div className="flex-1 min-w-0 mt-10 pt-1.5">
-                <h1 className="text-2xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
-                <div className="flex items-center flex-wrap gap-2 mt-1.5">
+            {/* Business name / category / city + CTA */}
+            <div className="flex items-start justify-between gap-4 mt-3 flex-wrap">
+              <div className="min-w-0">
+                <h1 className="text-xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
+                <div className="flex items-center flex-wrap gap-2 mt-1">
                   <Badge variant="outline" className="rounded-lg text-xs px-2.5 py-1 border-primary/20 text-primary bg-primary/5 font-semibold">
                     {provider.category}
                   </Badge>
                   {provider.city && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />{provider.city}
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* CTA buttons — mt-10 places them at card-body level */}
-              <div className="flex gap-3 flex-wrap shrink-0 mt-10">
+              <div className="flex gap-2 flex-wrap shrink-0">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
                     <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
