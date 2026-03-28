@@ -29,7 +29,7 @@ export default function LegalUsage() {
         </nav>
 
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#DB2777] to-[#a8872d] text-white rounded-3xl p-10 mb-10 shadow-xl">
+        <div className="bg-gradient-to-br from-[#94A3B8] to-[#a8872d] text-white rounded-3xl p-10 mb-10 shadow-xl">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 bg-white/15 rounded-2xl flex items-center justify-center">
               <BookOpen className="w-7 h-7 text-white" />
@@ -170,7 +170,7 @@ function Section({ number, title, children }: { number: string; title: string; c
   return (
     <section>
       <div className="flex items-start gap-4 mb-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#DB2777]/10 text-[#DB2777] font-bold text-sm flex items-center justify-center border border-[#DB2777]/30">
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#94A3B8]/10 text-[#94A3B8] font-bold text-sm flex items-center justify-center border border-[#94A3B8]/30">
           {number}
         </div>
         <h2 className="text-xl font-bold text-foreground pt-1.5">{title}</h2>
@@ -217,7 +217,7 @@ function Penalty({
 function Li({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#DB2777] flex-shrink-0" />
+      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#94A3B8] flex-shrink-0" />
       <span>{children}</span>
     </li>
   );

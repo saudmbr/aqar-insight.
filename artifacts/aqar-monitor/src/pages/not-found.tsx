@@ -23,7 +23,7 @@ export default function NotFound() {
           </span>
           <Building2
             className="absolute inset-0 m-auto w-16 h-16"
-            style={{ color: "#DB2777" }}
+            style={{ color: "#94A3B8" }}
           />
         </div>
 

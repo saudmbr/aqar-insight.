@@ -41,7 +41,7 @@ type ReportData = {
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const PALETTE = ["#0F7BA0","#DB2777","#34D399","#8B5CF6","#F97316","#EF4444","#06B6D4","#F59E0B","#EC4899","#14B8A6"];
+const PALETTE = ["#0F7BA0","#94A3B8","#34D399","#8B5CF6","#F97316","#EF4444","#06B6D4","#F59E0B","#EC4899","#14B8A6"];
 
 const PERIODS = [
   { value: "day",     label: "اليوم"       },
@@ -295,7 +295,7 @@ export default function AdminReports() {
           <TabsContent value="overview" className="mt-5 space-y-5">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               <KPICard label="إجمالي المستخدمين"    value={data?.overview.totalUsers    ?? 0} sub={`+${data?.overview.newUsers ?? 0} خلال ${currentPeriodLabel}`}    icon={Users}      loading={isLoading} />
-              <KPICard label="إجمالي الإعلانات"    value={data?.overview.totalListings  ?? 0} sub={`+${data?.overview.newListings ?? 0} جديد خلال ${currentPeriodLabel}`} icon={Building2}  color="#DB2777" loading={isLoading} />
+              <KPICard label="إجمالي الإعلانات"    value={data?.overview.totalListings  ?? 0} sub={`+${data?.overview.newListings ?? 0} جديد خلال ${currentPeriodLabel}`} icon={Building2}  color="#94A3B8" loading={isLoading} />
               <KPICard label="الإعلانات النشطة"    value={data?.overview.activeListings  ?? 0} sub="الإعلانات الظاهرة حالياً للجمهور"                                  icon={CheckCircle2} color="#34D399" loading={isLoading} />
               <KPICard label="إجمالي الطلبات"      value={data?.overview.totalRequests   ?? 0} sub={`+${data?.overview.newRequests ?? 0} جديد`}                         icon={FileText}   color="#8B5CF6" loading={isLoading} />
               <KPICard label="إجمالي الخدمات"      value={data?.overview.totalServices   ?? 0} sub={`+${data?.overview.newServices ?? 0} جديد`}                         icon={Wrench}     color="#F97316" loading={isLoading} />
@@ -309,7 +309,7 @@ export default function AdminReports() {
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   {[
                     { label: "مستخدمون جدد",   value: data?.overview.newUsers    ?? 0, color: "#0F7BA0" },
-                    { label: "إعلانات جديدة",  value: data?.overview.newListings ?? 0, color: "#DB2777" },
+                    { label: "إعلانات جديدة",  value: data?.overview.newListings ?? 0, color: "#94A3B8" },
                     { label: "طلبات جديدة",    value: data?.overview.newRequests ?? 0, color: "#8B5CF6" },
                     { label: "خدمات جديدة",    value: data?.overview.newServices ?? 0, color: "#34D399" },
                   ].map(item => (
@@ -355,7 +355,7 @@ export default function AdminReports() {
               <KPICard label="إجمالي المستخدمين"  value={data?.overview.totalUsers ?? 0}  icon={Users}   loading={isLoading} />
               <KPICard label="جدد خلال الفترة"    value={data?.overview.newUsers ?? 0}   icon={TrendingUp} color="#34D399" loading={isLoading}
                 sub={`خلال ${currentPeriodLabel}`} />
-              <KPICard label="المسوّقون المسجلون" value={data?.overview.totalMarketers ?? 0} icon={Star} color="#DB2777" loading={isLoading} />
+              <KPICard label="المسوّقون المسجلون" value={data?.overview.totalMarketers ?? 0} icon={Star} color="#94A3B8" loading={isLoading} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <SectionCard title="توزيع المستخدمين حسب الدور" sub="نسبة كل دور من إجمالي المستخدمين">
@@ -386,7 +386,7 @@ export default function AdminReports() {
               <KPICard label="إجمالي الإعلانات"  value={data?.overview.totalListings ?? 0}   icon={Building2}  loading={isLoading} />
               <KPICard label="نشط"                value={data?.overview.activeListings ?? 0}  icon={CheckCircle2} color="#34D399" loading={isLoading} />
               <KPICard label="مؤرشف"             value={data?.overview.archivedListings ?? 0} icon={FileText}   color="#94A3B8" loading={isLoading} />
-              <KPICard label="مميّز (Featured)"   value={data?.listings.featuredCount ?? 0}   icon={Star}       color="#DB2777" loading={isLoading} />
+              <KPICard label="مميّز (Featured)"   value={data?.listings.featuredCount ?? 0}   icon={Star}       color="#94A3B8" loading={isLoading} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
@@ -451,7 +451,7 @@ export default function AdminReports() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <KPICard label="إجمالي الطلبات"  value={data?.overview.totalRequests ?? 0} icon={FileText}   loading={isLoading} />
               <KPICard label="جدد خلال الفترة" value={data?.overview.newRequests ?? 0}   icon={TrendingUp} color="#34D399" loading={isLoading} sub={`خلال ${currentPeriodLabel}`} />
-              <KPICard label="نشطة"            value={(data?.requests.byStatus ?? []).find(r => r.status === "active")?.count ?? 0} icon={Activity} color="#DB2777" loading={isLoading} />
+              <KPICard label="نشطة"            value={(data?.requests.byStatus ?? []).find(r => r.status === "active")?.count ?? 0} icon={Activity} color="#94A3B8" loading={isLoading} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <SectionCard title="توزيع الطلبات حسب الحالة">
@@ -544,7 +544,7 @@ export default function AdminReports() {
                 icon={Activity} color="#0F7BA0" loading={isLoading}
                 sub="عدد جلسات تسجيل الدخول المحفوظة في الخادم حالياً" />
               <KPICard label="إعلانات مميّزة" value={data?.listings.featuredCount ?? 0}
-                icon={Star} color="#DB2777" loading={isLoading} />
+                icon={Star} color="#94A3B8" loading={isLoading} />
               <KPICard label="إعلانات موثّقة" value={data?.listings.verifiedCount ?? 0}
                 icon={CheckCircle2} color="#34D399" loading={isLoading} />
             </div>

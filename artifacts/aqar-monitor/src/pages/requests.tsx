@@ -167,15 +167,15 @@ export default function Requests() {
                 {/* 3 pillars */}
                 <div className="flex flex-wrap gap-3 mt-6">
                   <span className="flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-4 py-2 rounded-xl text-sm font-semibold">
-                    <Building2 className="w-4 h-4 text-[#DB2777]" />
+                    <Building2 className="w-4 h-4 text-[#94A3B8]" />
                     بحث عن عقار
                   </span>
                   <span className="flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-4 py-2 rounded-xl text-sm font-semibold">
-                    <Wrench className="w-4 h-4 text-[#DB2777]" />
+                    <Wrench className="w-4 h-4 text-[#94A3B8]" />
                     بحث عن خدمة
                   </span>
                   <span className="flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-4 py-2 rounded-xl text-sm font-semibold">
-                    <UserCheck className="w-4 h-4 text-[#DB2777]" />
+                    <UserCheck className="w-4 h-4 text-[#94A3B8]" />
                     بحث عن مسوّق عقاري
                   </span>
                 </div>
@@ -184,7 +184,7 @@ export default function Requests() {
               {/* CTA */}
               <div className="flex flex-col gap-4 shrink-0">
                 {isAuthenticated ? (
-                  <Button asChild size="lg" className="gap-2 rounded-2xl h-14 px-8 text-base font-bold bg-[#DB2777] hover:bg-[#b8973e] text-white border-none shadow-xl shadow-[#DB2777]/20">
+                  <Button asChild size="lg" className="gap-2 rounded-2xl h-14 px-8 text-base font-bold bg-[#94A3B8] hover:bg-[#b8973e] text-white border-none shadow-xl shadow-[#94A3B8]/20">
                     <Link href="/requests/new">
                       <PlusCircle className="w-5 h-5" />
                       نشر طلب جديد

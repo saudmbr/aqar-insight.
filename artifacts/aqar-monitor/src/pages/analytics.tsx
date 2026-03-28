@@ -64,7 +64,7 @@ const DIST_SORT_OPTS = [
   { value: "sqm",      label: "سعر المتر" },
 ];
 
-const BAR_COLORS = ["#0F7BA0", "#0F1C3F", "#DB2777", "#34D399", "#8B5CF6", "#F97316", "#EF4444", "#64748B"];
+const BAR_COLORS = ["#0F7BA0", "#0F1C3F", "#94A3B8", "#34D399", "#8B5CF6", "#F97316", "#EF4444", "#64748B"];
 const INPUT_CLS = "w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
 
 // ── Helper components ─────────────────────────────────────────────────────────
@@ -373,7 +373,7 @@ export default function Analytics() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   <KpiBlock label="متوسط سعر العقار" color="#0F7BA0" loading={loadingInsights}
                     value={formatCurrency(avgP)} sub="متوسط أسعار جميع الإعلانات النشطة" />
-                  <KpiBlock label="الوسيط السعري" color="#DB2777" loading={loadingInsights}
+                  <KpiBlock label="الوسيط السعري" color="#94A3B8" loading={loadingInsights}
                     value={formatCurrency(medP)} sub="50% من الإعلانات أقل من هذا السعر" />
                   <KpiBlock label="متوسط سعر المتر" color="#34D399" loading={loadingInsights}
                     value={formatCurrency(avgSqm)} sub="ريال سعودي / م²" />
@@ -486,7 +486,7 @@ export default function Analytics() {
                                 name === "count" ? "عدد الإعلانات" : "متوسط السعر",
                               ]}
                             />
-                            <Line yAxisId="l" type="monotone" dataKey="count" stroke="#DB2777" strokeWidth={2.5} dot={{ r: 3, fill: "#DB2777", strokeWidth: 0 }} name="count" />
+                            <Line yAxisId="l" type="monotone" dataKey="count" stroke="#94A3B8" strokeWidth={2.5} dot={{ r: 3, fill: "#94A3B8", strokeWidth: 0 }} name="count" />
                             <Line yAxisId="r" type="monotone" dataKey="avgPrice" stroke="#0F7BA0" strokeWidth={2.5} dot={{ r: 3, fill: "#0F7BA0", strokeWidth: 0 }} name="avgPrice" />
                           </LineChart>
                         </ResponsiveContainer>
@@ -494,7 +494,7 @@ export default function Analytics() {
                     </div>
                     <div className="flex items-center justify-center gap-6 mt-2">
                       <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                        <span className="w-5 h-0.5 bg-[#DB2777] rounded-full inline-block" /> عدد الإعلانات
+                        <span className="w-5 h-0.5 bg-[#94A3B8] rounded-full inline-block" /> عدد الإعلانات
                       </div>
                       <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
                         <span className="w-5 h-0.5 bg-[#0F7BA0] rounded-full inline-block" /> متوسط السعر
