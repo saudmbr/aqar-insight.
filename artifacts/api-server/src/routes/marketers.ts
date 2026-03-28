@@ -37,7 +37,7 @@ marketersRouter.put("/me/profile", async (req: Request, res: Response) => {
 
   const {
     officeName, bio, city, servedAreas, specialties, yearsExperience,
-    licenseNumber, photo, phone, whatsapp, email,
+    licenseNumber, photo, coverImage, phone, whatsapp, email,
     websiteUrl, facebookUrl, twitterUrl, instagramUrl, linkedinUrl,
   } = req.body as Record<string, unknown>;
 
@@ -56,6 +56,7 @@ marketersRouter.put("/me/profile", async (req: Request, res: Response) => {
     yearsExperience: yearsExperience ? parseInt(yearsExperience as string) : null,
     licenseNumber: licenseNumber ? String(licenseNumber) : null,
     photo: photo ? String(photo) : null,
+    coverImage: coverImage ? String(coverImage) : null,
     phone: phone ? String(phone) : null,
     whatsapp: whatsapp ? String(whatsapp) : null,
     email: email ? String(email) : null,
@@ -107,6 +108,7 @@ marketersRouter.get("/", async (_req: Request, res: Response) => {
       specialties: marketerProfilesTable.specialties,
       yearsExperience: marketerProfilesTable.yearsExperience,
       photo: marketerProfilesTable.photo,
+      coverImage: marketerProfilesTable.coverImage,
       whatsapp: marketerProfilesTable.whatsapp,
       phone: marketerProfilesTable.phone,
       verified: marketerProfilesTable.verified,
@@ -139,6 +141,7 @@ marketersRouter.get("/:id", async (req: Request, res: Response) => {
       yearsExperience: marketerProfilesTable.yearsExperience,
       licenseNumber: marketerProfilesTable.licenseNumber,
       photo: marketerProfilesTable.photo,
+      coverImage: marketerProfilesTable.coverImage,
       phone: marketerProfilesTable.phone,
       whatsapp: marketerProfilesTable.whatsapp,
       email: marketerProfilesTable.email,

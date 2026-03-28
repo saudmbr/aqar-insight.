@@ -13,6 +13,7 @@ export const marketerProfilesTable = pgTable("marketer_profiles", {
   yearsExperience: integer("years_experience"),
   licenseNumber: text("license_number"),
   photo: text("photo"),
+  coverImage: text("cover_image"),
 
   phone: text("phone"),
   whatsapp: text("whatsapp"),

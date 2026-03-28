@@ -19,6 +19,7 @@ interface MarketerRow {
   specialties: string | null;
   yearsExperience: number | null;
   photo: string | null;
+  coverImage: string | null;
   whatsapp: string | null;
   phone: string | null;
   verified: boolean;
@@ -32,10 +33,31 @@ function MarketerCard({ m }: { m: MarketerRow }) {
   return (
     <Link href={`/marketers/${m.id}`}>
       <div className="group bg-card border border-border/60 rounded-2xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-200 cursor-pointer hover:-translate-y-0.5">
-        {/* Header gradient */}
-        <div className="h-20 bg-gradient-to-l from-primary/20 to-primary/5 relative">
+        {/* Header — cover image or gradient */}
+        <div className="h-24 relative overflow-hidden">
+          {m.coverImage && getImageSrc(m.coverImage) ? (
+            <img
+              src={getImageSrc(m.coverImage) ?? ""}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={e => {
+                const img = e.currentTarget as HTMLImageElement;
+                img.style.display = "none";
+                const fallback = img.nextElementSibling as HTMLElement | null;
+                if (fallback) fallback.style.display = "block";
+              }}
+            />
+          ) : null}
+          <div
+            className="absolute inset-0"
+            style={
+              m.coverImage && getImageSrc(m.coverImage)
+                ? { background: "linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)" }
+                : { background: "linear-gradient(135deg, #0F1C3F 0%, #0F7BA0 100%)" }
+            }
+          />
           {m.verified && (
-            <span className="absolute top-3 left-3 flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary text-white">
+            <span className="absolute top-3 left-3 flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary text-white z-10">
               <BadgeCheck className="w-3.5 h-3.5" /> موثّق
             </span>
           )}

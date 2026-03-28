@@ -24,6 +24,7 @@ interface MarketerProfile {
   yearsExperience: number | null;
   licenseNumber: string | null;
   photo: string | null;
+  coverImage: string | null;
   phone: string | null;
   whatsapp: string | null;
   email: string | null;
@@ -115,16 +116,33 @@ export default function MarketerProfilePage() {
           </Link>
         </div>
 
-        {/* Profile hero card — clean side-by-side layout, no banner */}
+        {/* Profile hero card */}
         <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
-          {/* Teal accent strip at top */}
-          <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
+          {/* Cover image / accent strip */}
+          {profile.coverImage && getImageSrc(profile.coverImage) ? (
+            <div className="h-36 w-full relative overflow-hidden">
+              <img
+                src={getImageSrc(profile.coverImage) ?? ""}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={e => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  img.parentElement!.style.display = "none";
+                  const strip = img.parentElement!.nextElementSibling as HTMLElement | null;
+                  if (strip) strip.style.display = "block";
+                }}
+              />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,28,63,0.65) 0%, transparent 60%)" }} />
+            </div>
+          ) : (
+            <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
+          )}
 
-          <div className="p-6">
+          <div className={profile.coverImage && getImageSrc(profile.coverImage) ? "p-6 -mt-10 relative z-10" : "p-6"}>
             {/* Main info row: avatar + details + CTAs */}
             <div className="flex items-center gap-5 flex-wrap">
-              {/* Avatar — fixed size, no overlap tricks */}
-              <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-border flex items-center justify-center overflow-hidden shrink-0">
+              {/* Avatar — fixed size, white border when over cover image */}
+              <div className={`w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 ${profile.coverImage && getImageSrc(profile.coverImage) ? "border-4 border-white shadow-md" : "border border-border"}`}>
                 {profile.photo ? (
                   <img
                     src={getImageSrc(profile.photo) ?? ""}

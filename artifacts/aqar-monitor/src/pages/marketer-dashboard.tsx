@@ -27,6 +27,7 @@ interface MarketerProfile {
   yearsExperience?: number;
   licenseNumber?: string;
   photo?: string;
+  coverImage?: string;
   phone?: string;
   whatsapp?: string;
   email?: string;
@@ -359,13 +360,24 @@ export default function MarketerDashboard() {
               </div>
             </Section>
 
-            <Section title="🖼️ الصورة الشخصية">
-              <ImageUploader
-                value={profile.photo ?? ""}
-                onChange={v => set("photo", v.split("\n")[0]?.trim() ?? "")}
-                maxImages={1}
-                label="الصورة الشخصية"
-              />
+            <Section title="🖼️ الصور الشخصية">
+              <Field label="الصورة الشخصية (الأفاتار)">
+                <ImageUploader
+                  value={profile.photo ?? ""}
+                  onChange={v => set("photo", v.split("\n")[0]?.trim() ?? "")}
+                  maxImages={1}
+                  label="الصورة الشخصية"
+                />
+              </Field>
+              <Field label="صورة الغلاف (Cover Image)">
+                <p className="text-xs text-muted-foreground mb-2">تظهر كخلفية لبطاقة ملفك في دليل المسوّقين</p>
+                <ImageUploader
+                  value={profile.coverImage ?? ""}
+                  onChange={v => set("coverImage", v.split("\n")[0]?.trim() ?? "")}
+                  maxImages={1}
+                  label="صورة الغلاف"
+                />
+              </Field>
             </Section>
 
             {/* Save */}
