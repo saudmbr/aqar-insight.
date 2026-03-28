@@ -125,11 +125,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("lang", lang);
-    root.setAttribute("dir", isRTL ? "rtl" : "ltr");
     try {
       localStorage.setItem("aqar-lang", lang);
     } catch {}
-  }, [lang, isRTL]);
+  }, [lang]);
 
   const toggleLang = () => setLang(l => (l === "ar" ? "en" : "ar"));
   const t = (key: TranslationKey): string => translations[lang][key];

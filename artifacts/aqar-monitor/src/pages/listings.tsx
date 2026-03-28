@@ -34,12 +34,16 @@ interface ListingsResponse {
 
 export default function Listings() {
   const { isAuthenticated } = useAuth();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [showFilters, setShowFilters] = useState(false);
+
+  // Read ?q= from URL on mount
+  const urlSearch = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("q") ?? "";
 
   // Filters
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
+  const [search, setSearch] = useState(urlSearch);
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -50,8 +54,15 @@ export default function Listings() {
   const [data, setData] = useState<ListingsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync URL ?q= changes (e.g. from the top-bar search)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q") ?? "";
+    setSearch(q);
+  }, [location]);
+
   const buildQuery = (pg = page) => {
     const params = new URLSearchParams();
+    if (search) params.set("search", search);
     if (city) params.set("city", city);
     if (district) params.set("district", district);
     if (propertyType) params.set("propertyType", propertyType);
@@ -79,7 +90,7 @@ export default function Listings() {
   useEffect(() => {
     void fetchListings(1);
     setPage(1);
-  }, [city, district, propertyType, listingType, minPrice, maxPrice, bedrooms]);
+  }, [city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -88,11 +99,11 @@ export default function Listings() {
   };
 
   const resetFilters = () => {
-    setCity(""); setDistrict(""); setPropertyType(""); setListingType(""); setMinPrice(""); setMaxPrice(""); setBedrooms("");
+    setCity(""); setDistrict(""); setSearch(""); setPropertyType(""); setListingType(""); setMinPrice(""); setMaxPrice(""); setBedrooms("");
   };
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
-  const activeFiltersCount = [city, district, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
+  const activeFiltersCount = [city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
 
   return (
     <Layout>
@@ -129,9 +140,9 @@ export default function Listings() {
             <div className="relative flex-1">
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
               <Input
-                placeholder="ابحث بالحي أو المنطقة أو اسم الشارع…"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
+                placeholder="ابحث بالعقار أو الحي أو المدينة…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pr-12 h-14 rounded-2xl text-lg font-medium border-border/80 shadow-sm focus:border-primary focus:ring-primary/20"
               />
             </div>

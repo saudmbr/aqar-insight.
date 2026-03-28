@@ -19,13 +19,22 @@ listingsRouter.get("/", async (req: Request, res: Response) => {
     city, district, propertyType, listingType, listingPurpose,
     minPrice, maxPrice, minArea, maxArea,
     bedrooms, furnished, featured, urgent, exclusive,
-    marketerId,
+    marketerId, search,
     page = "1", limit = "20",
     sort = "newest",
   } = req.query as Record<string, string>;
 
   const conditions = [eq(listingsTable.status, "active")];
 
+  if (search) {
+    conditions.push(
+      or(
+        ilike(listingsTable.title, `%${search}%`),
+        ilike(listingsTable.district, `%${search}%`),
+        ilike(listingsTable.city, `%${search}%`),
+      )!
+    );
+  }
   if (city) conditions.push(eq(listingsTable.city, city));
   if (district) conditions.push(ilike(listingsTable.district, `%${district}%`));
   if (propertyType) conditions.push(eq(listingsTable.propertyType, propertyType));
