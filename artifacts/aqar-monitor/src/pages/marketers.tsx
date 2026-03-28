@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout/layout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Phone, Search, BadgeCheck, Building2, Star, Users, ChevronLeft } from "lucide-react";
+import { MapPin, Phone, Search, BadgeCheck, Building2, Star, Users, ChevronLeft, ShieldCheck, MessageCircle, SlidersHorizontal } from "lucide-react";
 import { getImageSrc } from "@/lib/utils";
 
 interface MarketerRow {
@@ -163,6 +163,60 @@ export default function Marketers() {
             <p className="text-white/75 mt-2 text-base max-w-2xl">
               تصفح كوكبة من أفضل المسوّقين العقاريين المحترفين، واطّلع على كتالوج عقاراتهم
             </p>
+          </div>
+        </div>
+
+        {/* Service description for visitors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: <ShieldCheck className="w-6 h-6" />,
+              color: "text-primary bg-primary/10 border-primary/20",
+              title: "مسوّقون موثّقون",
+              desc: "جميع المسوّقين المعروضين لديهم ملفات معتمدة، مع إمكانية التحقق من رقم الترخيص (فال) مباشرةً",
+            },
+            {
+              icon: <Building2 className="w-6 h-6" />,
+              color: "text-[#0F7BA0] bg-[#0F7BA0]/10 border-[#0F7BA0]/20",
+              title: "كتالوج العقارات",
+              desc: "تصفح إعلانات كل مسوّق بشكل مباشر من ملفه الشخصي — بيع، إيجار، أراضي، وأكثر",
+            },
+            {
+              icon: <MessageCircle className="w-6 h-6" />,
+              color: "text-green-600 bg-green-50 border-green-200",
+              title: "تواصل فوري",
+              desc: "تواصل مع المسوّق مباشرةً عبر الواتساب أو الجوال دون وسيط أو انتظار",
+            },
+          ].map((item, i) => (
+            <div key={i} className="flex gap-4 bg-card border border-border/60 rounded-2xl p-5 hover:shadow-sm transition-shadow">
+              <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${item.color}`}>
+                {item.icon}
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-1">{item.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* How it works strip */}
+        <div className="rounded-2xl border border-border/60 bg-muted/30 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-2 shrink-0">
+            <SlidersHorizontal className="w-5 h-5 text-primary" />
+            <span className="text-sm font-bold text-foreground">كيف تستفيد من الدليل؟</span>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            {[
+              { n: "١", t: "ابحث عن مسوّق بالمنطقة أو التخصص" },
+              { n: "٢", t: "اطّلع على ملفه وكتالوج عقاراته" },
+              { n: "٣", t: "تواصل معه مباشرةً لإتمام الصفقة" },
+            ].map(step => (
+              <div key={step.n} className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-primary/15 text-primary text-[10px] font-black flex items-center justify-center shrink-0">{step.n}</span>
+                <span>{step.t}</span>
+              </div>
+            ))}
           </div>
         </div>
 
