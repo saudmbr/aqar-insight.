@@ -1,0 +1,93 @@
+Implement phone number verification with SMS OTP during account registration for all account types except admin.
+
+Goal:
+Make phone verification mandatory during signup, so no user account can be created unless the phone number is verified first.
+
+Requirements:
+
+1) Apply to all account types except admin
+- Require phone verification for:
+  - normal user
+  - property owner
+  - real estate marketer
+  - broker
+  - real estate office
+  - developer
+  - service provider
+- Do NOT apply this requirement to admin accounts
+
+2) Signup form update
+- Add a required field:
+  - رقم الجوال
+- Validate Saudi phone number format properly
+- Prevent signup submission if phone number is missing or invalid
+
+3) OTP verification flow
+- After user submits signup form:
+  - generate a secure one-time verification code (OTP)
+  - send it by SMS to the provided phone number
+- Create a verification step/page where user enters the OTP
+- Only complete account creation after successful OTP verification
+
+4) Verification rules
+- OTP must:
+  - expire after a short period (for example 5–10 minutes)
+  - be one-time use only
+  - be invalidated after successful verification
+- Add resend OTP option with cooldown timer
+- Limit repeated attempts to prevent abuse
+
+5) Account creation logic
+- Do NOT create a fully active account before phone verification is completed
+- Either:
+  - create account in pending state until verified
+  OR
+  - create account only after verification succeeds
+- Mark verified phone status in database
+
+6) Database updates
+- Add fields such as:
+  - phone_number
+  - phone_verified
+  - phone_verified_at
+  - verification_status
+- Ensure fields are supported across all non-admin account types
+
+7) Login rules
+- Do not allow unverified users to access full account features
+- If account is pending verification, redirect them to complete phone verification
+- Keep admin login working as it is
+
+8) Security
+- Rate limit OTP requests
+- Rate limit verification attempts
+- Prevent brute force on OTP
+- Never expose OTP in frontend production mode
+- Keep the system production-ready
+
+9) Arabic UX
+- Keep all flows Arabic RTL
+- Use clear Arabic messages such as:
+  - "تم إرسال رمز التحقق إلى رقم الجوال"
+  - "أدخل رمز التحقق"
+  - "رمز التحقق غير صحيح"
+  - "انتهت صلاحية الرمز"
+  - "إعادة إرسال الرمز"
+- Make the experience clean and easy
+
+10) SMS provider integration
+- Implement the OTP flow in a provider-ready way
+- If SMS provider is not yet configured, create a clean integration layer so it can later connect to Twilio or any Saudi SMS provider
+- For development only, allow a safe test mode
+
+11) Admin exception
+- Admin accounts must not go through phone verification during signup/login
+- Keep admin auth logic separate and stable
+
+12) Final review
+After implementation, provide a summary of:
+- what was changed in signup
+- how OTP verification works
+- what database fields were added
+- how admin was excluded
+- what SMS integration method was prepared

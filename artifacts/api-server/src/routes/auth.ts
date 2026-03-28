@@ -2,9 +2,16 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { eq, or, and, gt, isNull } from "drizzle-orm";
-import { db, usersTable, passwordResetTokensTable, serviceProvidersTable } from "@workspace/db";
+import { eq, or, and, gt, isNull, lt } from "drizzle-orm";
+import {
+  db,
+  usersTable,
+  passwordResetTokensTable,
+  serviceProvidersTable,
+  otpVerificationsTable,
+} from "@workspace/db";
 import { sendPasswordResetEmail } from "../lib/email.js";
+import { sendSmsOtp } from "../lib/sms.js";
 
 const authRouter = Router();
 
@@ -12,7 +19,36 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "AqarInsight2025";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
 
-// ─── Login ────────────────────────────────────────────────────────────────────
+/* ─── Saudi phone normalizer ────────────────────────────────────────────────── */
+function normalizeSaudiPhone(raw: string): string | null {
+  const cleaned = raw.replace(/[\s\-().]/g, "");
+  if (/^05\d{8}$/.test(cleaned)) return "+966" + cleaned.slice(1);
+  if (/^\+9665\d{8}$/.test(cleaned)) return cleaned;
+  if (/^9665\d{8}$/.test(cleaned)) return "+" + cleaned;
+  if (/^005\d{8}$/.test(cleaned)) return "+966" + cleaned.slice(2);
+  return null;
+}
+
+/* ─── OTP in-memory rate limiter (send) ─────────────────────────────────────── */
+const _otpSendMap = new Map<string, { count: number; resetAt: number }>();
+const OTP_SEND_MAX = 5;
+const OTP_SEND_WINDOW = 60 * 60 * 1000;
+const OTP_TTL = 10 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+function checkOtpSendRate(phone: string): boolean {
+  const now = Date.now();
+  const entry = _otpSendMap.get(phone);
+  if (!entry || now >= entry.resetAt) {
+    _otpSendMap.set(phone, { count: 1, resetAt: now + OTP_SEND_WINDOW });
+    return true;
+  }
+  if (entry.count >= OTP_SEND_MAX) return false;
+  entry.count++;
+  return true;
+}
+
+/* ─── Login ────────────────────────────────────────────────────────────────── */
 authRouter.post("/login", async (req: Request, res: Response) => {
   const { identifier, password } = req.body as {
     identifier?: string;
@@ -26,8 +62,9 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 
   const id = identifier.trim();
 
-  // 1. Check hardcoded admin (by username or email)
-  const isAdminLogin = id === ADMIN_USERNAME || (ADMIN_EMAIL && id.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+  const isAdminLogin =
+    id === ADMIN_USERNAME ||
+    (ADMIN_EMAIL && id.toLowerCase() === ADMIN_EMAIL.toLowerCase());
   if (isAdminLogin && password === ADMIN_PASSWORD) {
     req.session.isAuthenticated = true;
     req.session.isAdmin = true;
@@ -53,7 +90,6 @@ authRouter.post("/login", async (req: Request, res: Response) => {
     return;
   }
 
-  // 2. Look up user in DB by username OR email
   try {
     const rows = await db
       .select()
@@ -74,7 +110,20 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       return;
     }
 
-    const role = (user.role ?? "user") as "admin" | "user" | "real_estate_marketer" | "service_provider";
+    if (user.phoneNumber && !user.phoneVerified) {
+      res.status(403).json({
+        message: "يجب التحقق من رقم الجوال أولاً",
+        requiresPhoneVerification: true,
+        phoneNumber: user.phoneNumber,
+      });
+      return;
+    }
+
+    const role = (user.role ?? "user") as
+      | "admin"
+      | "user"
+      | "real_estate_marketer"
+      | "service_provider";
 
     req.session.isAuthenticated = true;
     req.session.isAdmin = role === "admin";
@@ -101,16 +150,164 @@ authRouter.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Signup ───────────────────────────────────────────────────────────────────
+/* ─── OTP: Send ──────────────────────────────────────────────────────────────── */
+authRouter.post("/otp/send", async (req: Request, res: Response) => {
+  const { phone } = req.body as { phone?: string };
+
+  if (!phone?.trim()) {
+    res.status(400).json({ message: "يرجى إدخال رقم الجوال" });
+    return;
+  }
+
+  const normalized = normalizeSaudiPhone(phone.trim());
+  if (!normalized) {
+    res.status(400).json({
+      message: "يرجى إدخال رقم جوال سعودي صحيح (مثال: 0501234567)",
+    });
+    return;
+  }
+
+  if (!checkOtpSendRate(normalized)) {
+    res.status(429).json({
+      message: "تم تجاوز الحد الأقصى لطلبات الرمز. يرجى المحاولة بعد ساعة",
+    });
+    return;
+  }
+
+  try {
+    await db
+      .delete(otpVerificationsTable)
+      .where(
+        and(
+          eq(otpVerificationsTable.phoneNumber, normalized),
+          lt(otpVerificationsTable.expiresAt, new Date()),
+        ),
+      );
+
+    const otpCode = String(Math.floor(100000 + Math.random() * 900000));
+    const otpHash = await bcrypt.hash(otpCode, 6);
+    const expiresAt = new Date(Date.now() + OTP_TTL);
+
+    await db.insert(otpVerificationsTable).values({
+      phoneNumber: normalized,
+      otpHash,
+      expiresAt,
+    });
+
+    await sendSmsOtp(normalized, otpCode);
+
+    res.json({
+      success: true,
+      message: "تم إرسال رمز التحقق إلى رقم الجوال",
+      phone: normalized,
+    });
+  } catch (err) {
+    console.error("[otp/send]", err);
+    res.status(500).json({ message: "حدث خطأ أثناء إرسال الرمز، يرجى المحاولة مجدداً" });
+  }
+});
+
+/* ─── OTP: Verify ────────────────────────────────────────────────────────────── */
+authRouter.post("/otp/verify", async (req: Request, res: Response) => {
+  const { phone, code } = req.body as { phone?: string; code?: string };
+
+  if (!phone?.trim() || !code?.trim()) {
+    res.status(400).json({ message: "يرجى إدخال رقم الجوال ورمز التحقق" });
+    return;
+  }
+
+  const normalized = normalizeSaudiPhone(phone.trim());
+  if (!normalized) {
+    res.status(400).json({ message: "رقم الجوال غير صحيح" });
+    return;
+  }
+
+  try {
+    const rows = await db
+      .select()
+      .from(otpVerificationsTable)
+      .where(
+        and(
+          eq(otpVerificationsTable.phoneNumber, normalized),
+          eq(otpVerificationsTable.used, false),
+          gt(otpVerificationsTable.expiresAt, new Date()),
+        ),
+      )
+      .orderBy(otpVerificationsTable.createdAt)
+      .limit(1);
+
+    const record = rows[0];
+
+    if (!record) {
+      res.status(400).json({
+        message: "انتهت صلاحية الرمز أو لم يُرسَل. يرجى طلب رمز جديد",
+        expired: true,
+      });
+      return;
+    }
+
+    if (record.attempts >= OTP_MAX_ATTEMPTS) {
+      await db
+        .update(otpVerificationsTable)
+        .set({ used: true })
+        .where(eq(otpVerificationsTable.id, record.id));
+      res.status(429).json({
+        message: "تم تجاوز عدد المحاولات المسموح بها. يرجى طلب رمز جديد",
+        tooManyAttempts: true,
+      });
+      return;
+    }
+
+    const match = await bcrypt.compare(code.trim(), record.otpHash);
+
+    if (!match) {
+      await db
+        .update(otpVerificationsTable)
+        .set({ attempts: record.attempts + 1 })
+        .where(eq(otpVerificationsTable.id, record.id));
+
+      const remaining = OTP_MAX_ATTEMPTS - record.attempts - 1;
+      res.status(400).json({
+        message:
+          remaining > 0
+            ? `رمز التحقق غير صحيح. تبقّى ${remaining} محاولات`
+            : "رمز التحقق غير صحيح. سيتم إلغاء الرمز عند المحاولة التالية",
+        invalidCode: true,
+      });
+      return;
+    }
+
+    await db
+      .update(otpVerificationsTable)
+      .set({ used: true })
+      .where(eq(otpVerificationsTable.id, record.id));
+
+    req.session.otpVerifiedPhone = normalized;
+    req.session.save((err) => {
+      if (err) {
+        res.status(500).json({ message: "حدث خطأ، يرجى المحاولة مجدداً" });
+        return;
+      }
+      res.json({ success: true, message: "تم التحقق من رقم الجوال بنجاح" });
+    });
+  } catch (err) {
+    console.error("[otp/verify]", err);
+    res.status(500).json({ message: "حدث خطأ في الخادم، يرجى المحاولة مجدداً" });
+  }
+});
+
+/* ─── Signup ─────────────────────────────────────────────────────────────────── */
 authRouter.post("/signup", async (req: Request, res: Response) => {
-  const { fullName, username, email, password, userType, serviceCategory } = req.body as {
-    fullName?: string;
-    username?: string;
-    email?: string;
-    password?: string;
-    userType?: string;
-    serviceCategory?: string;
-  };
+  const { fullName, username, email, password, userType, serviceCategory, phone } =
+    req.body as {
+      fullName?: string;
+      username?: string;
+      email?: string;
+      password?: string;
+      userType?: string;
+      serviceCategory?: string;
+      phone?: string;
+    };
 
   if (!fullName?.trim() || !username?.trim() || !email?.trim() || !password) {
     res.status(400).json({ message: "يرجى ملء جميع الحقول المطلوبة" });
@@ -139,8 +336,26 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
     return;
   }
 
+  if (!phone?.trim()) {
+    res.status(400).json({ message: "رقم الجوال مطلوب للتسجيل" });
+    return;
+  }
+
+  const normalizedPhone = normalizeSaudiPhone(phone.trim());
+  if (!normalizedPhone) {
+    res.status(400).json({ message: "يرجى إدخال رقم جوال سعودي صحيح" });
+    return;
+  }
+
+  if (req.session.otpVerifiedPhone !== normalizedPhone) {
+    res.status(400).json({
+      message: "لم يتم التحقق من رقم الجوال. يرجى إتمام خطوة التحقق أولاً",
+      requiresOtpVerification: true,
+    });
+    return;
+  }
+
   try {
-    // Check for duplicates
     const existing = await db
       .select({ username: usersTable.username, email: usersTable.email })
       .from(usersTable)
@@ -163,9 +378,10 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Determine role from userType
     const validTypes = ["user", "real_estate_marketer", "service_provider"];
-    const assignedRole = validTypes.includes(userType ?? "") ? (userType as "user" | "real_estate_marketer" | "service_provider") : "user";
+    const assignedRole = validTypes.includes(userType ?? "")
+      ? (userType as "user" | "real_estate_marketer" | "service_provider")
+      : "user";
 
     const [newUser] = await db
       .insert(usersTable)
@@ -175,10 +391,12 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         email: email.trim().toLowerCase(),
         passwordHash,
         role: assignedRole,
+        phoneNumber: normalizedPhone,
+        phoneVerified: true,
+        phoneVerifiedAt: new Date(),
       })
       .returning();
 
-    // Auto-create service provider record if type is service_provider
     if (assignedRole === "service_provider" && serviceCategory) {
       await db.insert(serviceProvidersTable).values({
         userId: newUser.id,
@@ -189,7 +407,8 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
       });
     }
 
-    // Auto-login after signup
+    req.session.otpVerifiedPhone = undefined;
+
     req.session.isAuthenticated = true;
     req.session.isAdmin = false;
     req.session.userId = newUser.id;
@@ -220,7 +439,7 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Logout ───────────────────────────────────────────────────────────────────
+/* ─── Logout ────────────────────────────────────────────────────────────────── */
 authRouter.post("/logout", (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
@@ -232,7 +451,7 @@ authRouter.post("/logout", (req: Request, res: Response) => {
   });
 });
 
-// ─── Me ───────────────────────────────────────────────────────────────────────
+/* ─── Me ─────────────────────────────────────────────────────────────────────── */
 authRouter.get("/me", (req: Request, res: Response) => {
   if (req.session.isAuthenticated) {
     res.json({
@@ -248,14 +467,13 @@ authRouter.get("/me", (req: Request, res: Response) => {
   }
 });
 
-// ─── Get Profile ─────────────────────────────────────────────────────────────
+/* ─── Get Profile ────────────────────────────────────────────────────────────── */
 authRouter.get("/profile", async (req: Request, res: Response) => {
   if (!req.session.isAuthenticated) {
     res.status(401).json({ message: "يرجى تسجيل الدخول أولاً" });
     return;
   }
 
-  // Hardcoded admin has no DB record
   if (!req.session.userId) {
     res.json({
       fullName: req.session.fullName ?? "المدير",
@@ -275,6 +493,8 @@ authRouter.get("/profile", async (req: Request, res: Response) => {
         email: usersTable.email,
         role: usersTable.role,
         createdAt: usersTable.createdAt,
+        phoneNumber: usersTable.phoneNumber,
+        phoneVerified: usersTable.phoneVerified,
       })
       .from(usersTable)
       .where(eq(usersTable.id, req.session.userId))
@@ -290,7 +510,7 @@ authRouter.get("/profile", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Update Profile ───────────────────────────────────────────────────────────
+/* ─── Update Profile ─────────────────────────────────────────────────────────── */
 authRouter.put("/profile", async (req: Request, res: Response) => {
   if (!req.session.isAuthenticated || !req.session.userId) {
     res.status(401).json({ message: "لا يمكن تعديل بيانات هذا الحساب" });
@@ -314,7 +534,9 @@ authRouter.put("/profile", async (req: Request, res: Response) => {
   }
 
   if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
-    res.status(400).json({ message: "اسم المستخدم يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطة سفلية فقط" });
+    res.status(400).json({
+      message: "اسم المستخدم يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطة سفلية فقط",
+    });
     return;
   }
 
@@ -327,13 +549,19 @@ authRouter.put("/profile", async (req: Request, res: Response) => {
     const duplicate = await db
       .select({ id: usersTable.id, username: usersTable.username })
       .from(usersTable)
-      .where(or(eq(usersTable.username, username.trim()), eq(usersTable.email, email.trim().toLowerCase())))
+      .where(
+        or(
+          eq(usersTable.username, username.trim()),
+          eq(usersTable.email, email.trim().toLowerCase()),
+        ),
+      )
       .limit(1);
 
     if (duplicate[0] && duplicate[0].id !== req.session.userId) {
-      const msg = duplicate[0].username === username.trim()
-        ? "اسم المستخدم مستخدم بالفعل"
-        : "البريد الإلكتروني مستخدم بالفعل";
+      const msg =
+        duplicate[0].username === username.trim()
+          ? "اسم المستخدم مستخدم بالفعل"
+          : "البريد الإلكتروني مستخدم بالفعل";
       res.status(409).json({ message: msg });
       return;
     }
@@ -358,7 +586,7 @@ authRouter.put("/profile", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Change Password ──────────────────────────────────────────────────────────
+/* ─── Change Password ────────────────────────────────────────────────────────── */
 authRouter.put("/password", async (req: Request, res: Response) => {
   if (!req.session.isAuthenticated || !req.session.userId) {
     res.status(401).json({ message: "لا يمكن تغيير كلمة مرور هذا الحساب" });
@@ -399,7 +627,10 @@ authRouter.put("/password", async (req: Request, res: Response) => {
     }
 
     const newHash = await bcrypt.hash(newPassword, 12);
-    await db.update(usersTable).set({ passwordHash: newHash }).where(eq(usersTable.id, req.session.userId));
+    await db
+      .update(usersTable)
+      .set({ passwordHash: newHash })
+      .where(eq(usersTable.id, req.session.userId));
 
     res.json({ success: true });
   } catch {
@@ -407,12 +638,11 @@ authRouter.put("/password", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Forgot Password ──────────────────────────────────────────────────────────
-// In-memory rate limiter: max 3 requests per identifier per 15-min window
+/* ─── Forgot Password ────────────────────────────────────────────────────────── */
 const _fpRateMap = new Map<string, { count: number; resetAt: number }>();
 const FP_MAX = 3;
 const FP_WINDOW = 15 * 60 * 1000;
-const TOKEN_TTL = 15 * 60 * 1000; // 15 minutes
+const TOKEN_TTL = 15 * 60 * 1000;
 
 authRouter.post("/forgot-password", async (req: Request, res: Response) => {
   const { identifier } = req.body as { identifier?: string };
@@ -429,7 +659,6 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
   if (rate) {
     if (now < rate.resetAt) {
       if (rate.count >= FP_MAX) {
-        // Rate-limited — return success silently (never reveal account existence)
         res.json({ success: true });
         return;
       }
@@ -441,7 +670,6 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
     _fpRateMap.set(key, { count: 1, resetAt: now + FP_WINDOW });
   }
 
-  // Always respond with generic success — never reveal if email exists
   const GENERIC_SUCCESS = { success: true };
 
   try {
@@ -461,21 +689,25 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(now + TOKEN_TTL);
 
-    // Invalidate any existing unused tokens before issuing a new one
-    await db.delete(passwordResetTokensTable)
-      .where(and(eq(passwordResetTokensTable.userId, userId), isNull(passwordResetTokensTable.usedAt)));
+    await db
+      .delete(passwordResetTokensTable)
+      .where(
+        and(
+          eq(passwordResetTokensTable.userId, userId),
+          isNull(passwordResetTokensTable.usedAt),
+        ),
+      );
 
     await db.insert(passwordResetTokensTable).values({ userId, tokenHash, expiresAt });
 
-    // Send email (or log to console in dev if SMTP is not configured)
     try {
       await sendPasswordResetEmail(email, rawToken);
     } catch (emailErr) {
-      // Log but do not expose error details to the client
       console.error("[forgot-password] Failed to send reset email:", emailErr);
-      // In production with SMTP configured, surface a generic error
       if (process.env.NODE_ENV === "production" && process.env.SMTP_HOST) {
-        res.status(500).json({ message: "حدث خطأ أثناء إرسال البريد الإلكتروني، يرجى المحاولة لاحقاً" });
+        res.status(500).json({
+          message: "حدث خطأ أثناء إرسال البريد الإلكتروني، يرجى المحاولة لاحقاً",
+        });
         return;
       }
     }
@@ -486,7 +718,7 @@ authRouter.post("/forgot-password", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Validate Reset Token ─────────────────────────────────────────────────────
+/* ─── Validate Reset Token ───────────────────────────────────────────────────── */
 authRouter.get("/validate-reset-token", async (req: Request, res: Response) => {
   const { token } = req.query as { token?: string };
 
@@ -505,8 +737,8 @@ authRouter.get("/validate-reset-token", async (req: Request, res: Response) => {
         and(
           eq(passwordResetTokensTable.tokenHash, tokenHash),
           isNull(passwordResetTokensTable.usedAt),
-          gt(passwordResetTokensTable.expiresAt, new Date())
-        )
+          gt(passwordResetTokensTable.expiresAt, new Date()),
+        ),
       )
       .limit(1);
 
@@ -516,7 +748,7 @@ authRouter.get("/validate-reset-token", async (req: Request, res: Response) => {
   }
 });
 
-// ─── Reset Password ───────────────────────────────────────────────────────────
+/* ─── Reset Password ─────────────────────────────────────────────────────────── */
 authRouter.post("/reset-password", async (req: Request, res: Response) => {
   const { token, password } = req.body as { token?: string; password?: string };
 
@@ -545,19 +777,24 @@ authRouter.post("/reset-password", async (req: Request, res: Response) => {
         and(
           eq(passwordResetTokensTable.tokenHash, tokenHash),
           isNull(passwordResetTokensTable.usedAt),
-          gt(passwordResetTokensTable.expiresAt, new Date())
-        )
+          gt(passwordResetTokensTable.expiresAt, new Date()),
+        ),
       )
       .limit(1);
 
     const tokenRecord = rows[0];
     if (!tokenRecord) {
-      res.status(400).json({ message: "الرابط غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد." });
+      res
+        .status(400)
+        .json({ message: "الرابط غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد." });
       return;
     }
 
     const newHash = await bcrypt.hash(password, 12);
-    await db.update(usersTable).set({ passwordHash: newHash }).where(eq(usersTable.id, tokenRecord.userId));
+    await db
+      .update(usersTable)
+      .set({ passwordHash: newHash })
+      .where(eq(usersTable.id, tokenRecord.userId));
     await db
       .update(passwordResetTokensTable)
       .set({ usedAt: new Date() })
@@ -570,4 +807,3 @@ authRouter.post("/reset-password", async (req: Request, res: Response) => {
 });
 
 export default authRouter;
-

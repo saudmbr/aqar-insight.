@@ -8,5 +8,6 @@ declare module "express-session" {
     username?: string;
     fullName?: string;
     role?: "admin" | "user" | "real_estate_marketer" | "service_provider";
+    otpVerifiedPhone?: string;
   }
 }
