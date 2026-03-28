@@ -1,6 +1,9 @@
 import { useEffect, useRef, useCallback } from "react";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import L from "leaflet";
+import "leaflet.markercluster";
 import { getImageSrc } from "@/lib/utils";
 
 export type MapPin = {
@@ -24,6 +27,7 @@ type Props = {
   onPinClick?: (id: number) => void;
   onBoundsChange?: (ids: number[]) => void;
   height?: number | string;
+  clustering?: boolean;
 };
 
 const LISTING_TYPE_LABELS: Record<string, string> = {
@@ -158,17 +162,27 @@ export default function PropertyMap({
   onPinClick,
   onBoundsChange,
   height = 520,
+  clustering = true,
 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<number, L.Marker>>(new Map());
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const prevActivePinRef = useRef<number | null>(null);
 
-  // Initialise the map once
+  const fireBoundsChange = useCallback(() => {
+    if (!onBoundsChange || !mapInstanceRef.current) return;
+    const bounds = mapInstanceRef.current.getBounds();
+    const visibleIds: number[] = [];
+    markersRef.current.forEach((marker, id) => {
+      if (bounds.contains(marker.getLatLng())) visibleIds.push(id);
+    });
+    onBoundsChange(visibleIds);
+  }, [onBoundsChange]);
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Remove Leaflet's broken default icon path detection
     (L.Icon.Default.prototype as any)._getIconUrl = undefined;
     L.Icon.Default.mergeOptions({ iconUrl: "", shadowUrl: "" });
 
@@ -185,68 +199,107 @@ export default function PropertyMap({
       maxZoom: 19,
     }).addTo(map);
 
-    mapInstanceRef.current = map;
-
     if (onBoundsChange) {
-      const fireBoundsChange = () => {
-        const bounds = map.getBounds();
-        const visibleIds: number[] = [];
-        markersRef.current.forEach((marker, id) => {
-          if (bounds.contains(marker.getLatLng())) visibleIds.push(id);
-        });
-        onBoundsChange(visibleIds);
-      };
       map.on("moveend", fireBoundsChange);
       map.on("zoomend", fireBoundsChange);
     }
+
+    mapInstanceRef.current = map;
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
       markersRef.current.clear();
+      clusterGroupRef.current = null;
     };
   }, []);
 
-  // Store base URL for popup links
   useEffect(() => {
     (window as any).__VITE_BASE__ = (import.meta.env.BASE_URL ?? "").replace(/\/$/, "");
   }, []);
 
-  // Sync markers whenever pins change
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Remove old markers
+    // Remove previous cluster group or loose markers
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current = null;
+    }
     markersRef.current.forEach(m => m.remove());
     markersRef.current.clear();
 
     const isActive = (id: number) => id === activePinId;
 
-    for (const pin of pins) {
-      const marker = L.marker([pin.lat, pin.lng], {
-        icon: makePinIcon(pin, isActive(pin.id)),
-      }).addTo(map);
+    if (clustering && pins.length > 0) {
+      const group = (L as any).markerClusterGroup({
+        maxClusterRadius: 60,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: (cluster: any) => {
+          const count = cluster.getChildCount();
+          return L.divIcon({
+            html: `<div style="
+              width:42px;height:42px;border-radius:50%;
+              background:#0F7BA0;color:white;
+              display:flex;align-items:center;justify-content:center;
+              font-family:'Cairo',Arial,sans-serif;font-size:14px;font-weight:800;
+              border:3px solid white;box-shadow:0 3px 14px rgba(15,123,160,0.45);
+            ">${count}</div>`,
+            className: "",
+            iconSize: [42, 42],
+            iconAnchor: [21, 21],
+          });
+        },
+      }) as L.MarkerClusterGroup;
 
-      marker.bindPopup(makePopupHtml(pin), {
-        maxWidth: 240,
-        className: "aqar-popup",
-        closeButton: true,
-      });
+      for (const pin of pins) {
+        const marker = L.marker([pin.lat, pin.lng], {
+          icon: makePinIcon(pin, isActive(pin.id)),
+        });
 
-      if (onPinClick) {
-        marker.on("click", () => onPinClick(pin.id));
+        marker.bindPopup(makePopupHtml(pin), {
+          maxWidth: 240,
+          className: "aqar-popup",
+          closeButton: true,
+        });
+
+        if (onPinClick) {
+          marker.on("click", () => onPinClick(pin.id));
+        }
+
+        markersRef.current.set(pin.id, marker);
+        group.addLayer(marker);
       }
 
-      markersRef.current.set(pin.id, marker);
+      group.addTo(map);
+      clusterGroupRef.current = group;
+    } else {
+      for (const pin of pins) {
+        const marker = L.marker([pin.lat, pin.lng], {
+          icon: makePinIcon(pin, isActive(pin.id)),
+        }).addTo(map);
+
+        marker.bindPopup(makePopupHtml(pin), {
+          maxWidth: 240,
+          className: "aqar-popup",
+          closeButton: true,
+        });
+
+        if (onPinClick) {
+          marker.on("click", () => onPinClick(pin.id));
+        }
+
+        markersRef.current.set(pin.id, marker);
+      }
     }
 
-    // Fit map to all markers if we have some
     if (pins.length > 0) {
       const group = L.featureGroup(pins.map(p => L.circleMarker([p.lat, p.lng], { radius: 1 })));
       map.fitBounds(group.getBounds().pad(0.25), { maxZoom: 12, animate: false });
 
-      // Report initial visible IDs
       if (onBoundsChange) {
         const bounds = map.getBounds();
         const visibleIds = pins
@@ -256,11 +309,10 @@ export default function PropertyMap({
       }
     }
 
-    console.log(`[PropertyMap] Loaded ${pins.length} pins`);
+    console.log(`[PropertyMap] Loaded ${pins.length} pins (clustering: ${clustering})`);
     prevActivePinRef.current = activePinId ?? null;
   }, [pins]);
 
-  // Update icon when active pin changes (without full re-render)
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -302,6 +354,16 @@ export default function PropertyMap({
         }
         .aqar-popup .leaflet-popup-tip {
           background: white !important;
+        }
+        .marker-cluster-small,
+        .marker-cluster-medium,
+        .marker-cluster-large {
+          background: transparent !important;
+        }
+        .marker-cluster-small div,
+        .marker-cluster-medium div,
+        .marker-cluster-large div {
+          background: transparent !important;
         }
       `}</style>
       <div

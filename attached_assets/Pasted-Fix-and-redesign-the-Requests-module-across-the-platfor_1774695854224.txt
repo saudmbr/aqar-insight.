@@ -1,0 +1,115 @@
+Fix and redesign the "Requests" module across the platform.
+
+Current requirements:
+- Delete the existing current request from the system
+- Any new request must be deletable ONLY by its owner
+- User must be logged in to create or delete a request
+- Improve the request feature so it clearly represents users searching for:
+  - a service
+  - a property
+  - a specific real estate marketer
+
+Goal:
+Make the requests module logical, secure, and useful for real users.
+
+Requirements:
+
+1) Remove existing bad/current request
+- Delete the current existing request data that is showing now
+- Clean up any placeholder/demo request that should not remain
+- Keep the requests module clean and ready for real usage
+
+2) Authentication rules
+- User must be logged in to:
+  - create a request
+  - delete their own request
+- Guests must NOT be allowed to create requests
+- Guests must NOT be allowed to delete any request
+- If guest tries to create a request, redirect to login/signup with a clear Arabic message
+
+3) Ownership rules
+- Every request must store:
+  - owner_user_id
+  - created_by_user_id
+  - created_at
+  - updated_at
+  - request_status
+- Only the request owner can delete their own request
+- Admin can still manage all requests
+- No other user should be able to delete someone else’s request
+
+4) Request types
+- Redesign the requests feature so the user can create a request for one of these:
+  - searching for a service
+  - searching for a property
+  - searching for a specific real estate marketer
+- Add a clear request type selector in Arabic
+
+5) Add a short description/about section
+- Add a clear Arabic description/intro above the requests page explaining the feature
+- The meaning should be:
+  "هذه الخدمة تتيح للمستخدم تقديم طلب عند البحث عن خدمة، أو عقار، أو مسوق عقاري محدد، ليتمكن من الوصول إلى الجهات المناسبة بشكل أسرع وأسهل."
+- Make it look clean and professional
+
+6) Request form
+- Improve the request creation form with these fields:
+  - نوع الطلب
+  - عنوان الطلب
+  - وصف مختصر
+  - المدينة
+  - الحي (optional)
+  - الميزانية (optional)
+  - نوع العقار أو الخدمة (if relevant)
+  - اسم المسوق العقاري المطلوب (if relevant)
+  - وسيلة التواصل
+- Keep the form smart:
+  - show/hide fields depending on request type
+
+7) Request listing page
+- Show requests in a clean modern list/cards layout
+- Each request card should include:
+  - request type
+  - title
+  - short description
+  - city
+  - created date
+  - status
+- Show delete button ONLY for:
+  - request owner
+  - admin
+- Add confirmation dialog before delete
+
+8) Backend/API
+- Enforce ownership validation on the backend
+- Do NOT rely only on frontend checks
+- Prevent deleting a request by changing IDs manually
+- Return proper Arabic error messages for unauthorized actions
+
+9) UX improvements
+- Add empty state if there are no requests:
+  - "لا توجد طلبات حالياً"
+  - with CTA button:
+    "أضف طلبك الآن"
+- If guest is not logged in, show a clear CTA:
+  - "سجّل دخولك لإضافة طلب جديد"
+
+10) Status system
+- Add request status values:
+  - active
+  - closed
+  - archived
+- Owner can delete only their own active/closed request if allowed by business logic
+- Admin can manage all
+
+11) Important
+- Keep Arabic RTL
+- Do NOT break current auth or dashboard logic
+- Make the requests system production-ready
+
+12) Final deliverable
+After finishing, provide a summary of:
+- what was deleted
+- how ownership was fixed
+- how login requirement was enforced
+- what request types were added
+- what files/routes/pages were updated

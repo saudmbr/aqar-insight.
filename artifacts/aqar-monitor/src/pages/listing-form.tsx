@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, lazy, Suspense, type FormEvent } from "react";
 import { useParams, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { Loader2, Save, Building, Map, Info, Grid2X2, FileText, Image as ImageIc
 import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
 import type { Listing } from "@workspace/db";
+import type { LocationValue } from "@/components/location-picker";
+
+const LocationPicker = lazy(() => import("@/components/location-picker"));
 
 const CITIES = ["الرياض", "جدة", "الدمام", "مكة المكرمة", "المدينة المنورة", "الخبر", "تبوك", "أبها", "الطائف", "بريدة"];
 const PROPERTY_TYPES = ["شقة", "فيلا", "دور", "أرض", "عمارة", "مكتب", "محل", "مستودع", "مزرعة", "شاليه", "غرفة", "سكن عمالة", "عقار تجاري", "عقار صناعي", "مشروع تطويري"];
@@ -73,6 +76,7 @@ export default function ListingForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locationValue, setLocationValue] = useState<LocationValue | null>(null);
 
   const [form, setForm] = useState<PartialListing>({
     status: "active",
@@ -94,7 +98,18 @@ export default function ListingForm() {
     if (!isEdit) return;
     const load = async () => {
       const res = await fetch(`/api/listings/${id}`, { credentials: "include" });
-      if (res.ok) setForm(await res.json() as PartialListing);
+      if (res.ok) {
+        const data = await res.json() as PartialListing;
+        setForm(data);
+        if (data.latitude != null && data.longitude != null) {
+          setLocationValue({
+            lat: data.latitude as number,
+            lng: data.longitude as number,
+            city: data.city ?? undefined,
+            district: data.district ?? undefined,
+          });
+        }
+      }
       setLoading(false);
     };
     void load();
@@ -112,10 +127,16 @@ export default function ListingForm() {
     try {
       const url = isEdit ? `/api/listings/${id}` : "/api/listings";
       const method = isEdit ? "PUT" : "POST";
+      const payload = {
+        ...form,
+        ...(locationValue
+          ? { latitude: locationValue.lat, longitude: locationValue.lng }
+          : { latitude: null, longitude: null }),
+      };
       const res = await fetch(url, {
         method, credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json() as { id?: number; message?: string };
       if (!res.ok) throw new Error(data.message ?? "حدث خطأ");
@@ -235,21 +256,62 @@ export default function ListingForm() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <FieldGroup label="المدينة" required>
-                <SSelect value={form.city ?? ""} onChange={v => set("city", v)}>
+                <SSelect value={form.city ?? ""} onChange={v => {
+                  set("city", v);
+                  if (locationValue && !locationValue.city) {
+                    setLocationValue(lv => lv ? { ...lv, city: v } : lv);
+                  }
+                }}>
                   <option value="">اختر المدينة</option>
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </SSelect>
               </FieldGroup>
               <FieldGroup label="الحي">
-                <Input placeholder="مثال: حي الملقا" value={form.district ?? ""} onChange={e => set("district", e.target.value)} className="h-12 rounded-xl" />
+                <Input
+                  placeholder="مثال: حي الملقا"
+                  value={form.district ?? ""}
+                  onChange={e => set("district", e.target.value)}
+                  className="h-12 rounded-xl"
+                />
               </FieldGroup>
               <FieldGroup label="الحي الفرعي">
-                <Input placeholder="مثال: مخطط 123" value={form.subDistrict ?? ""} onChange={e => set("subDistrict", e.target.value)} className="h-12 rounded-xl" />
+                <Input
+                  placeholder="مثال: مخطط 123"
+                  value={form.subDistrict ?? ""}
+                  onChange={e => set("subDistrict", e.target.value)}
+                  className="h-12 rounded-xl"
+                />
               </FieldGroup>
             </div>
-            <FieldGroup label="الموقع التفصيلي أو رابط الخريطة">
-              <Input placeholder="مثال: طريق الملك عبدالله، أمام مجمع..." value={form.location ?? ""} onChange={e => set("location", e.target.value)} className="h-12 rounded-xl" />
+
+            {/* Map location picker */}
+            <FieldGroup label="تحديد الموقع على الخريطة">
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-32 rounded-2xl border border-border bg-muted/30">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              }>
+                <LocationPicker
+                  value={locationValue}
+                  defaultCity={form.city ?? undefined}
+                  onChange={(v) => {
+                    setLocationValue(v);
+                    if (v?.city && !form.city) set("city", v.city);
+                    if (v?.district && !form.district) set("district", v.district);
+                  }}
+                />
+              </Suspense>
             </FieldGroup>
+
+            <FieldGroup label="الموقع التفصيلي (اختياري)">
+              <Input
+                placeholder="مثال: طريق الملك عبدالله، أمام مجمع..."
+                value={form.location ?? ""}
+                onChange={e => set("location", e.target.value)}
+                className="h-12 rounded-xl"
+              />
+            </FieldGroup>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2 border-t border-border">
               <FieldGroup label="السعر (ريال سعودي)" required>
                 <Input type="number" min="0" placeholder="0" value={form.price ?? ""} onChange={e => set("price", e.target.value)} className="h-12 rounded-xl text-base font-bold text-primary" />

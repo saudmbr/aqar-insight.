@@ -13,6 +13,19 @@ const canEditListing = (req: Request, listing: { userId: number | null }) => {
   return listing.userId === req.session.userId;
 };
 
+// Saudi Arabia approximate bounding box
+const SA_LAT_MIN = 15.5, SA_LAT_MAX = 32.2;
+const SA_LNG_MIN = 34.5, SA_LNG_MAX = 55.8;
+
+function parseCoords(lat: unknown, lng: unknown): { latitude: number; longitude: number } | null {
+  if (lat == null && lng == null) return null;
+  const latNum = lat != null ? parseFloat(lat as string) : NaN;
+  const lngNum = lng != null ? parseFloat(lng as string) : NaN;
+  if (isNaN(latNum) || isNaN(lngNum)) return null;
+  if (latNum < SA_LAT_MIN || latNum > SA_LAT_MAX || lngNum < SA_LNG_MIN || lngNum > SA_LNG_MAX) return null;
+  return { latitude: latNum, longitude: lngNum };
+}
+
 // ─── List / Search ────────────────────────────────────────────────────────────
 listingsRouter.get("/", async (req: Request, res: Response) => {
   const {
@@ -376,6 +389,10 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
     exclusive: bool(b.exclusive),
     ownerDirect: bool(b.ownerDirect),
     internalNotes: b.internalNotes ? String(b.internalNotes) : null,
+    ...(() => {
+      const coords = parseCoords(b.latitude, b.longitude);
+      return coords ? coords : { latitude: null, longitude: null };
+    })(),
   }).returning();
 
   res.status(201).json(created);
@@ -450,6 +467,18 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
   if (b.videoUrl !== undefined) setObj.videoUrl = b.videoUrl ? String(b.videoUrl) : null;
   if (b.floorPlan !== undefined) setObj.floorPlan = b.floorPlan ? String(b.floorPlan) : null;
   if (b.internalNotes !== undefined) setObj.internalNotes = b.internalNotes ? String(b.internalNotes) : null;
+
+  // Coordinates: validate Saudi Arabia bounds or clear them
+  if (b.latitude !== undefined || b.longitude !== undefined) {
+    const coords = parseCoords(b.latitude, b.longitude);
+    if (coords) {
+      setObj.latitude = coords.latitude;
+      setObj.longitude = coords.longitude;
+    } else {
+      setObj.latitude = null;
+      setObj.longitude = null;
+    }
+  }
 
   await db.update(listingsTable).set(setObj).where(eq(listingsTable.id, id));
   const [updated] = await db.select().from(listingsTable).where(eq(listingsTable.id, id)).limit(1);

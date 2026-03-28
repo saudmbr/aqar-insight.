@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import {
   Verified, Star, BadgeCheck, ChevronLeft, Wifi, Zap, TreePine, School,
   Hospital, ShoppingBag, Bus, Home, Video, Archive, CheckCircle, Ban,
 } from "lucide-react";
+
+const ListingDetailMap = lazy(() => import("@/components/listing-detail-map"));
 
 interface MarketerInfo {
   id: number;
@@ -512,6 +514,46 @@ export default function ListingDetail() {
                 <CardContent className="p-5">
                   <h3 className="text-lg font-bold mb-3">المخطط الهندسي</h3>
                   <img src={getImageSrc(listing.floorPlan) ?? ""} alt="المخطط الهندسي" className="w-full rounded-2xl border border-border" />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Map section */}
+            {listing.latitude != null && listing.longitude != null ? (
+              <Card className="border-border rounded-3xl overflow-hidden">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      الموقع على الخريطة
+                    </h3>
+                    <div className="text-xs text-muted-foreground font-mono" dir="ltr">
+                      {(listing.latitude as number).toFixed(5)}, {(listing.longitude as number).toFixed(5)}
+                    </div>
+                  </div>
+                  <Suspense fallback={
+                    <Skeleton className="w-full rounded-2xl" style={{ height: 280 }} />
+                  }>
+                    <ListingDetailMap
+                      lat={listing.latitude as number}
+                      lng={listing.longitude as number}
+                      title={listing.title}
+                    />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-border rounded-3xl overflow-hidden border-dashed">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-3 text-muted-foreground">
+                    <MapPin className="w-5 h-5 text-muted-foreground/50" />
+                    <div>
+                      <p className="text-sm font-semibold">الموقع الدقيق غير محدد</p>
+                      {(listing.city || listing.district) && (
+                        <p className="text-xs mt-0.5">{[listing.district, listing.city].filter(Boolean).join("، ")}</p>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}

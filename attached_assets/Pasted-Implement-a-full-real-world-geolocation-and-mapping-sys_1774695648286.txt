@@ -1,0 +1,103 @@
+Implement a full real-world geolocation and mapping system across the entire platform.
+
+Goal:
+Make all properties and services accurately linked to real geographic locations, so the map reflects real-world positions and users can interact with data spatially.
+
+Requirements:
+
+1) Core location system
+- Every listing (property or service) must have:
+  - latitude
+  - longitude
+  - city
+  - district/neighborhood
+  - address (optional but recommended)
+- Ensure these fields are stored in the database and cannot be empty for published listings
+
+2) Map integration
+- Integrate a real map system (Google Maps or Mapbox)
+- Display all properties and services on the map as markers
+- Each marker must represent a real location based on coordinates
+- Use clustering if many markers exist
+
+3) Add listing with map selection
+- In the "Add Listing" page:
+  - allow user to pick location from map (click or drag pin)
+  - auto-fill latitude and longitude
+  - optionally auto-detect city and district using reverse geocoding
+- Prevent publishing without selecting a valid location
+
+4) Map on listing details page
+- Show a map section inside each listing page
+- Display exact location with a marker
+- Allow user to open in Google Maps
+
+5) Search and filtering by location
+- Enable users to:
+  - search by city
+  - search by neighborhood
+  - filter listings based on map area (visible region)
+- When user moves the map, results update dynamically
+
+6) Real-time map syncing
+- When a new listing is added:
+  - it should immediately appear on the map
+- When edited:
+  - update location in real time
+- When deleted:
+  - remove marker from map
+
+7) Services integration
+- Apply the same system for services:
+  - each service provider has a location
+  - show nearby services on the map
+- Optionally show "services near this property"
+
+8) Distance-based logic
+- Add distance calculations:
+  - show how far services are from a property
+  - allow sorting by nearest
+
+9) Accuracy and validation
+- Validate coordinates are real and within Saudi Arabia
+- Prevent fake or empty locations
+- Add fallback if user does not choose exact address
+
+10) Performance
+- Optimize map loading
+- Use lazy loading and clustering for large data
+- Avoid excessive API calls
+
+11) UI/UX
+- Make map clean, modern, and responsive
+- Add toggle between:
+  - list view
+  - map view
+- Add marker popups with:
+  - image
+  - title
+  - price
+  - quick link
+
+12) Future-ready
+- Prepare system for:
+  - heatmaps (price density)
+  - area analytics
+  - investment insights
+- Structure code so advanced analytics can be added later without breaking map logic
+
+13) Security
+- Ensure users cannot manipulate coordinates manually to fake locations
+- Validate on backend
+
+14) Important
+- Do NOT break existing features
+- Keep Arabic RTL UI
+- Make it production-ready
+
+15) Deliverable
+After implementation, provide:
+- what map system was used
+- how coordinates are stored
+- how listing → map syncing works
+- what files/components were added or modified

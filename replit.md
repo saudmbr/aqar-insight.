@@ -39,7 +39,11 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 **Geocoding & Mapping:**
 - Listings table includes `latitude` and `longitude` for precise map placement.
 - Deterministic geocoding for cities without specific coordinates uses a golden-angle distribution to prevent marker stacking.
-- Interactive property map (`property-map.tsx`) displays individual property pins, color-coded by listing type, with clickable popups and active pin highlighting.
+- Interactive property map (`property-map.tsx`) displays individual property pins, color-coded by listing type, with clickable popups, active pin highlighting, and **marker clustering** via `leaflet.markercluster` (teal count-badge clusters).
+- **LocationPicker** (`location-picker.tsx`) — embeds in the listing form. User clicks map to place pin; Nominatim reverse geocoding auto-fills city/district; "موقعي الحالي" browser geolocation button; manual coordinate entry fallback; Saudi Arabia bounds validation client-side.
+- **ListingDetailMap** (`listing-detail-map.tsx`) — non-interactive single-pin map embedded in listing detail page; shows exact coordinates; "فتح في خرائط جوجل" link.
+- **Backend coordinate validation** — `parseCoords()` in `listings.ts` validates `latitude`/`longitude` against Saudi Arabia bbox (lat 15.5–32.2, lng 34.5–55.8); out-of-bounds coordinates stored as `null`.
+- Both POST (create) and PUT (update) listing endpoints now handle `latitude`/`longitude` fields.
 
 ## External Dependencies
 
