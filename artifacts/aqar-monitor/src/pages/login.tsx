@@ -21,7 +21,9 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(identifier, password);
-      navigate(user.role === "admin" ? "/admin" : "/");
+      if (user.role === "admin") navigate("/admin");
+      else if (user.role === "service_provider") navigate("/services/dashboard");
+      else navigate("/");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "خطأ في تسجيل الدخول");
     } finally {

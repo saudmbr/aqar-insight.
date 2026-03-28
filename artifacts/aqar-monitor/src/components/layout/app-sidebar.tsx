@@ -114,6 +114,7 @@ export function AppSidebar() {
   const { t } = useLang();
 
   const isMarketer = user?.role === "real_estate_marketer";
+  const isServiceProvider = user?.role === "service_provider";
 
   return (
     <Sidebar side="right" variant="inset" className="border-l-0 bg-sidebar shadow-2xl">
@@ -141,12 +142,13 @@ export function AppSidebar() {
           <NavGroup labelKey="myAccount" items={[
             { titleKey: "myDashboard", url: "/dashboard", icon: LayoutDashboard },
             ...(isMarketer ? [{ titleKey: "marketerProfile" as TranslationKey, url: "/marketer/dashboard", icon: Star }] : []),
+            ...(isServiceProvider ? [{ titleKey: "services" as TranslationKey, url: "/services/dashboard", icon: Wrench }] : []),
             { titleKey: "personalProfile", url: "/account", icon: UserCircle2 },
           ]} location={location} />
         )}
 
-        {/* Marketer shortcut for non-marketers */}
-        {isAuthenticated && !isMarketer && !isAdmin && (
+        {/* Marketer shortcut for non-marketers and non-service-providers */}
+        {isAuthenticated && !isMarketer && !isServiceProvider && !isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/45 px-6 font-bold text-[11px] mb-1 tracking-normal">
               {t("joinMarketer")}

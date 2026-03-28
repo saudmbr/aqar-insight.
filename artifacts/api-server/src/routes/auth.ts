@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { eq, or, and, gt, isNull } from "drizzle-orm";
-import { db, usersTable, passwordResetTokensTable } from "@workspace/db";
+import { db, usersTable, passwordResetTokensTable, serviceProvidersTable } from "@workspace/db";
 import { sendPasswordResetEmail } from "../lib/email.js";
 
 const authRouter = Router();
@@ -70,7 +70,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       return;
     }
 
-    const role = (user.role === "admin" ? "admin" : "user") as "admin" | "user";
+    const role = (user.role ?? "user") as "admin" | "user" | "real_estate_marketer" | "service_provider";
 
     req.session.isAuthenticated = true;
     req.session.isAdmin = role === "admin";
@@ -98,11 +98,13 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 
 // ─── Signup ───────────────────────────────────────────────────────────────────
 authRouter.post("/signup", async (req: Request, res: Response) => {
-  const { fullName, username, email, password } = req.body as {
+  const { fullName, username, email, password, userType, serviceCategory } = req.body as {
     fullName?: string;
     username?: string;
     email?: string;
     password?: string;
+    userType?: string;
+    serviceCategory?: string;
   };
 
   if (!fullName?.trim() || !username?.trim() || !email?.trim() || !password) {
@@ -156,6 +158,10 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Determine role from userType
+    const validTypes = ["user", "real_estate_marketer", "service_provider"];
+    const assignedRole = validTypes.includes(userType ?? "") ? (userType as "user" | "real_estate_marketer" | "service_provider") : "user";
+
     const [newUser] = await db
       .insert(usersTable)
       .values({
@@ -163,9 +169,20 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         username: username.trim(),
         email: email.trim().toLowerCase(),
         passwordHash,
-        role: "user",
+        role: assignedRole,
       })
       .returning();
+
+    // Auto-create service provider record if type is service_provider
+    if (assignedRole === "service_provider" && serviceCategory) {
+      await db.insert(serviceProvidersTable).values({
+        userId: newUser.id,
+        businessName: fullName.trim(),
+        category: serviceCategory,
+        city: "الرياض",
+        status: "active",
+      });
+    }
 
     // Auto-login after signup
     req.session.isAuthenticated = true;
@@ -173,7 +190,7 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
     req.session.userId = newUser.id;
     req.session.username = newUser.username;
     req.session.fullName = newUser.fullName;
-    req.session.role = "user";
+    req.session.role = assignedRole;
 
     req.session.save((err) => {
       if (err) {
@@ -184,7 +201,7 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         success: true,
         username: newUser.username,
         fullName: newUser.fullName,
-        role: "user",
+        role: assignedRole,
       });
     });
   } catch (err: unknown) {

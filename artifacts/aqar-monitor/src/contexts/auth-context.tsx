@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
+export type UserRole = "admin" | "user" | "real_estate_marketer" | "service_provider";
+
 export interface AuthUser {
   username: string;
   fullName: string;
-  role: "admin" | "user";
+  role: UserRole;
 }
 
 interface AuthContextType {
@@ -18,6 +20,8 @@ interface AuthContextType {
     username: string,
     email: string,
     password: string,
+    userType?: string,
+    serviceCategory?: string,
   ) => Promise<AuthUser>;
 }
 
@@ -28,14 +32,14 @@ type MeResponse = {
   isAdmin: boolean;
   username: string;
   fullName: string;
-  role: "admin" | "user";
+  role: UserRole;
 };
 
 type AuthResponse = {
   success: boolean;
   username: string;
   fullName: string;
-  role: "admin" | "user";
+  role: UserRole;
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -85,12 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     username: string,
     email: string,
     password: string,
+    userType?: string,
+    serviceCategory?: string,
   ): Promise<AuthUser> => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, username, email, password }),
+      body: JSON.stringify({ fullName, username, email, password, userType, serviceCategory }),
     });
 
     if (!res.ok) {

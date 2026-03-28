@@ -27,6 +27,7 @@ import MarketerDashboard from "@/pages/marketer-dashboard";
 import Services from "@/pages/services";
 import ServiceForm from "@/pages/service-form";
 import ServiceProviderProfile from "@/pages/service-provider-profile";
+import ServiceProviderDashboard from "@/pages/service-provider-dashboard";
 
 import MapPage from "@/pages/map-page";
 
@@ -77,6 +78,9 @@ function Router() {
       </Route>
       <Route path="/services/new">
         {() => <UserRoute component={ServiceForm} />}
+      </Route>
+      <Route path="/services/dashboard">
+        {() => <UserRoute component={ServiceProviderDashboard} />}
       </Route>
       <Route path="/services/:id" component={ServiceProviderProfile} />
       <Route path="/requests/new">

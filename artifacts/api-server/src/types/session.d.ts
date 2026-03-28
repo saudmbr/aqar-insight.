@@ -7,6 +7,6 @@ declare module "express-session" {
     userId?: number | null;
     username?: string;
     fullName?: string;
-    role?: "admin" | "user";
+    role?: "admin" | "user" | "real_estate_marketer" | "service_provider";
   }
 }
