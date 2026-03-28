@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export type UserRole = "admin" | "user" | "real_estate_marketer" | "service_provider";
 
 export interface AuthUser {
+  id: number;
   username: string;
   fullName: string;
   role: UserRole;
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 type MeResponse = {
   isAuthenticated: boolean;
   isAdmin: boolean;
+  userId: number;
   username: string;
   fullName: string;
   role: UserRole;
@@ -37,6 +39,7 @@ type MeResponse = {
 
 type AuthResponse = {
   success: boolean;
+  userId: number;
   username: string;
   fullName: string;
   role: UserRole;
@@ -54,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .then((data) => {
         if (data.isAuthenticated) {
-          setUser({ username: data.username, fullName: data.fullName, role: data.role });
+          setUser({ id: data.userId, username: data.username, fullName: data.fullName, role: data.role });
         }
       })
       .catch(() => setUser(null))
@@ -76,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = (await res.json()) as AuthResponse;
     const authUser: AuthUser = {
+      id: data.userId,
       username: data.username,
       fullName: data.fullName,
       role: data.role,
@@ -106,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = (await res.json()) as AuthResponse;
     const authUser: AuthUser = {
+      id: data.userId,
       username: data.username,
       fullName: data.fullName,
       role: data.role,

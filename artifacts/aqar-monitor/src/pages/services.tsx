@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { getImageSrc } from "@/lib/utils";
 import {
   Search, PlusCircle, MapPin, Star, Verified,
-  Wrench, ArrowLeft, Filter
+  Wrench, ArrowLeft, Filter, Pencil, Trash2,
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -31,10 +31,11 @@ interface Provider {
   verified?: boolean | null;
   ratingAvg?: number | null;
   ratingCount?: number | null;
+  userId?: number | null;
 }
 
 export default function Services() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -64,6 +65,19 @@ export default function Services() {
     const raw = images.split("\n").map(u => u.trim()).filter(Boolean)[0] ?? null;
     return getImageSrc(raw);
   };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) return;
+    const res = await fetch(`/api/service-providers/${id}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) {
+      setProviders(prev => prev.filter(p => p.id !== id));
+    } else {
+      alert("فشل الحذف، يرجى المحاولة مجدداً");
+    }
+  };
+
+  const canManage = (p: Provider) =>
+    user?.role === "admin" || (user && p.userId === user.id);
 
   return (
     <Layout>
@@ -230,11 +244,31 @@ export default function Services() {
                         <p className="text-sm font-medium text-muted-foreground">السعر حسب الطلب</p>
                       )}
                       
-                      <Button asChild variant="ghost" className="rounded-xl h-10 px-3 hover:bg-primary/5 hover:text-primary transition-colors">
-                        <Link href={`/services/${p.id}`}>
-                          <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {canManage(p) && (
+                          <>
+                            <Button asChild variant="ghost" size="icon" className="rounded-xl h-9 w-9 hover:bg-primary/8 hover:text-primary transition-colors" title="تعديل">
+                              <Link href="/services/dashboard">
+                                <Pencil className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-xl h-9 w-9 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                              title="حذف"
+                              onClick={(e) => { e.preventDefault(); void handleDelete(p.id); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        <Button asChild variant="ghost" className="rounded-xl h-9 px-3 hover:bg-primary/5 hover:text-primary transition-colors">
+                          <Link href={`/services/${p.id}`}>
+                            <ArrowLeft className="w-5 h-5" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

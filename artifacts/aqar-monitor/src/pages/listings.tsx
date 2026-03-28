@@ -33,8 +33,8 @@ interface ListingsResponse {
 }
 
 export default function Listings() {
-  const { isAuthenticated } = useAuth();
-  const [location, navigate] = useLocation();
+  const { isAuthenticated, user } = useAuth();
+  const [location] = useLocation();
   const [showFilters, setShowFilters] = useState(false);
 
   // Read ?q= from URL on mount
@@ -104,6 +104,19 @@ export default function Listings() {
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
   const activeFiltersCount = [city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
+
+  const handleDeleteListing = async (id: number) => {
+    if (!confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) return;
+    const res = await fetch(`/api/listings/${id}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) {
+      setData(prev => prev ? { ...prev, data: prev.data.filter(l => l.id !== id), total: prev.total - 1 } : prev);
+    } else {
+      alert("فشل الحذف، يرجى المحاولة مجدداً");
+    }
+  };
+
+  const canEditListing = (listing: { userId?: number | null }) =>
+    !!(user?.role === "admin" || (user && listing.userId === user.id));
 
   return (
     <Layout>
@@ -232,7 +245,12 @@ export default function Listings() {
           <div className="space-y-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {data?.data.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  canEdit={canEditListing(listing)}
+                  onDelete={handleDeleteListing}
+                />
               ))}
             </div>
 

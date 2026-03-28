@@ -27,6 +27,7 @@ serviceProvidersRouter.get("/", async (req: Request, res: Response) => {
       ratingAvg: serviceProvidersTable.ratingAvg,
       ratingCount: serviceProvidersTable.ratingCount,
       createdAt: serviceProvidersTable.createdAt,
+      userId: serviceProvidersTable.userId,
     })
     .from(serviceProvidersTable)
     .where(and(...conditions))

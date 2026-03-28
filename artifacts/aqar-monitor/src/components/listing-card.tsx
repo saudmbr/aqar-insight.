@@ -1,6 +1,7 @@
 import { Link } from "wouter";
-import { MapPin, BedDouble, Bath, Maximize2, Verified, Star, Building2 } from "lucide-react";
+import { MapPin, BedDouble, Bath, Maximize2, Verified, Star, Building2, Pencil, Trash2 } from "lucide-react";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface ListingCardData {
   id: number;
@@ -19,6 +20,7 @@ export interface ListingCardData {
   verified?: boolean | null;
   furnishingStatus?: string | null;
   createdAt?: string | Date | null;
+  userId?: number | null;
 }
 
 const LISTING_TYPE_LABELS: Record<string, string> = {
@@ -54,31 +56,63 @@ function ImagePlaceholder() {
   );
 }
 
-export function ListingCard({ listing }: { listing: ListingCardData }) {
+interface ListingCardProps {
+  listing: ListingCardData;
+  canEdit?: boolean;
+  onDelete?: (id: number) => void;
+}
+
+export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
   const firstImage = getFirstImage(listing.images);
   const typeLabel = LISTING_TYPE_LABELS[listing.listingType] ?? listing.listingType;
   const typeStyle = LISTING_TYPE_COLORS[listing.listingType] ?? { bg: "bg-muted", text: "text-muted-foreground" };
 
   return (
-    <Link href={`/listings/${listing.id}`}>
-      <div
-        className="group bg-card rounded-[22px] overflow-hidden cursor-pointer h-full flex flex-col relative"
-        style={{
-          border: "1.5px solid var(--border)",
-          boxShadow: "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)",
-          transition: "box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease",
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(15,28,63,0.14), 0 3px 12px rgba(15,28,63,0.07)";
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-          (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(15,123,160,0.2)";
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)";
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-          (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
-        }}
-      >
+    <div
+      className="group bg-card rounded-[22px] overflow-hidden h-full flex flex-col relative"
+      style={{
+        border: "1.5px solid var(--border)",
+        boxShadow: "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)",
+        transition: "box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(15,28,63,0.14), 0 3px 12px rgba(15,28,63,0.07)";
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(15,123,160,0.2)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)";
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
+      }}
+    >
+      {/* Owner action buttons — hover overlay */}
+      {canEdit && (
+        <div className="absolute top-3.5 left-3.5 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Button
+            asChild
+            size="icon"
+            className="h-8 w-8 rounded-xl bg-white/90 hover:bg-white text-primary shadow-md border border-white/30 backdrop-blur-md"
+            title="تعديل الإعلان"
+            onClick={e => e.stopPropagation()}
+          >
+            <Link href={`/listings/${listing.id}/edit`}>
+              <Pencil className="w-3.5 h-3.5" />
+            </Link>
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 rounded-xl bg-white/90 hover:bg-red-50 text-destructive shadow-md border border-white/30 backdrop-blur-md"
+            title="حذف الإعلان"
+            onClick={e => { e.stopPropagation(); e.preventDefault(); onDelete?.(listing.id); }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
+
+      <Link href={`/listings/${listing.id}`} className="flex flex-col flex-1">
         {/* Image Area */}
         <div className="relative h-56 shrink-0 overflow-hidden bg-muted">
           {/* Gradient overlay */}
@@ -108,7 +142,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             )}
           </div>
 
-          {listing.verified && (
+          {listing.verified && !canEdit && (
             <div className="absolute top-3.5 left-3.5 z-20">
               <span className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-white/95 text-primary shadow-sm flex items-center gap-1">
                 <Verified className="w-3.5 h-3.5 fill-primary text-white" />
@@ -179,7 +213,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             )}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

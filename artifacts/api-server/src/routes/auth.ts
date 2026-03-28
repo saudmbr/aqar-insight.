@@ -86,6 +86,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
       }
       res.json({
         success: true,
+        userId: user.id,
         username: user.username,
         fullName: user.fullName,
         role,
@@ -199,6 +200,7 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
       }
       res.status(201).json({
         success: true,
+        userId: newUser.id,
         username: newUser.username,
         fullName: newUser.fullName,
         role: assignedRole,
@@ -232,6 +234,7 @@ authRouter.get("/me", (req: Request, res: Response) => {
     res.json({
       isAuthenticated: true,
       isAdmin: req.session.isAdmin ?? false,
+      userId: req.session.userId,
       username: req.session.username,
       fullName: req.session.fullName,
       role: req.session.role,
