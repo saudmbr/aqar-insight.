@@ -66,6 +66,9 @@ export default function Login() {
                   id="identifier"
                   type="text"
                   autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="admin أو example@email.com"
@@ -95,6 +98,9 @@ export default function Login() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"

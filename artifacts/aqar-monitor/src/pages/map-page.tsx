@@ -10,7 +10,7 @@ import { formatCurrency, getImageSrc } from "@/lib/utils";
 import {
   MapPin, Building2, SlidersHorizontal, X, Search,
   Maximize2, BedDouble, Bath, ChevronLeft, RefreshCcw,
-  Navigation, Layers,
+  Navigation, Layers, Map,
 } from "lucide-react";
 import type { MapPin as MapPinType } from "@/components/property-map";
 
@@ -123,6 +123,9 @@ export default function MapPage() {
   // Map ↔ list sync
   const [activePinId, setActivePinId] = useState<number | null>(null);
   const [visibleIds, setVisibleIds] = useState<number[]>([]);
+
+  // Mobile view toggle
+  const [mobileView, setMobileView] = useState<"map" | "list">("map");
 
   const buildQuery = () => {
     const p = new URLSearchParams();
@@ -298,11 +301,41 @@ export default function MapPage() {
         </div>
       )}
 
+      {/* Mobile tab bar */}
+      <div className="md:hidden flex border-b border-border bg-white">
+        <button
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+            mobileView === "map"
+              ? "text-primary border-b-2 border-primary"
+              : "text-muted-foreground"
+          }`}
+          onClick={() => setMobileView("map")}
+        >
+          <Map className="w-4 h-4" />
+          <span>الخريطة</span>
+        </button>
+        <button
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+            mobileView === "list"
+              ? "text-primary border-b-2 border-primary"
+              : "text-muted-foreground"
+          }`}
+          onClick={() => setMobileView("list")}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>القائمة {!loading && pins.length > 0 && `(${visiblePins.length})`}</span>
+        </button>
+      </div>
+
       {/* Main split layout */}
-      <div className="flex" style={{ height: "calc(100vh - 170px)", minHeight: 500 }}>
+      <div className="flex" style={{ height: "calc(100vh - 170px)", minHeight: 400 }}>
         {/* Left panel: listing cards */}
         <div
-          className="flex-shrink-0 flex flex-col bg-muted/40 border-e border-border w-[280px] min-w-[200px] max-w-xs"
+          className={`flex-col bg-muted/40 border-e border-border md:flex-shrink-0 md:w-[280px] md:min-w-[200px] md:max-w-xs ${
+            mobileView === "list"
+              ? "flex w-full"
+              : "hidden md:flex"
+          }`}
         >
           {/* Panel header */}
           <div className="px-3 py-3 border-b border-border bg-white flex items-center justify-between">
@@ -379,7 +412,7 @@ export default function MapPage() {
         </div>
 
         {/* Right panel: map */}
-        <div className="flex-1 relative">
+        <div className={`flex-1 relative ${mobileView === "list" ? "hidden md:block" : "block"}`}>
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/60 backdrop-blur-sm">
               <div className="bg-white rounded-2xl px-6 py-4 shadow-lg flex items-center gap-3">
