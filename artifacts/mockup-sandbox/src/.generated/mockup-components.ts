@@ -7,6 +7,7 @@ export const modules: ModuleMap = {
   "./components/mockups/ads/AdDataVertical.tsx": () => import("../components/mockups/ads/AdDataVertical.tsx"),
   "./components/mockups/ads/AdFamilySquare.tsx": () => import("../components/mockups/ads/AdFamilySquare.tsx"),
   "./components/mockups/ads/AdFamilyVertical.tsx": () => import("../components/mockups/ads/AdFamilyVertical.tsx"),
+  "./components/mockups/ads/VideoMarketerAd.tsx": () => import("../components/mockups/ads/VideoMarketerAd.tsx"),
   "./components/mockups/logos/ClassicColumns.tsx": () => import("../components/mockups/logos/ClassicColumns.tsx"),
   "./components/mockups/logos/GeometricCity.tsx": () => import("../components/mockups/logos/GeometricCity.tsx"),
   "./components/mockups/logos/RoyalArch.tsx": () => import("../components/mockups/logos/RoyalArch.tsx"),
