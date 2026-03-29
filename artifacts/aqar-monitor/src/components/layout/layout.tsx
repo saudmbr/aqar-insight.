@@ -58,29 +58,31 @@ export function Layout({ children }: LayoutProps) {
               <LogoBrand variant="header" linkTo="/" />
 
               {/* Search bar — hidden on mobile, visible on sm+ */}
-              <form
-                onSubmit={handleSearch}
-                className="hidden sm:flex flex-1 items-center gap-2 max-w-xl"
-                dir="rtl"
-              >
-                <div className="relative flex-1">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder={isAr ? "ابحث عن عقار، حي، مدينة..." : "Search property, district, city..."}
-                    className="w-full h-10 pr-9 pl-3 text-sm bg-muted/60 border border-border rounded-xl outline-none focus:border-primary focus:bg-white transition-all placeholder:text-muted-foreground/60"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="h-10 px-4 rounded-xl text-sm font-semibold text-white shrink-0 transition-all hover:brightness-110"
-                  style={{ background: "var(--primary)" }}
+              <div className="hidden sm:flex flex-1 items-center justify-center">
+                <form
+                  onSubmit={handleSearch}
+                  className="flex items-center gap-2 w-full max-w-xl"
+                  dir="rtl"
                 >
-                  {isAr ? "بحث" : "Search"}
-                </button>
-              </form>
+                  <div className="relative flex-1">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder={isAr ? "ابحث عن عقار، حي، مدينة..." : "Search property, district, city..."}
+                      className="w-full h-10 pr-9 pl-3 text-sm bg-muted/60 border border-border rounded-xl outline-none focus:border-primary focus:bg-white transition-all placeholder:text-muted-foreground/60"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="h-10 px-4 rounded-xl text-sm font-semibold text-white shrink-0 transition-all hover:brightness-110"
+                    style={{ background: "var(--primary)" }}
+                  >
+                    {isAr ? "بحث" : "Search"}
+                  </button>
+                </form>
+              </div>
 
               {/* Mobile search icon */}
               <button
