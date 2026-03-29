@@ -1,4 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from "react";
+import heroBg from "@/assets/hero-bg.png";
 import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
@@ -349,93 +350,171 @@ export default function Home() {
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-14 pb-16">
 
         {/* ══════════════════════════════════════════════════════════════
-            HERO — Value-driven smart real estate platform
+            HERO — Ultra Premium Saudi Real Estate Platform
         ══════════════════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
           <div
             className="relative rounded-[2rem] overflow-hidden text-white"
             style={{
-              background: "linear-gradient(140deg, #0F1C3F 0%, #0F1C3F 45%, #0a2a4a 75%, #0F7BA0 100%)",
-              boxShadow: "0 32px 80px rgba(15,28,63,0.45), 0 8px 24px rgba(15,28,63,0.25)",
+              minHeight: 520,
+              boxShadow: "0 40px 100px rgba(6,18,32,0.65), 0 8px 32px rgba(6,18,32,0.40)",
             }}
           >
-            {/* Layered background atmosphere */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_90%_at_top_right,rgba(15,123,160,0.4),transparent)] pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_50%_at_bottom_left,rgba(201,168,76,0.10),transparent)] pointer-events-none" />
-
-            {/* Subtle dot grid */}
-            <div
-              className="absolute inset-0 opacity-[0.035] pointer-events-none"
-              style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "26px 26px" }}
+            {/* Background image — flipped for RTL (skyline on left, open space on right for text) */}
+            <img
+              src={heroBg}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover object-center select-none pointer-events-none"
+              style={{ transform: "scaleX(-1)" }}
+              draggable={false}
             />
 
-            {/* Analytics chart lines — right side decoration */}
-            <div className="absolute left-0 top-0 bottom-0 w-[52%] pointer-events-none overflow-hidden hidden lg:block opacity-[0.07]">
-              <svg viewBox="0 0 520 320" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Rising trend line */}
-                <polyline points="0,240 60,210 120,195 180,160 240,130 300,100 360,80 420,55 520,30"
-                  stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                {/* Area fill under the line */}
-                <polygon points="0,240 60,210 120,195 180,160 240,130 300,100 360,80 420,55 520,30 520,320 0,320"
-                  fill="white" fillOpacity="0.25" />
-                {/* Second subtle line */}
-                <polyline points="0,280 80,265 160,250 240,230 320,200 400,175 520,145"
-                  stroke="white" strokeWidth="1.5" strokeDasharray="6 4" strokeLinecap="round" />
-                {/* Data points */}
-                <circle cx="180" cy="160" r="4" fill="white" fillOpacity="0.7" />
-                <circle cx="300" cy="100" r="4" fill="white" fillOpacity="0.7" />
-                <circle cx="420" cy="55" r="5" fill="white" />
-                {/* Horizontal guide lines */}
-                <line x1="0" y1="80"  x2="520" y2="80"  stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
-                <line x1="0" y1="160" x2="520" y2="160" stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
-                <line x1="0" y1="240" x2="520" y2="240" stroke="white" strokeWidth="0.5" strokeOpacity="0.4" />
-                {/* Bar chart hints at bottom left */}
-                <rect x="20"  y="270" width="28" height="50" rx="3" fill="white" fillOpacity="0.3" />
-                <rect x="56"  y="250" width="28" height="70" rx="3" fill="white" fillOpacity="0.3" />
-                <rect x="92"  y="240" width="28" height="80" rx="3" fill="white" fillOpacity="0.35" />
-                <rect x="128" y="255" width="28" height="65" rx="3" fill="white" fillOpacity="0.3" />
-              </svg>
-            </div>
+            {/* ── Gradient overlays (RTL-optimised) ── */}
+            {/* Main: deep dark on right (text area) → transparent left (show image) */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(to left, rgba(5,14,27,0.96) 0%, rgba(5,14,27,0.82) 32%, rgba(5,14,27,0.45) 60%, rgba(5,14,27,0.08) 100%)" }}
+            />
+            {/* Bottom vignette for search bar readability */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(to top, rgba(5,14,27,0.90) 0%, rgba(5,14,27,0.35) 28%, transparent 55%)" }}
+            />
+            {/* Top vignette */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(to bottom, rgba(5,14,27,0.60) 0%, transparent 28%)" }}
+            />
+            {/* Teal glow accent — left center where skyline shows */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse 55% 70% at 18% 45%, rgba(15,123,160,0.22) 0%, transparent 70%)" }}
+            />
+            {/* Warm golden accent from the sunset on the image */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(ellipse 40% 35% at 12% 20%, rgba(234,179,8,0.10) 0%, transparent 70%)" }}
+            />
 
-            {/* Floating mini analytics card — top-left corner accent */}
-            <div className="absolute top-6 left-6 hidden xl:flex items-center gap-2.5 bg-white/8 border border-white/12 rounded-2xl px-4 py-2.5 backdrop-blur-sm pointer-events-none">
-              <TrendingUp className="w-4 h-4 text-[#94A3B8]" />
+            {/* ── Floating ambient glass cards ── */}
+            {/* Top-left: live market stat */}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="absolute top-6 left-7 hidden lg:flex items-center gap-3 rounded-2xl px-4 py-3 pointer-events-none"
+              style={{
+                background: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.16)",
+                backdropFilter: "blur(14px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
+              }}
+            >
+              <div className="w-8 h-8 rounded-xl bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-4 h-4 text-cyan-300" />
+              </div>
               <div>
-                <p className="text-[10px] text-white/60 leading-none mb-0.5">متوسط أسعار الرياض</p>
-                <p className="text-xs font-extrabold text-white leading-none">
-                  {kpis ? formatCurrency(kpis.avgPricePerSqm) + " / م²" : "جارٍ التحميل…"}
+                <p className="text-[10px] text-white/55 leading-none mb-0.5 tracking-wide">متوسط سعر المتر · الرياض</p>
+                <p className="text-sm font-black text-white leading-none">
+                  {kpis ? formatCurrency(kpis.avgPricePerSqm) + " / م²" : "—"}
                 </p>
               </div>
-              <div className="flex items-center gap-0.5 text-green-400 text-[10px] font-bold">
-                <ArrowUpRight className="w-3 h-3" />
-                <span>حي</span>
+              <span className="text-green-400 text-[10px] font-bold flex items-center gap-0.5 bg-green-400/10 rounded-lg px-2 py-1">
+                <ArrowUpRight className="w-3 h-3" /> حي
+              </span>
+            </motion.div>
+
+            {/* Bottom-left: live listings count */}
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="absolute bottom-28 left-7 hidden xl:flex flex-col gap-1 rounded-2xl px-4 py-4 pointer-events-none w-44"
+              style={{
+                background: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.16)",
+                backdropFilter: "blur(14px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+                <span className="text-[10px] text-white/55 font-medium tracking-wide">إعلانات مباشرة</span>
               </div>
-            </div>
+              <p className="text-3xl font-black text-white leading-none">{kpis ? formatNumber(kpis.totalListings) : "—"}</p>
+              <p className="text-[10px] text-white/50 mt-0.5">عقار متاح الآن</p>
+            </motion.div>
+
+            {/* Bottom-left-2: this month listings */}
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="absolute bottom-28 left-56 hidden xl:flex flex-col gap-1 rounded-2xl px-4 py-4 pointer-events-none w-44"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.13)",
+                backdropFilter: "blur(14px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Activity className="w-3 h-3 text-cyan-300 flex-shrink-0" />
+                <span className="text-[10px] text-white/55 font-medium tracking-wide">هذا الشهر</span>
+              </div>
+              <p className="text-3xl font-black text-white leading-none">{kpis ? formatNumber(kpis.newLast30Days) : "—"}</p>
+              <p className="text-[10px] text-white/50 mt-0.5">إعلان جديد</p>
+            </motion.div>
 
             {/* Main content */}
-            <div className="relative px-8 py-12 md:px-14 md:py-16">
+            <div className="relative px-6 py-14 md:px-14 md:py-16">
               {/* Eyebrow badge */}
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6">
-                <BarChart3 className="w-3.5 h-3.5 text-[#94A3B8]" />
-                عقار إنسايت
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="inline-flex items-center gap-2 text-white/90 px-4 py-1.5 rounded-full text-[13px] font-semibold mb-6"
+                style={{
+                  background: "rgba(15,123,160,0.25)",
+                  border: "1px solid rgba(15,123,160,0.45)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-cyan-300" />
+                عقار إنسايت · منصة العقارات الذكية
+              </motion.div>
 
               {/* Headline */}
-              <h1 className="text-[2.4rem] md:text-[3.2rem] font-extrabold leading-[1.08] tracking-tight mb-4 text-white max-w-2xl">
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, type: "spring", stiffness: 200 }}
+                className="text-[2.6rem] md:text-[3.5rem] font-extrabold leading-[1.05] tracking-tight mb-5 text-white max-w-2xl"
+              >
                 خذ القرار الصح
                 <br />
-                <span className="text-[#94A3B8]">في عقارك</span>
-              </h1>
+                <span style={{ color: "#94C7DC" }}>في عقارك</span>
+              </motion.h1>
 
               {/* Subtitle */}
-              <p className="text-[16px] md:text-[17px] text-white/75 leading-relaxed mb-8 max-w-xl font-medium">
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-[16px] md:text-[17px] leading-relaxed mb-8 max-w-xl font-medium"
+                style={{ color: "rgba(255,255,255,0.72)" }}
+              >
                 قارن الأسعار في مئات الأحياء، تابع المشاريع المستقبلية، وتواصل مع أفضل المسوّقين
-              </p>
+              </motion.p>
 
               {/* Search bar — two-row layout */}
               <div
-                className="bg-white/12 backdrop-blur-md border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col gap-2.5 max-w-3xl mb-6"
-                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)" }}
+                className="backdrop-blur-xl border rounded-2xl p-3 md:p-4 flex flex-col gap-2.5 max-w-3xl mb-6"
+                style={{
+                  background: "rgba(5,14,27,0.55)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.08)",
+                }}
               >
                 {/* Row 1 — Location: المنطقة → المدينة → الحي */}
                 <div className="flex flex-col md:flex-row gap-2.5">
@@ -574,15 +653,15 @@ export default function Home() {
 
               {/* Stats strip */}
               {hasData && (
-                <div className="hidden md:flex items-center gap-8 mt-8 pt-6 border-t border-white/10">
+                <div className="hidden md:flex items-center gap-8 mt-8 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}>
                   {[
                     { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2 },
                     { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm), icon: Banknote },
                     { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity },
                   ].map(s => (
                     <div key={s.label} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                        <s.icon className="w-4 h-4 text-white/70" />
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(15,123,160,0.20)", border: "1px solid rgba(15,123,160,0.30)" }}>
+                        <s.icon className="w-4 h-4 text-cyan-300" />
                       </div>
                       <div>
                         <div className="text-lg font-extrabold text-white leading-none">{s.value}</div>
