@@ -440,12 +440,12 @@ export default function Home() {
             />
 
             {/* ── Floating ambient glass cards ── */}
-            {/* Top-left: live market stat */}
+            {/* Top-left: price per sqm — 3 key regions */}
             <motion.div
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="absolute top-6 left-7 hidden lg:flex items-center gap-3 rounded-2xl px-4 py-3 pointer-events-none"
+              className="absolute top-6 left-7 hidden lg:flex flex-col gap-0 rounded-2xl px-4 py-3 pointer-events-none w-60"
               style={{
                 background: "rgba(255,255,255,0.10)",
                 border: "1px solid rgba(255,255,255,0.16)",
@@ -453,18 +453,52 @@ export default function Home() {
                 boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
               }}
             >
-              <div className="w-8 h-8 rounded-xl bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-4 h-4 text-cyan-300" />
+              {/* عنوان البطاقة */}
+              <div className="flex items-center gap-2 mb-2.5 pb-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+                <div className="w-6 h-6 rounded-lg bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
+                </div>
+                <p className="text-[10px] text-white/70 font-bold tracking-wide">متوسط سعر المتر² / م²</p>
               </div>
-              <div>
-                <p className="text-[10px] text-white/55 leading-none mb-0.5 tracking-wide">متوسط سعر المتر · الرياض</p>
-                <p className="text-sm font-black text-white leading-none">
-                  {kpis ? formatCurrency(kpis.avgPricePerSqm) + " / م²" : "—"}
-                </p>
-              </div>
-              <span className="text-green-400 text-[10px] font-bold flex items-center gap-0.5 bg-green-400/10 rounded-lg px-2 py-1">
-                <ArrowUpRight className="w-3 h-3" /> حي
-              </span>
+              {/* الرياض */}
+              {(() => {
+                const city = insights?.byCity?.find(c => c.city === "الرياض");
+                const psm = city?.avgPricePerSqm ?? 0;
+                return (
+                  <div className="flex items-center justify-between py-1.5">
+                    <span className="text-[11px] text-white/80 font-medium">الرياض</span>
+                    <span className="text-[12px] font-black text-white tabular-nums">
+                      {psm > 0 ? formatCurrency(psm) : "—"}
+                    </span>
+                  </div>
+                );
+              })()}
+              {/* جدة */}
+              {(() => {
+                const city = insights?.byCity?.find(c => c.city === "جدة");
+                const psm = city?.avgPricePerSqm ?? 0;
+                return (
+                  <div className="flex items-center justify-between py-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                    <span className="text-[11px] text-white/80 font-medium">جدة</span>
+                    <span className="text-[12px] font-black text-white tabular-nums">
+                      {psm > 0 ? formatCurrency(psm) : "—"}
+                    </span>
+                  </div>
+                );
+              })()}
+              {/* المنطقة الشرقية */}
+              {(() => {
+                const reg = insights?.byRegion?.find(r => r.region === "المنطقة الشرقية");
+                const psm = reg?.avgPricePerSqm ?? 0;
+                return (
+                  <div className="flex items-center justify-between py-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                    <span className="text-[11px] text-white/80 font-medium">المنطقة الشرقية</span>
+                    <span className="text-[12px] font-black text-white tabular-nums">
+                      {psm > 0 ? formatCurrency(psm) : "—"}
+                    </span>
+                  </div>
+                );
+              })()}
             </motion.div>
 
             {/* Bottom-left: live listings count */}
