@@ -1149,7 +1149,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {(insights?.smartInsights ?? []).map((ins, i) => {
+                  {(insights?.smartInsights ?? []).slice(2).map((ins, i) => {
                     const isPositive = /فرصة|نمو|منخفض|مناسب|طلب عالٍ|مستقر/.test(ins);
                     const isWarning  = /مرتفع|انخفاض|تحذير|مخاطر|احتراز/.test(ins);
                     const color  = isPositive ? "#22C55E" : isWarning ? "#EF4444" : "#0F7BA0";
