@@ -22,7 +22,7 @@ import {
   Tooltip, PieChart, Pie, Cell, BarChart, Bar,
 } from "recharts";
 import type { MapPin as MapPinItem } from "@/components/property-map";
-import { SAUDI_REGIONS } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz, getAhyaa } from "@/lib/saudi-geo";
 
 const PropertyMap = lazy(() => import("@/components/property-map"));
 
@@ -212,9 +212,10 @@ export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
 
-  // Quick search state (hero bar)
+  // Quick search state (hero bar) — منطقة → محافظة → مركز → حي
   const [quickRegion, setQuickRegion]           = useState("");
   const [quickCity, setQuickCity]               = useState("");
+  const [quickMarkaz, setQuickMarkaz]           = useState("");
   const [quickDistrict, setQuickDistrict]       = useState("");
   const [quickType, setQuickType]               = useState("");
   const [quickListingType, setQuickListingType] = useState("");
@@ -329,16 +330,17 @@ export default function Home() {
     ? (filterOpts?.districts ?? []).filter(d => d.city === applied.city)
     : (filterOpts?.districts ?? []);
 
-  // Derived lists for quick-search dropdowns
-  const citiesForRegion: string[] = quickRegion ? (SAUDI_REGIONS[quickRegion] ?? []) : [];
-  const districtsForCity: string[] = quickCity
-    ? (filterOpts?.districts ?? []).filter(d => d.city === quickCity).map(d => d.district)
-    : [];
+  // Derived lists — التسلسل الإداري: منطقة → محافظة → مركز → حي
+  const muhafazatForRegion: string[] = getMuhafazat(quickRegion);
+  const marakizForMuhafaza: string[] = getMarakiz(quickRegion, quickCity);
+  const ahyaaForMarkaz: string[]     = getAhyaa(quickRegion, quickCity, quickMarkaz);
 
   // Quick search → navigate to /listings with params
   const handleQuickSearch = () => {
     const p = new URLSearchParams();
-    if (quickCity) p.set("city", quickCity);
+    if (quickRegion)  p.set("region",  quickRegion);
+    if (quickCity)    p.set("city",    quickCity);
+    if (quickMarkaz)  p.set("markaz",  quickMarkaz);
     if (quickDistrict) p.set("district", quickDistrict);
     if (quickType) p.set("propertyType", quickType);
     if (quickListingType) p.set("listingType", quickListingType);
@@ -516,7 +518,7 @@ export default function Home() {
                   boxShadow: "0 12px 40px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.08)",
                 }}
               >
-                {/* Row 1 — Location: المنطقة → المدينة → الحي */}
+                {/* Row 1 — Location: المنطقة → المحافظة → المركز → الحي */}
                 <div className="flex flex-col md:flex-row gap-2.5">
                   {/* المنطقة */}
                   <div className="flex flex-col gap-1 flex-1">
@@ -526,25 +528,27 @@ export default function Home() {
                       onChange={e => {
                         setQuickRegion(e.target.value);
                         setQuickCity("");
+                        setQuickMarkaz("");
                         setQuickDistrict("");
                       }}
                       className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer"
                       style={{ color: "white" }}
                     >
                       <option value="" style={{ color: "#0F1C3F" }}>كل المناطق</option>
-                      {Object.keys(SAUDI_REGIONS).map(r => (
+                      {SAUDI_REGIONS_LIST.map(r => (
                         <option key={r} value={r} style={{ color: "#0F1C3F" }}>{r}</option>
                       ))}
                     </select>
                   </div>
 
-                  {/* المدينة */}
+                  {/* المحافظة */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المدينة</span>
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المحافظة</span>
                     <select
                       value={quickCity}
                       onChange={e => {
                         setQuickCity(e.target.value);
+                        setQuickMarkaz("");
                         setQuickDistrict("");
                       }}
                       disabled={!quickRegion}
@@ -552,10 +556,32 @@ export default function Home() {
                       style={{ color: "white" }}
                     >
                       <option value="" style={{ color: "#0F1C3F" }}>
-                        {quickRegion ? "كل المدن" : "اختر المنطقة أولاً"}
+                        {quickRegion ? "كل المحافظات" : "اختر المنطقة أولاً"}
                       </option>
-                      {citiesForRegion.map(c => (
-                        <option key={c} value={c} style={{ color: "#0F1C3F" }}>{c}</option>
+                      {muhafazatForRegion.map(m => (
+                        <option key={m} value={m} style={{ color: "#0F1C3F" }}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* المركز */}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المركز</span>
+                    <select
+                      value={quickMarkaz}
+                      onChange={e => {
+                        setQuickMarkaz(e.target.value);
+                        setQuickDistrict("");
+                      }}
+                      disabled={!quickCity || marakizForMuhafaza.length === 0}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>
+                        {!quickCity ? "اختر المحافظة أولاً" : "كل المراكز"}
+                      </option>
+                      {marakizForMuhafaza.map(m => (
+                        <option key={m} value={m} style={{ color: "#0F1C3F" }}>{m}</option>
                       ))}
                     </select>
                   </div>
@@ -566,19 +592,15 @@ export default function Home() {
                     <select
                       value={quickDistrict}
                       onChange={e => setQuickDistrict(e.target.value)}
-                      disabled={!quickCity || districtsForCity.length === 0}
+                      disabled={!quickCity || ahyaaForMarkaz.length === 0}
                       className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                       style={{ color: "white" }}
                     >
                       <option value="" style={{ color: "#0F1C3F" }}>
-                        {!quickCity
-                          ? "اختر المدينة أولاً"
-                          : districtsForCity.length === 0
-                          ? "لا توجد أحياء مسجّلة"
-                          : "كل الأحياء"}
+                        {!quickCity ? "اختر المحافظة أولاً" : ahyaaForMarkaz.length === 0 ? "أدخل المركز" : "كل الأحياء"}
                       </option>
-                      {districtsForCity.map(d => (
-                        <option key={d} value={d} style={{ color: "#0F1C3F" }}>{d}</option>
+                      {ahyaaForMarkaz.map(h => (
+                        <option key={h} value={h} style={{ color: "#0F1C3F" }}>{h}</option>
                       ))}
                     </select>
                   </div>

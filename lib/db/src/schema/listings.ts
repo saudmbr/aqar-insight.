@@ -23,8 +23,10 @@ export const listingsTable = pgTable("listings", {
   status: text("status").notNull().default("active"),
   referenceNumber: text("reference_number"),
 
-  // Location
+  // Location — التسلسل الإداري: منطقة → محافظة → مركز → حي
+  region: text("region"),
   city: text("city").notNull(),
+  markaz: text("markaz"),
   district: text("district"),
   subDistrict: text("sub_district"),
   location: text("location"),

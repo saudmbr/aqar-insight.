@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
 import { useState, useEffect, type FormEvent } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -37,13 +37,15 @@ export default function Listings() {
   const [location] = useLocation();
   const [showFilters, setShowFilters] = useState(false);
 
-  // Read ?q= from URL on mount
-  const urlSearch = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("q") ?? "";
+  // Read URL params on mount
+  const _init = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
 
-  // Filters
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
-  const [search, setSearch] = useState(urlSearch);
+  // Filters — التسلسل الإداري: منطقة → محافظة → مركز
+  const [region, setRegion]     = useState(_init.get("region") ?? "");
+  const [city, setCity]         = useState(_init.get("city") ?? "");
+  const [markaz, setMarkaz]     = useState(_init.get("markaz") ?? "");
+  const [district, setDistrict] = useState(_init.get("district") ?? "");
+  const [search, setSearch]     = useState(_init.get("q") ?? "");
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -59,16 +61,28 @@ export default function Listings() {
     return () => { document.title = "عقار إنسايت"; };
   }, []);
 
-  // Sync URL ?q= changes (e.g. from the top-bar search)
+  // Sync URL params on navigation (hero search → listings)
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("q") ?? "";
+    const p = new URLSearchParams(window.location.search);
+    const q = p.get("q") ?? "";
     setSearch(q);
+    const r = p.get("region") ?? "";
+    const c = p.get("city") ?? "";
+    const m = p.get("markaz") ?? "";
+    const d = p.get("district") ?? "";
+    if (r) setRegion(r);
+    if (c) setCity(c);
+    if (m) setMarkaz(m);
+    if (d) setDistrict(d);
+    if (r || c) setShowFilters(true);
   }, [location]);
 
   const buildQuery = (pg = page) => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
+    if (region) params.set("region", region);
     if (city) params.set("city", city);
+    if (markaz) params.set("markaz", markaz);
     if (district) params.set("district", district);
     if (propertyType) params.set("propertyType", propertyType);
     if (listingType) params.set("listingType", listingType);
@@ -95,7 +109,7 @@ export default function Listings() {
   useEffect(() => {
     void fetchListings(1);
     setPage(1);
-  }, [city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms]);
+  }, [region, city, markaz, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -104,11 +118,12 @@ export default function Listings() {
   };
 
   const resetFilters = () => {
-    setCity(""); setDistrict(""); setSearch(""); setPropertyType(""); setListingType(""); setMinPrice(""); setMaxPrice(""); setBedrooms("");
+    setRegion(""); setCity(""); setMarkaz(""); setDistrict("");
+    setSearch(""); setPropertyType(""); setListingType(""); setMinPrice(""); setMaxPrice(""); setBedrooms("");
   };
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
-  const activeFiltersCount = [city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
+  const activeFiltersCount = [region, city, markaz, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
 
   const handleDeleteListing = async (id: number) => {
     if (!confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) return;
@@ -177,42 +192,65 @@ export default function Listings() {
 
           {/* Expanded Filters Panel */}
           {showFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 bg-card border border-border shadow-sm rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">المدينة</label>
-                <select value={city} onChange={(e) => setCity(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">جميع المدن</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+            <div className="p-6 bg-card border border-border shadow-sm rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
+              {/* Row 1 — التسلسل الإداري */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">المنطقة</label>
+                  <select value={region} onChange={(e) => { setRegion(e.target.value); setCity(""); setMarkaz(""); setDistrict(""); }}
+                    className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                    <option value="">جميع المناطق</option>
+                    {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">المحافظة</label>
+                  <select value={city} onChange={(e) => { setCity(e.target.value); setMarkaz(""); setDistrict(""); }} disabled={!region}
+                    className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="">{region ? "جميع المحافظات" : "اختر المنطقة أولاً"}</option>
+                    {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">المركز</label>
+                  <select value={markaz} onChange={(e) => { setMarkaz(e.target.value); setDistrict(""); }} disabled={!city}
+                    className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="">{city ? "جميع المراكز" : "اختر المحافظة أولاً"}</option>
+                    {getMarakiz(region, city).map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">الحي</label>
+                  <Input placeholder="اكتب الحي…" value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl font-medium" />
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">النوع</label>
-                <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">جميع الأنواع</option>
-                  {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">الغرض</label>
-                <select value={listingType} onChange={(e) => setListingType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">الكل</option>
-                  {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">السعر (من)</label>
-                <Input type="number" placeholder="مثال: 500,000" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-11 rounded-xl font-medium" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">السعر (إلى)</label>
-                <Input type="number" placeholder="مثال: 2,000,000" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="h-11 rounded-xl font-medium" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-foreground">غرف النوم</label>
-                <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">الكل</option>
-                  {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>+{n}</option>)}
-                </select>
+              {/* Row 2 — نوع + غرض + سعر + غرف */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">نوع العقار</label>
+                  <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                    <option value="">جميع الأنواع</option>
+                    {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">الغرض</label>
+                  <select value={listingType} onChange={(e) => setListingType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                    <option value="">الكل</option>
+                    {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">السعر (من)</label>
+                  <Input type="number" placeholder="مثال: 500,000" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-11 rounded-xl font-medium" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground">غرف النوم</label>
+                  <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                    <option value="">الكل</option>
+                    {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>+{n}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
           )}

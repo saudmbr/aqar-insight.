@@ -454,13 +454,14 @@ export default function ListingDetail() {
               {/* Title */}
               <h1 className="text-2xl md:text-3xl font-extrabold text-foreground leading-snug mb-3">{listing.title}</h1>
 
-              {/* Location */}
-              <div className="flex items-center gap-2 text-base text-muted-foreground font-medium mb-6">
-                <MapPin className="w-5 h-5 text-primary shrink-0" />
+              {/* Location — منطقة ← محافظة ← مركز ← حي */}
+              <div className="flex items-start gap-2 text-base text-muted-foreground font-medium mb-6">
+                <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <span>
+                  {listing.region ? <><span className="text-foreground/70">{listing.region}</span><span className="mx-1.5 text-muted-foreground/40">›</span></> : null}
                   {listing.city}
-                  {listing.district ? ` ، حي ${listing.district}` : ""}
-                  {listing.subDistrict ? ` ، ${listing.subDistrict}` : ""}
+                  {(listing as any).markaz ? <><span className="mx-1.5 text-muted-foreground/40">›</span><span>{(listing as any).markaz}</span></> : null}
+                  {listing.district ? <><span className="mx-1.5 text-muted-foreground/40">›</span><span>حي {listing.district}</span></> : null}
                 </span>
               </div>
 
@@ -711,8 +712,10 @@ export default function ListingDetail() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                   <MapPin className="w-4 h-4 text-primary" />
                   <span>
+                    {listing.region ? <>{listing.region}<span className="mx-1 text-muted-foreground/40">›</span></> : null}
                     {listing.city}
-                    {listing.district ? ` ، حي ${listing.district}` : ""}
+                    {(listing as any).markaz ? <><span className="mx-1 text-muted-foreground/40">›</span>{(listing as any).markaz}</> : null}
+                    {listing.district ? <><span className="mx-1 text-muted-foreground/40">›</span>حي {listing.district}</> : null}
                   </span>
                   {listing.latitude != null && listing.longitude != null && (
                     <span className="text-xs font-mono text-muted-foreground/70 mr-2" dir="ltr">
@@ -734,7 +737,9 @@ export default function ListingDetail() {
                   <div className="text-center text-muted-foreground">
                     <MapPin className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
                     <p className="text-sm font-medium">الموقع الدقيق غير محدد</p>
-                    <p className="text-xs mt-0.5">{[listing.district, listing.city].filter(Boolean).join("، ")}</p>
+                    <p className="text-xs mt-0.5">
+                      {[listing.region, listing.city, (listing as any).markaz, listing.district ? `حي ${listing.district}` : ""].filter(Boolean).join(" › ")}
+                    </p>
                   </div>
                 </div>
               )}

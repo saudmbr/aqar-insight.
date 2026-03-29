@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -107,8 +107,10 @@ function ListingMiniCard({
 export default function MapPage() {
   const [, navigate] = useLocation();
 
-  // Filters
-  const [city, setCity] = useState("");
+  // Filters — التسلسل الإداري: منطقة → محافظة → مركز
+  const [region, setRegion]     = useState("");
+  const [city, setCity]         = useState("");
+  const [markaz, setMarkaz]     = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -129,7 +131,9 @@ export default function MapPage() {
 
   const buildQuery = () => {
     const p = new URLSearchParams();
+    if (region) p.set("region", region);
     if (city) p.set("city", city);
+    if (markaz) p.set("markaz", markaz);
     if (propertyType) p.set("propertyType", propertyType);
     if (listingType) p.set("listingType", listingType);
     if (minPrice) p.set("minPrice", minPrice);
@@ -160,7 +164,7 @@ export default function MapPage() {
     } finally {
       setLoading(false);
     }
-  }, [city, propertyType, listingType, minPrice, maxPrice]);
+  }, [region, city, markaz, propertyType, listingType, minPrice, maxPrice]);
 
   useEffect(() => {
     document.title = "خريطة العقارات – عقار إنسايت";
@@ -179,11 +183,12 @@ export default function MapPage() {
   };
 
   const clearFilters = () => {
-    setCity(""); setPropertyType(""); setListingType("");
+    setRegion(""); setCity(""); setMarkaz("");
+    setPropertyType(""); setListingType("");
     setMinPrice(""); setMaxPrice("");
   };
 
-  const hasFilters = !!(city || propertyType || listingType || minPrice || maxPrice);
+  const hasFilters = !!(region || city || markaz || propertyType || listingType || minPrice || maxPrice);
 
   return (
     <Layout>
@@ -235,14 +240,27 @@ export default function MapPage() {
         <div className="bg-white border-b border-border px-6 py-4 shadow-sm">
           <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">المدينة</label>
-              <select
-                value={city}
-                onChange={e => setCity(e.target.value)}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="">كل المدن</option>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <label className="text-xs text-muted-foreground mb-1 block">المنطقة</label>
+              <select value={region} onChange={e => { setRegion(e.target.value); setCity(""); setMarkaz(""); }}
+                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <option value="">كل المناطق</option>
+                {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">المحافظة</label>
+              <select value={city} onChange={e => { setCity(e.target.value); setMarkaz(""); }} disabled={!region}
+                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50">
+                <option value="">{region ? "كل المحافظات" : "اختر المنطقة"}</option>
+                {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">المركز</label>
+              <select value={markaz} onChange={e => setMarkaz(e.target.value)} disabled={!city}
+                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50">
+                <option value="">{city ? "كل المراكز" : "اختر المحافظة"}</option>
+                {getMarakiz(region, city).map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div>

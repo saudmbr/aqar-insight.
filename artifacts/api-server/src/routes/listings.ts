@@ -29,7 +29,7 @@ function parseCoords(lat: unknown, lng: unknown): { latitude: number; longitude:
 // ─── List / Search ────────────────────────────────────────────────────────────
 listingsRouter.get("/", async (req: Request, res: Response) => {
   const {
-    city, district, propertyType, listingType, listingPurpose,
+    region, city, markaz, district, propertyType, listingType, listingPurpose,
     minPrice, maxPrice, minArea, maxArea,
     bedrooms, furnished, featured, urgent, exclusive,
     marketerId, search,
@@ -45,10 +45,14 @@ listingsRouter.get("/", async (req: Request, res: Response) => {
         ilike(listingsTable.title, `%${search}%`),
         ilike(listingsTable.district, `%${search}%`),
         ilike(listingsTable.city, `%${search}%`),
+        ilike(listingsTable.markaz, `%${search}%`),
+        ilike(listingsTable.region, `%${search}%`),
       )!
     );
   }
+  if (region) conditions.push(eq(listingsTable.region, region));
   if (city) conditions.push(eq(listingsTable.city, city));
+  if (markaz) conditions.push(eq(listingsTable.markaz, markaz));
   if (district) conditions.push(ilike(listingsTable.district, `%${district}%`));
   if (propertyType) conditions.push(eq(listingsTable.propertyType, propertyType));
   if (listingType) conditions.push(eq(listingsTable.listingType, listingType));
@@ -83,7 +87,9 @@ listingsRouter.get("/", async (req: Request, res: Response) => {
         propertyType: listingsTable.propertyType,
         listingType: listingsTable.listingType,
         listingPurpose: listingsTable.listingPurpose,
+        region: listingsTable.region,
         city: listingsTable.city,
+        markaz: listingsTable.markaz,
         district: listingsTable.district,
         price: listingsTable.price,
         areaSqm: listingsTable.areaSqm,
@@ -148,12 +154,14 @@ function geocodeListing(id: number, city: string): [number, number] | null {
 
 listingsRouter.get("/map-pins", async (req: Request, res: Response) => {
   const {
-    city, district, propertyType, listingType,
+    region, city, markaz, district, propertyType, listingType,
     minPrice, maxPrice, minArea, maxArea,
   } = req.query as Record<string, string>;
 
   const conditions = [eq(listingsTable.status, "active")];
+  if (region) conditions.push(eq(listingsTable.region, region));
   if (city) conditions.push(eq(listingsTable.city, city));
+  if (markaz) conditions.push(eq(listingsTable.markaz, markaz));
   if (district) conditions.push(ilike(listingsTable.district, `%${district}%`));
   if (propertyType) conditions.push(eq(listingsTable.propertyType, propertyType));
   if (listingType) conditions.push(eq(listingsTable.listingType, listingType));
@@ -330,7 +338,9 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
     listingPurpose: b.listingPurpose ? String(b.listingPurpose) : null,
     status: b.status ? String(b.status) : "active",
     referenceNumber: b.referenceNumber ? String(b.referenceNumber) : null,
+    region: b.region ? String(b.region) : null,
     city: String(b.city),
+    markaz: b.markaz ? String(b.markaz) : null,
     district: b.district ? String(b.district) : null,
     subDistrict: b.subDistrict ? String(b.subDistrict) : null,
     location: b.location ? String(b.location) : null,
@@ -444,7 +454,9 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
   if (b.listingPurpose !== undefined) setObj.listingPurpose = b.listingPurpose ? String(b.listingPurpose) : null;
   if (b.status) setObj.status = String(b.status);
   if (b.referenceNumber !== undefined) setObj.referenceNumber = b.referenceNumber ? String(b.referenceNumber) : null;
+  if (b.region !== undefined) setObj.region = b.region ? String(b.region) : null;
   if (b.city) setObj.city = String(b.city);
+  if (b.markaz !== undefined) setObj.markaz = b.markaz ? String(b.markaz) : null;
   if (b.district !== undefined) setObj.district = b.district ? String(b.district) : null;
   if (b.subDistrict !== undefined) setObj.subDistrict = b.subDistrict ? String(b.subDistrict) : null;
   if (b.location !== undefined) setObj.location = b.location ? String(b.location) : null;

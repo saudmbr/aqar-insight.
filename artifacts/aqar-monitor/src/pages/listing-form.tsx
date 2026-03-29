@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { getMuhafazat, getMarakiz, getAhyaa, SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { useState, useEffect, lazy, Suspense, type FormEvent } from "react";
 import { useParams, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -130,7 +130,7 @@ export default function ListingForm() {
     e.preventDefault();
     setError(null);
     if (!form.title || !form.propertyType || !form.listingType || !form.city || !form.price) {
-      setError("يرجى ملء الحقول الإلزامية: العنوان، نوع العقار، الغرض، المدينة، السعر");
+      setError("يرجى ملء الحقول الإلزامية: العنوان، نوع العقار، الغرض، المحافظة، السعر");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -256,37 +256,76 @@ export default function ListingForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <FieldGroup label="المدينة" required>
+            {/* 4-level geo cascade: منطقة → محافظة → مركز → حي */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* منطقة */}
+              <FieldGroup label="المنطقة">
+                <SSelect value={form.region ?? ""} onChange={v => {
+                  set("region", v);
+                  set("city", "");
+                  set("markaz", "");
+                  set("district", "");
+                }}>
+                  <option value="">اختر المنطقة</option>
+                  {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                </SSelect>
+              </FieldGroup>
+
+              {/* محافظة */}
+              <FieldGroup label="المحافظة" required>
                 <SSelect value={form.city ?? ""} onChange={v => {
                   set("city", v);
+                  set("markaz", "");
+                  set("district", "");
                   if (locationValue && !locationValue.city) {
                     setLocationValue(lv => lv ? { ...lv, city: v } : lv);
                   }
                 }}>
-                  <option value="">اختر المدينة</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="">
+                    {form.region ? "اختر المحافظة" : "اختر المنطقة أولاً"}
+                  </option>
+                  {getMuhafazat(form.region ?? "").map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
                 </SSelect>
               </FieldGroup>
+
+              {/* مركز */}
+              <FieldGroup label="المركز">
+                <SSelect value={form.markaz ?? ""} onChange={v => {
+                  set("markaz", v);
+                  set("district", "");
+                }}>
+                  <option value="">
+                    {!form.city ? "اختر المحافظة أولاً" : "اختر المركز (اختياري)"}
+                  </option>
+                  {getMarakiz(form.region ?? "", form.city ?? "").map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </SSelect>
+              </FieldGroup>
+
+              {/* حي */}
               <FieldGroup label="الحي">
-                <Input
-                  placeholder="مثال: حي الملقا"
-                  value={form.district ?? ""}
-                  onChange={e => set("district", e.target.value)}
-                  className="h-12 rounded-xl"
-                />
+                {getAhyaa(form.region ?? "", form.city ?? "", form.markaz ?? "").length > 0 ? (
+                  <SSelect value={form.district ?? ""} onChange={v => set("district", v)}>
+                    <option value="">اختر الحي (اختياري)</option>
+                    {getAhyaa(form.region ?? "", form.city ?? "", form.markaz ?? "").map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </SSelect>
+                ) : (
+                  <Input
+                    placeholder="مثال: حي الملقا"
+                    value={form.district ?? ""}
+                    onChange={e => set("district", e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                )}
                 <p className="text-xs text-primary/80 mt-1.5 flex items-center gap-1">
                   <span>📍</span>
                   <span>تعبئة الحي ضرورية لظهور إعلانك في تحليلات الأحياء ومقارنة الأسعار</span>
                 </p>
-              </FieldGroup>
-              <FieldGroup label="الحي الفرعي">
-                <Input
-                  placeholder="مثال: مخطط 123"
-                  value={form.subDistrict ?? ""}
-                  onChange={e => set("subDistrict", e.target.value)}
-                  className="h-12 rounded-xl"
-                />
               </FieldGroup>
             </div>
 

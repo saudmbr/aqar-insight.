@@ -36,6 +36,15 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - **Image Upload System:** Utilizes Google Cloud Storage via presigned URLs for secure image uploads with drag-and-drop, preview, and reordering functionalities. Supports multiple image formats and a 5MB per file limit.
 - **Legal Pages:** Three professionally designed RTL Arabic legal pages (`/terms`, `/privacy`, `/usage`) with distinct gradient banners and structured content, linked from the global footer.
 
+**4-Level Geographic Hierarchy (منطقة → محافظة → مركز → حي):**
+- Full Saudi Arabia administrative geo data in `artifacts/aqar-monitor/src/lib/saudi-geo.ts`: exports `SAUDI_GEO` (full tree), `SAUDI_REGIONS_LIST` (array of 13 region names), `getMuhafazat(region)`, `getMarakiz(region, muhafaza)`, `getAhyaa(region, muhafaza, markaz)`.
+- DB `listings` table has 4 geo columns: `region` (منطقة), `city` (محافظة — kept as `city` for API compatibility), `markaz` (مركز), `district` (حي).
+- **Listing form** (`listing-form.tsx`): 4 cascading dropdowns; each level resets lower levels on change; حي shows dropdown if predefined ahyaa exist, otherwise free-text input.
+- **Hero search** (`home.tsx`): 4-level cascading selects in the search bar; each lower level disables until parent is chosen; search navigates to `/listings?region=...&city=...&markaz=...&district=...`.
+- **Listings page** (`listings.tsx`): filter panel has 4 geo selects in Row 1; URL params from hero search are read on mount and on location change (automatically opens filter panel if region/city provided).
+- **Map page** (`map-page.tsx`): filter panel includes منطقة + محافظة + مركز selects before نوع العقار.
+- **Listing detail** (`listing-detail.tsx`): location breadcrumb shows full chain: منطقة › محافظة › مركز › حي throughout the page.
+
 **Geocoding & Mapping:**
 - Listings table includes `latitude` and `longitude` for precise map placement.
 - Deterministic geocoding for cities without specific coordinates uses a golden-angle distribution to prevent marker stacking.
