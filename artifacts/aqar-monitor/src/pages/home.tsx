@@ -200,12 +200,22 @@ function ListingCard({ listing }: { listing: Listing }) {
             <MapPin className="w-3 h-3 shrink-0" />
             <span className="truncate">{[listing.city, listing.district].filter(Boolean).join(" — ")}</span>
           </div>
-          <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-border/50">
-            <span className="text-[15px] font-extrabold text-foreground">{formatCurrency(listing.price)}</span>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              {listing.areaSqm ? <span className="bg-muted rounded-md px-1.5 py-0.5">{formatNumber(listing.areaSqm)} م²</span> : null}
-              {listing.propertyType ? <span className="bg-muted rounded-md px-1.5 py-0.5">{listing.propertyType}</span> : null}
+          <div className="mt-auto pt-3 border-t border-border/50">
+            {/* السعر + المساحة في صف واحد */}
+            <div className="flex items-center justify-between gap-1 mb-1.5">
+              <span className="text-[15px] font-extrabold text-foreground min-w-0 truncate">{formatCurrency(listing.price)}</span>
+              {listing.areaSqm ? (
+                <span className="flex-shrink-0 bg-muted rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
+                  {formatNumber(listing.areaSqm)} م²
+                </span>
+              ) : null}
             </div>
+            {/* نوع العقار في صف منفصل */}
+            {listing.propertyType ? (
+              <span className="inline-block bg-primary/8 text-primary rounded-md px-2 py-0.5 text-[10px] font-semibold max-w-full truncate">
+                {listing.propertyType}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
