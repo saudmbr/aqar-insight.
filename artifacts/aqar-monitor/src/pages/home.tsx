@@ -310,18 +310,23 @@ export default function Home() {
   // Map filters
   const [mapRegion, setMapRegion]           = useState("");
   const [mapCity, setMapCity]               = useState("");
+  const [mapDistrict, setMapDistrict]       = useState("");
   const [mapListingType, setMapListingType] = useState("");
   const [mapPropertyType, setMapPropertyType] = useState("");
 
-  const mapHasFilters = !!(mapRegion || mapCity || mapListingType || mapPropertyType);
+  const mapHasFilters = !!(mapRegion || mapCity || mapDistrict || mapListingType || mapPropertyType);
+
+  // Derived districts list for map filter
+  const mapAhyaa: string[] = getAllAhyaaForCity(mapRegion, mapCity);
 
   // Map pins — individual property markers
   const { data: mapPinsData } = useQuery<{ pins: MapPinItem[] }>({
-    queryKey: ["home-map-pins", mapRegion, mapCity, mapListingType, mapPropertyType],
+    queryKey: ["home-map-pins", mapRegion, mapCity, mapDistrict, mapListingType, mapPropertyType],
     queryFn: async () => {
       const p = new URLSearchParams({ limit: "300" });
       if (mapRegion) p.set("region", mapRegion);
       if (mapCity) p.set("city", mapCity);
+      if (mapDistrict) p.set("district", mapDistrict);
       if (mapListingType) p.set("listingType", mapListingType);
       if (mapPropertyType) p.set("propertyType", mapPropertyType);
       const res = await fetch(`${BASE()}/api/listings/map-pins?${p}`);
@@ -874,7 +879,7 @@ export default function Home() {
                 <span className="text-xs font-semibold text-foreground">فلترة الخريطة</span>
                 {mapHasFilters && (
                   <span className="text-[10px] px-1.5 py-0 h-4 inline-flex items-center rounded-full bg-primary/10 text-primary font-bold">
-                    {[mapRegion, mapCity, mapListingType, mapPropertyType].filter(Boolean).length} نشط
+                    {[mapRegion, mapCity, mapDistrict, mapListingType, mapPropertyType].filter(Boolean).length} نشط
                   </span>
                 )}
               </div>
@@ -884,7 +889,7 @@ export default function Home() {
                 <label className="text-[10px] text-muted-foreground">المنطقة</label>
                 <select
                   value={mapRegion}
-                  onChange={e => { setMapRegion(e.target.value); setMapCity(""); }}
+                  onChange={e => { setMapRegion(e.target.value); setMapCity(""); setMapDistrict(""); }}
                   className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
                   <option value="">كل المناطق</option>
@@ -897,12 +902,26 @@ export default function Home() {
                 <label className="text-[10px] text-muted-foreground">المحافظة</label>
                 <select
                   value={mapCity}
-                  onChange={e => setMapCity(e.target.value)}
+                  onChange={e => { setMapCity(e.target.value); setMapDistrict(""); }}
                   disabled={!mapRegion}
                   className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
                 >
                   <option value="">{mapRegion ? "كل المحافظات" : "— اختر منطقة"}</option>
                   {getMuhafazat(mapRegion).map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+
+              {/* الحي */}
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] text-muted-foreground">الحي</label>
+                <select
+                  value={mapDistrict}
+                  onChange={e => setMapDistrict(e.target.value)}
+                  disabled={!mapCity}
+                  className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
+                >
+                  <option value="">{mapCity ? "كل الأحياء" : "— اختر محافظة"}</option>
+                  {mapAhyaa.map(h => <option key={h} value={h}>{h}</option>)}
                 </select>
               </div>
 
@@ -942,7 +961,7 @@ export default function Home() {
 
               {mapHasFilters && (
                 <button
-                  onClick={() => { setMapRegion(""); setMapCity(""); setMapListingType(""); setMapPropertyType(""); }}
+                  onClick={() => { setMapRegion(""); setMapCity(""); setMapDistrict(""); setMapListingType(""); setMapPropertyType(""); }}
                   className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-destructive border border-border rounded-lg flex items-center gap-1 self-end transition-colors"
                 >
                   <X className="w-3 h-3" />
