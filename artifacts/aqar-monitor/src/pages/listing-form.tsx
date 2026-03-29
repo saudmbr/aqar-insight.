@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save, Building, Map, Info, Grid2X2, FileText, Image as ImageIcon, Contact, Zap } from "lucide-react";
 import { ImageUploader } from "@/components/image-uploader";
+import { VideoUploader } from "@/components/video-uploader";
 import { useAuth } from "@/contexts/auth-context";
 import type { Listing } from "@workspace/db";
 import type { LocationValue } from "@/components/location-picker";
@@ -576,10 +577,17 @@ export default function ListingForm() {
               onChange={v => set("images", v)}
               maxImages={10}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-border">
-              <FieldGroup label="رابط الفيديو (يوتيوب / Vimeo)">
-                <Input type="url" placeholder="https://youtube.com/..." value={form.videoUrl ?? ""} onChange={e => set("videoUrl", e.target.value)} className="h-12 rounded-xl font-mono text-sm" dir="ltr" />
-              </FieldGroup>
+            <div className="pt-2 border-t border-border space-y-3">
+              <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                فيديو العقار (رفع مباشر أو رابط يوتيوب / Vimeo)
+              </p>
+              <VideoUploader
+                value={form.videoUrl ?? ""}
+                onChange={v => set("videoUrl", v)}
+              />
+            </div>
+            <div className="pt-2 border-t border-border">
               <FieldGroup label="رابط المخطط الهندسي">
                 <Input type="url" placeholder="https://example.com/floor-plan.jpg" value={form.floorPlan ?? ""} onChange={e => set("floorPlan", e.target.value)} className="h-12 rounded-xl font-mono text-sm" dir="ltr" />
               </FieldGroup>

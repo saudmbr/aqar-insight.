@@ -16,7 +16,7 @@ import {
   Verified, Star, BadgeCheck, ChevronLeft, Wifi, Zap, TreePine, School,
   Hospital, ShoppingBag, Bus, Home, Video, Archive, CheckCircle, Ban,
   Camera, Navigation2, TrendingUp, BarChart3, CarFront, Layers, Shield,
-  ChevronRight, Sparkles, UserCheck, Eye, ArrowUpRight,
+  ChevronRight, Sparkles, UserCheck, Eye, ArrowUpRight, X,
 } from "lucide-react";
 
 const ListingDetailMap = lazy(() => import("@/components/listing-detail-map"));
@@ -117,6 +117,7 @@ export default function ListingDetail() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -371,14 +372,13 @@ export default function ListingDetail() {
               </button>
             )}
             {listing.videoUrl && (
-              <a
-                href={listing.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-sm font-semibold hover:border-primary/40 hover:bg-muted transition-all"
+              <button
+                onClick={() => setVideoOpen(v => !v)}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold transition-all ${videoOpen ? "bg-red-500 text-white border-red-500" : "bg-card border-border hover:border-red-400 hover:bg-red-50"}`}
               >
-                <Video className="w-4 h-4 text-red-500" />فيديو
-              </a>
+                <Video className="w-4 h-4" />
+                {videoOpen ? "إغلاق الفيديو" : "مشاهدة الفيديو"}
+              </button>
             )}
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/60 border border-dashed border-border text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60">
               <Navigation2 className="w-4 h-4" />جولة افتراضية
@@ -568,6 +568,49 @@ export default function ListingDetail() {
                 </div>
               </div>
             )}
+
+            {/* Video Player ─────────────────────────────────────── */}
+            {listing.videoUrl && videoOpen && (() => {
+              const ytMatch = listing.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+              const vimeoMatch = listing.videoUrl.match(/vimeo\.com\/(\d+)/);
+              const embedUrl = ytMatch
+                ? `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`
+                : vimeoMatch
+                  ? `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`
+                  : null;
+              const directSrc = listing.videoUrl.startsWith("/objects/")
+                ? `/api/storage${listing.videoUrl}`
+                : !embedUrl ? listing.videoUrl : null;
+              return (
+                <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                    <SectionTitle icon={<Video className="w-4.5 h-4.5" />}>فيديو العقار</SectionTitle>
+                    <button
+                      onClick={() => setVideoOpen(false)}
+                      className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                  {embedUrl ? (
+                    <iframe
+                      src={embedUrl}
+                      className="w-full aspect-video"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : directSrc ? (
+                    <video
+                      src={directSrc}
+                      controls
+                      autoPlay
+                      className="w-full aspect-video bg-black"
+                      preload="metadata"
+                    />
+                  ) : null}
+                </div>
+              );
+            })()}
 
             {/* Amenities — المميزات والمرافق */}
             {hasAmenities && (
