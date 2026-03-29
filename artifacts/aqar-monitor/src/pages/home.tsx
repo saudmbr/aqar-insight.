@@ -1548,7 +1548,7 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-border/50">
                         {(insights?.byRegion ?? []).map((r, i) => (
-                          <tr key={r.region} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate(`/listings?region=${encodeURIComponent(r.region)}`)}>
+                          <tr key={r.region} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate(`${BASE()}/listings?region=${encodeURIComponent(r.region)}`)}>
                             <td className="px-5 py-3.5 font-semibold text-foreground flex items-center gap-1.5">
                               {i === 0 && <Star className="w-3 h-3 text-accent shrink-0" />}
                               {r.region}

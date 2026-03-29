@@ -21,17 +21,6 @@ export const PROPERTY_TYPE_GROUPS: PropertyTypeGroup[] = [
     ],
   },
   {
-    label: "فندقي وترفيهي",
-    types: [
-      "شاليه",
-      "استراحة",
-      "فندق",
-      "شقق فندقية",
-      "منتجع",
-      "كمبوند سكني",
-    ],
-  },
-  {
     label: "تجاري",
     types: [
       "محل تجاري",

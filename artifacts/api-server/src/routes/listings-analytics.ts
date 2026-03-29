@@ -5,8 +5,8 @@ import { eq, and, gte, lte, sql, count, avg, min, max, desc } from "drizzle-orm"
 const LISTING_LABEL_MAP: Record<string, string> = {
   sale: "للبيع", installment: "بيع بالتقسيط", auction: "مزاد علني",
   rent: "للإيجار", rent_annual: "إيجار سنوي", rent_monthly: "إيجار شهري",
-  rent_daily: "إيجار يومي", rent_seasonal: "إيجار موسمي",
-  investment: "استثماري", partnership: "شراكة / مشاركة",
+  rent_seasonal: "إيجار موسمي",
+  investment: "استثماري",
 };
 
 const router: IRouter = Router();
@@ -144,8 +144,8 @@ router.get("/listings-insights", async (req, res) => {
       maxPrice: max(listingsTable.price),
       minPrice: min(listingsTable.price),
       saleCount:       sql<number>`sum(case when listing_type in ('sale','installment','auction') then 1 else 0 end)::int`,
-      rentCount:       sql<number>`sum(case when listing_type in ('rent','rent_annual','rent_monthly','rent_daily','rent_seasonal') then 1 else 0 end)::int`,
-      investCount:     sql<number>`sum(case when listing_type in ('investment','partnership') then 1 else 0 end)::int`,
+      rentCount:       sql<number>`sum(case when listing_type in ('rent','rent_annual','rent_monthly','rent_seasonal') then 1 else 0 end)::int`,
+      investCount:     sql<number>`sum(case when listing_type = 'investment' then 1 else 0 end)::int`,
       listingsWithArea:sql<number>`sum(case when price_per_sqm is not null and price_per_sqm > 0 then 1 else 0 end)::int`,
       medianPrice:     sql<number>`percentile_cont(0.5) within group (order by price)`,
       p25:             sql<number>`percentile_cont(0.25) within group (order by price)`,

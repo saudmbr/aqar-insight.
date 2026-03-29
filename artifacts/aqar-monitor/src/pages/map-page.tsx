@@ -485,6 +485,7 @@ export default function MapPage() {
               onPinClick={id => setActivePinId(activePinId === id ? null : id)}
               onBoundsChange={setVisibleIds}
               height="100%"
+              selectedRegion={region || undefined}
             />
           </Suspense>
         </div>

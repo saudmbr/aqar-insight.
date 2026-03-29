@@ -13,16 +13,14 @@ export const LISTING_TYPES: ListingTypeEntry[] = [
   { value: "rent",          label: "للإيجار",          short: "إيجار",    color: "#5B8DB8", group: "إيجار" },
   { value: "rent_annual",   label: "إيجار سنوي",       short: "سنوي",     color: "#4A7DA8", group: "إيجار" },
   { value: "rent_monthly",  label: "إيجار شهري",       short: "شهري",     color: "#3D6D98", group: "إيجار" },
-  { value: "rent_daily",    label: "إيجار يومي",       short: "يومي",     color: "#7A9FCB", group: "إيجار" },
   { value: "rent_seasonal", label: "إيجار موسمي",      short: "موسمي",    color: "#6B8FBB", group: "إيجار" },
-  { value: "investment",    label: "استثماري",          short: "استثمار",  color: "#D4A017", group: "استثماري / أخرى" },
-  { value: "partnership",   label: "شراكة / مشاركة",  short: "شراكة",    color: "#8E44AD", group: "استثماري / أخرى" },
+  { value: "investment",    label: "استثماري",          short: "استثمار",  color: "#D4A017", group: "استثماري" },
 ];
 
 export const LISTING_TYPE_GROUPS = [
-  { label: "بيع",               types: LISTING_TYPES.filter(t => t.group === "بيع") },
-  { label: "إيجار",             types: LISTING_TYPES.filter(t => t.group === "إيجار") },
-  { label: "استثماري / أخرى",  types: LISTING_TYPES.filter(t => t.group === "استثماري / أخرى") },
+  { label: "بيع",         types: LISTING_TYPES.filter(t => t.group === "بيع") },
+  { label: "إيجار",       types: LISTING_TYPES.filter(t => t.group === "إيجار") },
+  { label: "استثماري",   types: LISTING_TYPES.filter(t => t.group === "استثماري") },
 ];
 
 export const LISTING_TYPE_MAP: Record<string, string> = Object.fromEntries(

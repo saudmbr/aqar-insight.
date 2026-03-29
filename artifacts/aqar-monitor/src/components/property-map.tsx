@@ -21,6 +21,23 @@ export type MapPin = {
   geocoded?: boolean;
 };
 
+// Center coordinates + zoom for each Saudi region
+const REGION_CENTERS: Record<string, { lat: number; lng: number; zoom: number }> = {
+  "منطقة الرياض":          { lat: 24.69,  lng: 46.72,  zoom: 9 },
+  "منطقة مكة المكرمة":    { lat: 21.50,  lng: 40.90,  zoom: 8 },
+  "منطقة المدينة المنورة": { lat: 24.50,  lng: 39.60,  zoom: 9 },
+  "منطقة القصيم":          { lat: 26.00,  lng: 43.97,  zoom: 9 },
+  "المنطقة الشرقية":       { lat: 25.40,  lng: 49.60,  zoom: 8 },
+  "منطقة عسير":            { lat: 19.09,  lng: 42.55,  zoom: 9 },
+  "منطقة تبوك":            { lat: 28.38,  lng: 36.50,  zoom: 9 },
+  "منطقة حائل":            { lat: 27.50,  lng: 41.70,  zoom: 9 },
+  "منطقة الحدود الشمالية": { lat: 30.98,  lng: 41.18,  zoom: 9 },
+  "منطقة جازان":           { lat: 16.90,  lng: 42.60,  zoom: 9 },
+  "منطقة نجران":           { lat: 17.50,  lng: 44.10,  zoom: 9 },
+  "منطقة الباحة":          { lat: 20.01,  lng: 41.46,  zoom: 10 },
+  "منطقة الجوف":           { lat: 29.80,  lng: 38.20,  zoom: 9 },
+};
+
 type Props = {
   pins: MapPin[];
   activePinId?: number | null;
@@ -28,6 +45,7 @@ type Props = {
   onBoundsChange?: (ids: number[]) => void;
   height?: number | string;
   clustering?: boolean;
+  selectedRegion?: string;
 };
 
 const LISTING_TYPE_LABELS: Record<string, string> = {
@@ -179,6 +197,7 @@ export default function PropertyMap({
   onBoundsChange,
   height = 520,
   clustering = true,
+  selectedRegion,
 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -195,6 +214,18 @@ export default function PropertyMap({
     });
     onBoundsChange(visibleIds);
   }, [onBoundsChange]);
+
+  // Fly to selected region when it changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (selectedRegion && REGION_CENTERS[selectedRegion]) {
+      const { lat, lng, zoom } = REGION_CENTERS[selectedRegion];
+      map.flyTo([lat, lng], zoom, { animate: true, duration: 1.0 });
+    } else if (!selectedRegion) {
+      map.flyTo([23.8859, 45.0792], 6, { animate: true, duration: 1.0 });
+    }
+  }, [selectedRegion]);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
