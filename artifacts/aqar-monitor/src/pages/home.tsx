@@ -721,16 +721,27 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link href="/listings/new">
                   <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-white transition-all"
+                    whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(245,158,11,0.6), 0 0 0 1px rgba(245,158,11,0.5)" }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all"
                     style={{
-                      background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                      boxShadow: "0 6px 24px rgba(245,158,11,0.45), 0 2px 8px rgba(245,158,11,0.25)",
+                      background: "rgba(245,158,11,0.12)",
+                      border: "1.5px solid rgba(245,158,11,0.55)",
+                      boxShadow: "0 4px 20px rgba(245,158,11,0.30), inset 0 1px 0 rgba(255,255,255,0.08)",
+                      color: "#fbbf24",
+                      backdropFilter: "blur(8px)",
                     }}
                   >
-                    <PlusCircle className="w-4 h-4" />
-                    أضف عقارك الآن
+                    <PlusCircle className="w-4 h-4" style={{ filter: "drop-shadow(0 0 4px rgba(251,191,36,0.8))" }} />
+                    <span style={{
+                      background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      filter: "drop-shadow(0 0 8px rgba(245,158,11,0.5))",
+                    }}>
+                      أضف عقارك الآن
+                    </span>
                   </motion.button>
                 </Link>
                 <Link href="/listings">
