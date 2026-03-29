@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { LISTING_TYPE_MAP as _LTM } from "@/lib/listing-types";
 import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@workspace/db";
 import {
@@ -37,10 +38,7 @@ interface ListingDetail extends Listing {
   marketer?: MarketerInfo | null;
 }
 
-const LISTING_TYPE_LABELS: Record<string, string> = {
-  sale: "للبيع", rent: "للإيجار",
-  monthly_rent: "إيجار شهري", investment: "استثماري", auction: "مزاد",
-};
+const LISTING_TYPE_LABELS: Record<string, string> = _LTM;
 
 const LISTING_TYPE_STYLE: Record<string, string> = {
   sale:         "bg-primary text-white",

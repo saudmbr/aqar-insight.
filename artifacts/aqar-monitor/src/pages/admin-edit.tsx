@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, ArrowRight, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
 const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
@@ -24,7 +25,7 @@ const formSchema = z.object({
   city: z.string().min(2, "المدينة مطلوبة"),
   district: z.string().min(2, "الحي مطلوب"),
   propertyType: z.string().min(2, "نوع العقار مطلوب"),
-  listingType: z.enum(["sale", "rent"], { errorMap: () => ({ message: "نوع العملية مطلوب" }) }),
+  listingType: z.string().min(1, "نوع العملية مطلوب"),
   price: z.coerce.number().min(1, "السعر يجب أن يكون أكبر من 0"),
   area: z.coerce.number().min(1, "المساحة يجب أن تكون أكبر من 0"),
   bedrooms: z.coerce.number().optional().nullable(),
@@ -75,7 +76,7 @@ export default function AdminEdit() {
         city: property.city,
         district: property.district,
         propertyType: property.propertyType,
-        listingType: property.listingType as "sale" | "rent",
+        listingType: property.listingType ?? "sale",
         price: property.price,
         area: property.area,
         bedrooms: property.bedrooms ?? null,
@@ -256,8 +257,14 @@ export default function AdminEdit() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="sale">بيع</SelectItem>
-                                <SelectItem value="rent">إيجار</SelectItem>
+                                {LISTING_TYPE_GROUPS.map(g => (
+                                  <SelectGroup key={g.label}>
+                                    <SelectLabel className="font-bold text-muted-foreground text-xs">{g.label}</SelectLabel>
+                                    {g.types.map(t => (
+                                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />

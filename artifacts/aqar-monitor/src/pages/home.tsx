@@ -24,6 +24,7 @@ import {
 import type { MapPin as MapPinItem } from "@/components/property-map";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz, getAhyaa } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
 const PropertyMap = lazy(() => import("@/components/property-map"));
 
@@ -643,9 +644,14 @@ export default function Home() {
                       className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer"
                       style={{ color: "white" }}
                     >
-                      <option value="" style={{ color: "#0F1C3F" }}>بيع وإيجار</option>
-                      <option value="sale" style={{ color: "#0F1C3F" }}>للبيع</option>
-                      <option value="rent" style={{ color: "#0F1C3F" }}>للإيجار</option>
+                      <option value="" style={{ color: "#0F1C3F" }}>كل الصفقات</option>
+                      {LISTING_TYPE_GROUPS.map(g => (
+                        <optgroup key={g.label} label={`── ${g.label}`}>
+                          {g.types.map(t => (
+                            <option key={t.value} value={t.value} style={{ color: "#0F1C3F" }}>{t.label}</option>
+                          ))}
+                        </optgroup>
+                      ))}
                     </select>
                   </div>
 
@@ -969,9 +975,14 @@ export default function Home() {
                     <select value={filters.listingType}
                       onChange={e => setFilters(f => ({ ...f, listingType: e.target.value }))}
                       className={INPUT_CLS}>
-                      <option value="">بيع وإيجار</option>
-                      <option value="sale">للبيع</option>
-                      <option value="rent">للإيجار</option>
+                      <option value="">كل الصفقات</option>
+                      {LISTING_TYPE_GROUPS.map(g => (
+                        <optgroup key={g.label} label={`── ${g.label}`}>
+                          {g.types.map(t => (
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                          ))}
+                        </optgroup>
+                      ))}
                     </select>
                     <input type="number" placeholder="أقل سعر (ر.س)" value={filters.minPrice}
                       onChange={e => setFilters(f => ({ ...f, minPrice: e.target.value }))} className={INPUT_CLS} />

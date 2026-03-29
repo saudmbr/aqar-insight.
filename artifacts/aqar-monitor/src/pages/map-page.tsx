@@ -1,5 +1,6 @@
 import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS, LISTING_TYPE_MAP, LISTING_TYPE_COLOR_MAP } from "@/lib/listing-types";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -19,21 +20,8 @@ const PropertyMap = lazy(() => import("@/components/property-map"));
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
-const LISTING_TYPES = [
-  { value: "sale", label: "للبيع" },
-  { value: "rent", label: "للإيجار" },
-  { value: "monthly_rent", label: "إيجار شهري" },
-];
-const LISTING_TYPE_LABELS: Record<string, string> = {
-  sale: "للبيع", rent: "للإيجار",
-  monthly_rent: "إيجار شهري",
-  investment: "استثماري", auction: "مزاد",
-};
-const LISTING_TYPE_COLORS: Record<string, string> = {
-  sale: "#0F7BA0", rent: "#94A3B8",
-  monthly_rent: "#0d9488",
-  investment: "#7c3aed", auction: "#e11d48",
-};
+const LISTING_TYPE_LABELS = LISTING_TYPE_MAP;
+const LISTING_TYPE_COLORS = LISTING_TYPE_COLOR_MAP;
 
 function formatPrice(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} م ر.س`;
@@ -283,7 +271,11 @@ export default function MapPage() {
                 className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="">الكل</option>
-                {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                {LISTING_TYPE_GROUPS.map(g => (
+                  <optgroup key={g.label} label={`── ${g.label}`}>
+                    {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
             <div>

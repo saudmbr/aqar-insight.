@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout/layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { LISTING_TYPE_SHORT_MAP } from "@/lib/listing-types";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -65,7 +66,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  sale:     "بيع",   rent:     "إيجار",
+  ...LISTING_TYPE_SHORT_MAP,
   property: "طلب عقار", service: "طلب خدمة", marketer: "طلب مسوّق",
 };
 

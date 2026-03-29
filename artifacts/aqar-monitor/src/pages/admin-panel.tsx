@@ -49,6 +49,7 @@ import {
 import { motion } from "framer-motion";
 import { ImportDialog } from "@/components/import-dialog";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS, LISTING_TYPE_MAP } from "@/lib/listing-types";
 
 function formatPrice(price: number) {
   if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(2)} م.ر`;
@@ -241,9 +242,15 @@ export default function AdminPanel() {
                   <SelectValue placeholder="نوع العملية" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="_all_">بيع وإيجار</SelectItem>
-                  <SelectItem value="sale">بيع</SelectItem>
-                  <SelectItem value="rent">إيجار</SelectItem>
+                  <SelectItem value="_all_">كل الصفقات</SelectItem>
+                  {LISTING_TYPE_GROUPS.map(g => (
+                    <SelectGroup key={g.label}>
+                      <SelectLabel className="font-bold text-muted-foreground text-xs">{g.label}</SelectLabel>
+                      {g.types.map(t => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

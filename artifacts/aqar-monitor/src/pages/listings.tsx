@@ -1,5 +1,6 @@
 import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS, PROPERTY_TYPES_FLAT } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { useState, useEffect, type FormEvent } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -13,13 +14,6 @@ import {
   ChevronLeft, ChevronRight, X,
 } from "lucide-react";
 
-const LISTING_TYPES = [
-  { value: "sale", label: "للبيع" },
-  { value: "rent", label: "للإيجار" },
-  { value: "monthly_rent", label: "إيجار شهري" },
-  { value: "investment", label: "استثماري" },
-  { value: "auction", label: "مزاد" },
-];
 
 
 interface ListingsResponse {
@@ -238,7 +232,11 @@ export default function Listings() {
                   <label className="text-sm font-semibold text-foreground">الغرض</label>
                   <select value={listingType} onChange={(e) => setListingType(e.target.value)} className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
                     <option value="">الكل</option>
-                    {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    {LISTING_TYPE_GROUPS.map(g => (
+                      <optgroup key={g.label} label={`── ${g.label}`}>
+                        {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </optgroup>
+                    ))}
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">

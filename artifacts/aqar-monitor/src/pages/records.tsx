@@ -4,11 +4,12 @@ import { Layout } from "@/components/layout/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Search, ChevronRight, ChevronLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { LISTING_TYPE_GROUPS, LISTING_TYPE_MAP } from "@/lib/listing-types";
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
@@ -24,7 +25,7 @@ function exportToCsv(rows: Listing[]) {
   const headers = ["ID", "العنوان", "المدينة", "الحي", "النوع", "العملية", "الحالة", "السعر", "المساحة م²", "سعر المتر", "التاريخ"];
   const csvRows = rows.map(r => [
     r.id, `"${r.title ?? ""}"`, `"${r.city ?? ""}"`, `"${r.district ?? ""}"`,
-    `"${r.propertyType ?? ""}"`, r.listingType === "sale" ? "بيع" : "إيجار",
+    `"${r.propertyType ?? ""}"`, LISTING_TYPE_MAP[r.listingType] ?? r.listingType,
     `"${r.status ?? ""}"`, r.price ?? "", r.areaSqm ?? "", r.pricePerSqm ?? "",
     new Date(r.createdAt).toLocaleDateString("en-GB"),
   ]);
@@ -147,9 +148,15 @@ export default function Records() {
               <Select value={listingType} onValueChange={handleFilter(setListingType)}>
                 <SelectTrigger><SelectValue placeholder="العملية" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">الكل</SelectItem>
-                  <SelectItem value="sale">بيع</SelectItem>
-                  <SelectItem value="rent">إيجار</SelectItem>
+                  <SelectItem value="all">كل الصفقات</SelectItem>
+                  {LISTING_TYPE_GROUPS.map(g => (
+                    <SelectGroup key={g.label}>
+                      <SelectLabel className="font-bold text-muted-foreground text-xs">{g.label}</SelectLabel>
+                      {g.types.map(t => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -212,8 +219,8 @@ export default function Records() {
                           </td>
                           <td className="px-4 py-3">{item.propertyType}</td>
                           <td className="px-4 py-3">
-                            <Badge variant={item.listingType === "sale" ? "default" : "outline"} className="font-normal">
-                              {item.listingType === "sale" ? "بيع" : "إيجار"}
+                            <Badge variant={item.listingType === "sale" || item.listingType === "installment" || item.listingType === "auction" ? "default" : "outline"} className="font-normal">
+                              {LISTING_TYPE_MAP[item.listingType] ?? item.listingType}
                             </Badge>
                           </td>
                           <td className="px-4 py-3">

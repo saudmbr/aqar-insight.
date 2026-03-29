@@ -14,6 +14,7 @@ import {
   MapPin, Activity, AlertTriangle, Lightbulb, Info,
   ArrowUpRight, ArrowDownRight, Scale,
 } from "lucide-react";
+import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
@@ -318,9 +319,12 @@ export default function Analytics() {
               {(filterOpts?.propertyTypes ?? []).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             <select value={listingType} onChange={e => setListingType(e.target.value)} className={INPUT_CLS}>
-              <option value="">بيع وإيجار</option>
-              <option value="sale">للبيع</option>
-              <option value="rent">للإيجار</option>
+              <option value="">كل الصفقات</option>
+              {LISTING_TYPE_GROUPS.map(g => (
+                <optgroup key={g.label} label={`── ${g.label}`}>
+                  {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </optgroup>
+              ))}
             </select>
           </div>
           {(city || district || propertyType || listingType) && (

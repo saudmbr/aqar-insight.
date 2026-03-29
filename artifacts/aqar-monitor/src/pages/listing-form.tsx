@@ -1,5 +1,6 @@
 import { getMuhafazat, getMarakiz, getAhyaa, SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { useState, useEffect, lazy, Suspense, type FormEvent } from "react";
 import { useParams, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -17,13 +18,6 @@ import type { LocationValue } from "@/components/location-picker";
 const LocationPicker = lazy(() => import("@/components/location-picker"));
 
 
-const LISTING_TYPES = [
-  { value: "sale", label: "للبيع" },
-  { value: "rent", label: "للإيجار" },
-  { value: "monthly_rent", label: "إيجار شهري" },
-  { value: "investment", label: "استثماري" },
-  { value: "auction", label: "مزاد" },
-];
 const LISTING_PURPOSES = ["سكني", "تجاري", "صناعي", "زراعي", "استثماري"];
 const FURNISHING = ["مفروش", "غير مفروش", "نصف مفروش"];
 const DEED_PRESETS = ["صك إلكتروني مستقل", "صك ورقي", "صك مشترك", "تحت الإفراز", "قيد التسجيل", "وقف"];
@@ -220,8 +214,12 @@ export default function ListingForm() {
               </FieldGroup>
               <FieldGroup label="نوع الإعلان" required>
                 <SSelect value={form.listingType ?? ""} onChange={v => set("listingType", v)}>
-                  <option value="">اختر</option>
-                  {LISTING_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  <option value="">اختر نوع الصفقة</option>
+                  {LISTING_TYPE_GROUPS.map(g => (
+                    <optgroup key={g.label} label={`── ${g.label}`}>
+                      {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </optgroup>
+                  ))}
                 </SSelect>
               </FieldGroup>
               <FieldGroup label="الغرض">
