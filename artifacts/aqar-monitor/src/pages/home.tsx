@@ -1382,63 +1382,6 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* ══════════════════════════════════════════════════════════════
-            TREND CHART
-        ══════════════════════════════════════════════════════════════ */}
-        {hasData && (
-          <motion.div variants={fadeUp}>
-            <SectionLabel
-              eyebrow="تطور السوق"
-              title="اتجاهات الأسعار والإعلانات"
-              description="تطور عدد الإعلانات ومتوسط الأسعار بمرور الوقت"
-              action={
-                <Link href="/analytics">
-                  <button className="flex items-center gap-1.5 text-primary font-bold text-[13px] hover:underline underline-offset-2">
-                    التحليل الكامل <ArrowLeft className="w-3.5 h-3.5" />
-                  </button>
-                </Link>
-              }
-            />
-            <Card className="rounded-2xl border-border/60 shadow-sm">
-              <CardContent className="pt-6 pb-4 px-6">
-                <div className="h-[280px]" dir="ltr">
-                  {loadingTrends ? (
-                    <Skeleton className="w-full h-full rounded-xl" />
-                  ) : (trends?.length ?? 0) < 2 ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-                      <AlertCircle className="w-8 h-8 opacity-30" />
-                      <p className="text-sm">بيانات غير كافية لعرض الاتجاه — سيظهر الرسم البياني مع تراكم الإعلانات</p>
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={trends} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.6} />
-                        <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} dy={8} />
-                        <YAxis yAxisId="l" orientation="left" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                        <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false}
-                          tickFormatter={v => `${(v / 1000).toFixed(0)}k`} dx={8} />
-                        <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}
-                          formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "عدد الإعلانات" : "متوسط السعر"]} />
-                        <Line yAxisId="l" type="monotone" dataKey="count" stroke="#94A3B8" strokeWidth={2.5} dot={{ r: 4, fill: "#94A3B8", strokeWidth: 0 }} name="count" />
-                        <Line yAxisId="r" type="monotone" dataKey="avgPrice" stroke="#0F7BA0" strokeWidth={2.5} dot={{ r: 4, fill: "#0F7BA0", strokeWidth: 0 }} name="avgPrice" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-                <div className="flex items-center justify-center gap-6 mt-2">
-                  <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                    <span className="w-5 h-0.5 bg-[#94A3B8] rounded-full inline-block" />
-                    عدد الإعلانات
-                  </div>
-                  <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                    <span className="w-5 h-0.5 bg-[#0F7BA0] rounded-full inline-block" />
-                    متوسط السعر
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
 
         {/* ══════════════════════════════════════════════════════════════
             GEOGRAPHIC ANALYSIS
