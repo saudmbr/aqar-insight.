@@ -125,6 +125,7 @@ export const listingsTable = pgTable("listings", {
   urgent: boolean("urgent").default(false),
   exclusive: boolean("exclusive").default(false),
   ownerDirect: boolean("owner_direct").default(false),
+  virtualTour: boolean("virtual_tour").default(false),
   verified: boolean("verified").default(false),
 
   // Internal

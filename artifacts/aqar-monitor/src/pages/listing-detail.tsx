@@ -442,7 +442,8 @@ export default function ListingDetail() {
                 </span>
                 {listing.urgent && <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-red-100 text-red-700 border border-red-200">⚡ عاجل</span>}
                 {listing.exclusive && <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 border border-amber-200">⭐ حصري</span>}
-                {listing.ownerDirect && <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-green-100 text-green-700 border border-green-200">🤝 مالك مباشر</span>}
+                {listing.ownerDirect && <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-green-100 text-green-700 border border-green-200">🤝 من المالك مباشرة</span>}
+                {listing.virtualTour && <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-purple-100 text-purple-700 border border-purple-200">🥽 جولة افتراضية VR</span>}
                 {listing.verified && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                     <Verified className="w-3.5 h-3.5" />موثّق

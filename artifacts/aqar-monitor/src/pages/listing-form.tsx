@@ -466,7 +466,8 @@ export default function ListingForm() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <Checkbox label="⚡ عرض عاجل" checked={!!form.urgent} onChange={v => set("urgent", v)} />
               <Checkbox label="⭐ حصري" checked={!!form.exclusive} onChange={v => set("exclusive", v)} />
-              <Checkbox label="🤝 مالك مباشر" checked={!!form.ownerDirect} onChange={v => set("ownerDirect", v)} />
+              <Checkbox label="🤝 من المالك مباشرة" checked={!!form.ownerDirect} onChange={v => set("ownerDirect", v)} />
+              <Checkbox label="🥽 جولة افتراضية VR" checked={!!form.virtualTour} onChange={v => set("virtualTour", v)} />
             </div>
           </CardContent>
         </Card>

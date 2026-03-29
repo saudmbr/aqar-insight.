@@ -408,6 +408,7 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
     urgent: bool(b.urgent),
     exclusive: bool(b.exclusive),
     ownerDirect: bool(b.ownerDirect),
+    virtualTour: bool(b.virtualTour),
     internalNotes: b.internalNotes ? String(b.internalNotes) : null,
     ...(() => {
       const coords = parseCoords(b.latitude, b.longitude);
@@ -475,7 +476,7 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
     "nearbySchools","nearbyHospitals","nearbyMosques","nearbyMalls","nearbyTransport",
     "nearbyParks","nearbyMainRoads","nearbyPharmacies","nearbyBanks","nearbyRestaurants",
     "nearbyNurseries","nearbySports","nearbyGasStation","nearbyUniversities",
-    "urgent","exclusive","ownerDirect",
+    "urgent","exclusive","ownerDirect","virtualTour",
   ];
   for (const f of boolFields) {
     if (b[f] !== undefined) setObj[f] = bool(b[f]);
