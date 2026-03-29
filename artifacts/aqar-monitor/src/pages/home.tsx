@@ -1,5 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from "react";
-import heroBg from "@/assets/hero-bg.png";
+import heroBg from "@/assets/hero-bg.jpg";
 import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
