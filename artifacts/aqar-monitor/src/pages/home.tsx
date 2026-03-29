@@ -1,6 +1,5 @@
-import { useState, useCallback, lazy, Suspense, useMemo } from "react";
-import heroBgNight from "@/assets/hero-bg.jpg";
-import heroBgDay from "@/assets/hero-bg-day.png";
+import { useState, useCallback, lazy, Suspense } from "react";
+import heroBg from "@/assets/hero-bg.jpg";
 import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/auth-context";
@@ -233,14 +232,7 @@ export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
 
-  // Time-based hero background: 6:00–18:59 = daytime, 19:00–5:59 = nighttime
-  const isDaytime = useMemo(() => {
-    const h = new Date().getHours();
-    return h >= 6 && h < 19;
-  }, []);
-  const heroBg = isDaytime ? heroBgDay : heroBgNight;
-
-  // Quick search state (hero bar) — منطقة → محافظة → مركز → حي
+  // Quick search state (hero bar) — منطقة → محافظة → حي
   const [quickRegion, setQuickRegion]           = useState("");
   const [quickCity, setQuickCity]               = useState("");
   const [quickDistrictInput, setQuickDistrictInput] = useState("");
@@ -407,9 +399,7 @@ export default function Home() {
             className="relative rounded-[2rem] overflow-hidden text-white"
             style={{
               minHeight: 520,
-              boxShadow: isDaytime
-                ? "0 12px 48px rgba(6,18,32,0.22), 0 4px 16px rgba(6,18,32,0.14)"
-                : "0 16px 60px rgba(6,18,32,0.38), 0 4px 18px rgba(6,18,32,0.22)",
+              boxShadow: "0 16px 60px rgba(6,18,32,0.38), 0 4px 18px rgba(6,18,32,0.22)",
             }}
           >
             {/* Background image — flipped for RTL (skyline on left, open space on right for text) */}
@@ -421,51 +411,31 @@ export default function Home() {
               draggable={false}
             />
 
-            {/* ── Gradient overlays (RTL-optimised, day/night aware) ── */}
+            {/* ── Gradient overlays (RTL-optimised) ── */}
             {/* Main: dark on right (text area) → transparent left (show image) */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDaytime
-                  ? "linear-gradient(to left, rgba(8,18,36,0.90) 0%, rgba(8,18,36,0.72) 32%, rgba(8,18,36,0.32) 62%, rgba(8,18,36,0.04) 100%)"
-                  : "linear-gradient(to left, rgba(5,14,27,0.92) 0%, rgba(5,14,27,0.76) 32%, rgba(5,14,27,0.38) 62%, rgba(5,14,27,0.06) 100%)"
-              }}
+              style={{ background: "linear-gradient(to left, rgba(5,14,27,0.92) 0%, rgba(5,14,27,0.76) 32%, rgba(5,14,27,0.38) 62%, rgba(5,14,27,0.06) 100%)" }}
             />
             {/* Bottom vignette for search bar readability */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDaytime
-                  ? "linear-gradient(to top, rgba(8,18,36,0.82) 0%, rgba(8,18,36,0.28) 28%, transparent 52%)"
-                  : "linear-gradient(to top, rgba(5,14,27,0.82) 0%, rgba(5,14,27,0.28) 28%, transparent 52%)"
-              }}
+              style={{ background: "linear-gradient(to top, rgba(5,14,27,0.82) 0%, rgba(5,14,27,0.28) 28%, transparent 52%)" }}
             />
             {/* Top vignette */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDaytime
-                  ? "linear-gradient(to bottom, rgba(8,18,36,0.38) 0%, transparent 26%)"
-                  : "linear-gradient(to bottom, rgba(5,14,27,0.42) 0%, transparent 26%)"
-              }}
+              style={{ background: "linear-gradient(to bottom, rgba(5,14,27,0.42) 0%, transparent 26%)" }}
             />
             {/* Teal glow accent */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDaytime
-                  ? "radial-gradient(ellipse 55% 65% at 18% 48%, rgba(15,123,160,0.18) 0%, transparent 70%)"
-                  : "radial-gradient(ellipse 55% 65% at 18% 48%, rgba(15,123,160,0.20) 0%, transparent 70%)"
-              }}
+              style={{ background: "radial-gradient(ellipse 55% 65% at 18% 48%, rgba(15,123,160,0.20) 0%, transparent 70%)" }}
             />
-            {/* Accent: golden-warm for day, subtle cool for night */}
+            {/* Cool blue accent */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background: isDaytime
-                  ? "radial-gradient(ellipse 45% 40% at 14% 15%, rgba(234,179,8,0.08) 0%, transparent 70%)"
-                  : "radial-gradient(ellipse 40% 35% at 12% 20%, rgba(100,160,220,0.07) 0%, transparent 70%)"
-              }}
+              style={{ background: "radial-gradient(ellipse 40% 35% at 12% 20%, rgba(100,160,220,0.07) 0%, transparent 70%)" }}
             />
 
             {/* ── Floating ambient glass cards ── */}
