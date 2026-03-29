@@ -1,4 +1,3 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -9,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText } from "lucide-react";
 import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
 
 
 const CATEGORIES = [
@@ -38,7 +38,9 @@ export default function ServiceForm() {
 
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("");
+  const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
   const [coveredAreas, setCoveredAreas] = useState("");
   const [description, setDescription] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
@@ -66,7 +68,7 @@ export default function ServiceForm() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName, category, city, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages }),
+        body: JSON.stringify({ businessName, category, region: region || null, city, district: district || null, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages }),
       });
       const data = await res.json() as { id?: number; message?: string };
       if (!res.ok) throw new Error(data.message ?? "حدث خطأ");
@@ -112,11 +114,49 @@ export default function ServiceForm() {
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </FieldGroup>
-              <FieldGroup label="المدينة الرئيسية" required>
-                <select value={city} onChange={e => setCity(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">اختر المدينة</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <FieldGroup label="المنطقة" required>
+                <select
+                  value={region}
+                  onChange={e => { setRegion(e.target.value); setCity(""); setDistrict(""); }}
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none"
+                >
+                  <option value="">اختر المنطقة</option>
+                  {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
+              </FieldGroup>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <FieldGroup label="المحافظة (المدينة)" required>
+                <select
+                  value={city}
+                  onChange={e => { setCity(e.target.value); setDistrict(""); }}
+                  disabled={!region}
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
+                >
+                  <option value="">{region ? "اختر المحافظة" : "— اختر المنطقة أولاً"}</option>
+                  {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </FieldGroup>
+              <FieldGroup label="الحي">
+                {getAllAhyaaForCity(region, city).length > 0 ? (
+                  <select
+                    value={district}
+                    onChange={e => setDistrict(e.target.value)}
+                    disabled={!city}
+                    className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
+                  >
+                    <option value="">{city ? "كل الأحياء" : "— اختر المحافظة أولاً"}</option>
+                    {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                ) : (
+                  <Input
+                    placeholder={city ? "اكتب اسم الحي" : "— اختر المحافظة أولاً"}
+                    value={district}
+                    onChange={e => setDistrict(e.target.value)}
+                    disabled={!city}
+                    className="h-12 rounded-xl text-base disabled:opacity-40"
+                  />
+                )}
               </FieldGroup>
             </div>
             

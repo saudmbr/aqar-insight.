@@ -63,7 +63,7 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
     .where(eq(serviceProvidersTable.userId, req.session.userId))
     .limit(1);
 
-  const { businessName, category, city, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages } = req.body as Record<string, unknown>;
+  const { businessName, category, region, city, district, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages } = req.body as Record<string, unknown>;
 
   if (!existing) {
     if (!businessName || !category || !city) {
@@ -73,7 +73,9 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
       userId: req.session.userId,
       businessName: String(businessName),
       category: String(category),
+      region: region ? String(region) : null,
       city: String(city),
+      district: district ? String(district) : null,
       coveredAreas: coveredAreas ? String(coveredAreas) : null,
       description: description ? String(description) : null,
       startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null,
@@ -89,7 +91,9 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
   await db.update(serviceProvidersTable).set({
     ...(businessName !== undefined && { businessName: String(businessName) }),
     ...(category !== undefined && { category: String(category) }),
+    ...(region !== undefined && { region: region ? String(region) : null }),
     ...(city !== undefined && { city: String(city) }),
+    ...(district !== undefined && { district: district ? String(district) : null }),
     ...(coveredAreas !== undefined && { coveredAreas: coveredAreas ? String(coveredAreas) : null }),
     ...(description !== undefined && { description: description ? String(description) : null }),
     ...(startingPrice !== undefined && { startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null }),
@@ -117,7 +121,7 @@ serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
   }
 
   const {
-    businessName, category, city, coveredAreas, description, startingPrice,
+    businessName, category, region, city, district, coveredAreas, description, startingPrice,
     contactPhone, whatsapp, workingHours, portfolioImages,
   } = req.body as Record<string, unknown>;
 
@@ -129,7 +133,9 @@ serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
     userId: req.session.userId ?? null,
     businessName: String(businessName),
     category: String(category),
+    region: region ? String(region) : null,
     city: String(city),
+    district: district ? String(district) : null,
     coveredAreas: coveredAreas ? String(coveredAreas) : null,
     description: description ? String(description) : null,
     startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null,
@@ -172,12 +178,14 @@ serviceProvidersRouter.put("/:id", async (req: Request, res: Response) => {
   const isOwner = req.session.userId && existing.userId === req.session.userId;
   if (!req.session.isAdmin && !isOwner) { res.status(403).json({ message: "غير مصرح لك" }); return; }
 
-  const { businessName, category, city, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages } = req.body as Record<string, unknown>;
+  const { businessName, category, region, city, district, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages } = req.body as Record<string, unknown>;
 
   await db.update(serviceProvidersTable).set({
     ...(businessName !== undefined && { businessName: String(businessName) }),
     ...(category !== undefined && { category: String(category) }),
+    ...(region !== undefined && { region: region ? String(region) : null }),
     ...(city !== undefined && { city: String(city) }),
+    ...(district !== undefined && { district: district ? String(district) : null }),
     ...(coveredAreas !== undefined && { coveredAreas: coveredAreas ? String(coveredAreas) : null }),
     ...(description !== undefined && { description: description ? String(description) : null }),
     ...(startingPrice !== undefined && { startingPrice: startingPrice ? parseFloat(String(startingPrice)) : null }),

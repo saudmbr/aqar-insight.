@@ -7,7 +7,9 @@ export const serviceProvidersTable = pgTable("service_providers", {
 
   businessName: text("business_name").notNull(),
   category: text("category").notNull(),
+  region: text("region"),
   city: text("city").notNull(),
+  district: text("district"),
   coveredAreas: text("covered_areas"),
   description: text("description"),
   startingPrice: real("starting_price"),

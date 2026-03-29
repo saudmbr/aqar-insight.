@@ -9,8 +9,9 @@ import { Loader2, Save, FileText, Banknote, Contact, Building2, Wrench, UserChec
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
+
 const SERVICE_TYPES  = ["مقاول بناء", "تشطيبات", "سباكة وكهرباء", "تكييف", "دهانات", "تنظيف", "تصميم داخلي", "مساحة وتقييم", "صيانة عامة", "أخرى"];
 const CONTACT_METHODS = ["واتساب", "هاتف", "بريد إلكتروني", "داخل المنصة"];
 
@@ -71,6 +72,7 @@ export default function RequestForm() {
   const [requestType, setRequestType] = useState("property");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [budgetMin, setBudgetMin] = useState("");
@@ -95,6 +97,7 @@ export default function RequestForm() {
       const body: Record<string, unknown> = {
         requestType,
         title,
+        region: region || null,
         city,
         district: district || null,
         budgetMin: budgetMin || null,
@@ -256,23 +259,53 @@ export default function RequestForm() {
               </FieldGroup>
             )}
 
-            {/* City + District */}
+            {/* Region + City + District */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <FieldGroup label="المدينة" required>
-                <select value={city} onChange={e => setCity(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
-                  <option value="">اختر المدينة</option>
-                  {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <FieldGroup label="المنطقة">
+                <select
+                  value={region}
+                  onChange={e => { setRegion(e.target.value); setCity(""); setDistrict(""); }}
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none"
+                >
+                  <option value="">اختر المنطقة (اختياري)</option>
+                  {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </FieldGroup>
-              <FieldGroup label="الحي" hint="اختياري">
-                <Input
-                  placeholder="اسم الحي أو المنطقة"
-                  value={district}
-                  onChange={e => setDistrict(e.target.value)}
-                  className="h-12 rounded-xl text-base"
-                />
+              <FieldGroup label="المدينة" required>
+                <select
+                  value={city}
+                  onChange={e => { setCity(e.target.value); setDistrict(""); }}
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none"
+                >
+                  <option value="">اختر المدينة</option>
+                  {region
+                    ? getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)
+                    : SAUDI_REGIONS_LIST.flatMap(r => getMuhafazat(r)).map(m => <option key={m} value={m}>{m}</option>)
+                  }
+                </select>
               </FieldGroup>
             </div>
+            <FieldGroup label="الحي" hint="اختياري — يُساعد في الحصول على عروض أكثر دقة">
+              {getAllAhyaaForCity(region, city).length > 0 ? (
+                <select
+                  value={district}
+                  onChange={e => setDistrict(e.target.value)}
+                  disabled={!city}
+                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
+                >
+                  <option value="">{city ? "كل الأحياء" : "— اختر المدينة أولاً"}</option>
+                  {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h}>{h}</option>)}
+                </select>
+              ) : (
+                <Input
+                  placeholder={city ? "اكتب اسم الحي" : "اختر المدينة أولاً"}
+                  value={district}
+                  onChange={e => setDistrict(e.target.value)}
+                  disabled={!city}
+                  className="h-12 rounded-xl text-base disabled:opacity-40"
+                />
+              )}
+            </FieldGroup>
 
             {/* Description */}
             <FieldGroup label="وصف مختصر لطلبك">

@@ -8,6 +8,7 @@ export const customerRequestsTable = pgTable("customer_requests", {
   requestType: text("request_type").notNull().default("property"),
   title: text("title").notNull(),
   category: text("category"),
+  region: text("region"),
   city: text("city").notNull(),
   district: text("district"),
   budgetMin: real("budget_min"),

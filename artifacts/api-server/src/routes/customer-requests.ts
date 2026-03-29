@@ -80,7 +80,7 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
     res.status(401).json({ message: "يرجى تسجيل الدخول لنشر طلب" }); return;
   }
 
-  const { requestType, title, category, city, district, budgetMin, budgetMax, details, marketerName, contactMethod, contactInfo } = req.body as Record<string, unknown>;
+  const { requestType, title, category, region, city, district, budgetMin, budgetMax, details, marketerName, contactMethod, contactInfo } = req.body as Record<string, unknown>;
 
   if (!requestType || !title || !city) {
     res.status(400).json({ message: "يرجى ملء العنوان، نوع الطلب، والمدينة" }); return;
@@ -96,6 +96,7 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
     requestType: String(requestType),
     title: String(title),
     category: category ? String(category) : null,
+    region: region ? String(region) : null,
     city: String(city),
     district: district ? String(district) : null,
     budgetMin: budgetMin ? parseFloat(String(budgetMin)) : null,
