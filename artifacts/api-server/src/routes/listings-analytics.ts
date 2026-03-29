@@ -160,7 +160,7 @@ router.get("/listings-insights", async (req, res) => {
       avgPricePerSqm: avg(listingsTable.pricePerSqm),
     }).from(listingsTable).where(where)
       .groupBy(listingsTable.city)
-      .orderBy(desc(count())),
+      .orderBy(desc(avg(listingsTable.price))),
 
     db.select({
       district: listingsTable.district,
@@ -170,7 +170,7 @@ router.get("/listings-insights", async (req, res) => {
       avgPricePerSqm: avg(listingsTable.pricePerSqm),
     }).from(listingsTable).where(and(where, sql`district is not null and district != ''`))
       .groupBy(listingsTable.district, listingsTable.city)
-      .orderBy(desc(count())),
+      .orderBy(desc(avg(listingsTable.price))),
 
     db.select({
       propertyType: listingsTable.propertyType,

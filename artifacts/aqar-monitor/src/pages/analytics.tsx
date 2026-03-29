@@ -134,7 +134,7 @@ export default function Analytics() {
   const [district, setDistrict] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
-  const [districtSort, setDistrictSort] = useState("activity");
+  const [districtSort, setDistrictSort] = useState("price");
   const [userRole, setUserRole] = useState<"buyer" | "marketer" | "provider">("buyer");
 
   useEffect(() => {
