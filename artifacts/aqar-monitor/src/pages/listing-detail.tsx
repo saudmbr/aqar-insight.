@@ -257,7 +257,7 @@ export default function ListingDetail() {
     listing.pool || listing.maidRoom || listing.driverRoom || listing.airConditioning ||
     listing.electricityMeter || listing.waterMeter || listing.kitchen || listing.balcony ||
     listing.storageRoom || listing.basement || listing.smartHome || listing.securitySystem ||
-    listing.internet || listing.sewage || listing.mortgageEligibility ||
+    listing.internet || listing.sewage ||
     listing.majlis || listing.prayerRoom || listing.wardrobeRoom || listing.gym ||
     listing.jacuzzi || listing.annex || listing.heating || listing.solarHeater ||
     listing.waterTank || listing.generator || listing.solarEnergy || listing.naturalGas ||
@@ -648,7 +648,6 @@ export default function ListingDetail() {
                   {listing.solarEnergy && <AmenityBadge label="طاقة شمسية" />}
                   {listing.smartHome && <AmenityBadge label="منزل ذكي" icon={<Zap className="w-3.5 h-3.5" />} />}
                   {listing.securitySystem && <AmenityBadge label="كاميرات مراقبة / أمن" icon={<Shield className="w-3.5 h-3.5" />} />}
-                  {listing.mortgageEligibility && <AmenityBadge label="مؤهل للتمويل العقاري" icon={<Shield className="w-3.5 h-3.5" />} />}
                 </div>
               </div>
             )}

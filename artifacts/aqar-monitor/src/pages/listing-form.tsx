@@ -318,18 +318,21 @@ export default function ListingForm() {
               />
             </FieldGroup>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2 border-t border-border">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-border">
               <FieldGroup label="السعر (ريال سعودي)" required>
                 <Input type="number" min="0" placeholder="0" value={form.price ?? ""} onChange={e => set("price", e.target.value)} className="h-12 rounded-xl text-base font-bold text-primary" />
               </FieldGroup>
               <FieldGroup label="المساحة (م²)">
                 <Input type="number" min="0" placeholder="0" value={form.areaSqm ?? ""} onChange={e => set("areaSqm", e.target.value)} className="h-12 rounded-xl" />
               </FieldGroup>
-              <FieldGroup label="قابل للتفاوض">
-                <div className="h-12 flex items-center">
-                  <Checkbox label="نعم، قابل للتفاوض" checked={!!form.negotiable} onChange={v => set("negotiable", v)} />
-                </div>
-              </FieldGroup>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+              <div className="h-12 flex items-center">
+                <Checkbox label="قابل للتفاوض" checked={!!form.negotiable} onChange={v => set("negotiable", v)} />
+              </div>
+              <div className="h-12 flex items-center">
+                <Checkbox label="مؤهل للتمويل العقاري" checked={!!form.mortgageEligibility} onChange={v => set("mortgageEligibility", v)} />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -437,7 +440,6 @@ export default function ListingForm() {
               <Checkbox label="طاقة شمسية" checked={!!form.solarEnergy} onChange={v => set("solarEnergy", v)} />
               <Checkbox label="منزل ذكي" checked={!!form.smartHome} onChange={v => set("smartHome", v)} />
               <Checkbox label="كاميرات مراقبة / نظام أمني" checked={!!form.securitySystem} onChange={v => set("securitySystem", v)} />
-              <Checkbox label="مؤهل للتمويل العقاري" checked={!!form.mortgageEligibility} onChange={v => set("mortgageEligibility", v)} />
             </div>
             <p className="text-sm text-muted-foreground font-medium pt-2 border-t border-border">المرافق القريبة</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
