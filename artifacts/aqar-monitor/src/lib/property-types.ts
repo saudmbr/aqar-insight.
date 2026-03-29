@@ -32,6 +32,7 @@ export const PROPERTY_TYPE_GROUPS: PropertyTypeGroup[] = [
       "معرض",
       "مطعم",
       "صيدلية",
+      "مستوصف",
       "عيادة",
     ],
   },
@@ -49,8 +50,6 @@ export const PROPERTY_TYPE_GROUPS: PropertyTypeGroup[] = [
     label: "عمارات ومبانٍ",
     types: [
       "عمارة سكنية",
-      "عمارة مختلطة",
-      "بناية",
     ],
   },
   {

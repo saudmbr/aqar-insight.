@@ -503,6 +503,13 @@ export function getAhyaa(region: string, muhafaza: string, markaz: string): stri
   return SAUDI_GEO[region]?.[muhafaza]?.[markaz] ?? [];
 }
 
+/** كل أحياء محافظة معينة (من جميع مراكزها) */
+export function getAllAhyaaForCity(region: string, muhafaza: string): string[] {
+  const muhData = SAUDI_GEO[region]?.[muhafaza];
+  if (!muhData) return [];
+  return [...new Set(Object.values(muhData).flat())].sort();
+}
+
 /** كل المحافظات مسطحة */
 export const ALL_MUHAFAZAT: string[] = [
   ...new Set(

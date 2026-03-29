@@ -1,4 +1,4 @@
-import { getMuhafazat, getMarakiz, getAhyaa, SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
+import { getMuhafazat, getAllAhyaaForCity, SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { useState, useEffect, lazy, Suspense, type FormEvent } from "react";
@@ -32,9 +32,9 @@ const FACADES = [
 const BUILDING_QUALITY = ["فاخر", "ممتاز", "جيد", "متوسط", "يحتاج تجديد"];
 const FINISHING = ["كامل التشطيب", "شبه مشطّب", "هيكل", "مشطّب فاخر"];
 
-function FieldGroup({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function FieldGroup({ label, required, children, className }: { label: string; required?: boolean; children: React.ReactNode; className?: string }) {
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${className ?? ""}`}>
       <Label className="text-sm font-semibold text-foreground flex items-center gap-1">
         {label}
         {required && <span className="text-destructive">*</span>}
@@ -260,14 +260,13 @@ export default function ListingForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            {/* 4-level geo cascade: منطقة → محافظة → مركز → حي */}
+            {/* 3-level geo cascade: منطقة → محافظة → حي */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* منطقة */}
               <FieldGroup label="المنطقة">
                 <SSelect value={form.region ?? ""} onChange={v => {
                   set("region", v);
                   set("city", "");
-                  set("markaz", "");
                   set("district", "");
                 }}>
                   <option value="">اختر المنطقة</option>
@@ -279,7 +278,6 @@ export default function ListingForm() {
               <FieldGroup label="المحافظة" required>
                 <SSelect value={form.city ?? ""} onChange={v => {
                   set("city", v);
-                  set("markaz", "");
                   set("district", "");
                   if (locationValue && !locationValue.city) {
                     setLocationValue(lv => lv ? { ...lv, city: v } : lv);
@@ -294,30 +292,24 @@ export default function ListingForm() {
                 </SSelect>
               </FieldGroup>
 
-              {/* مركز */}
-              <FieldGroup label="المركز">
-                <SSelect value={form.markaz ?? ""} onChange={v => {
-                  set("markaz", v);
-                  set("district", "");
-                }}>
-                  <option value="">
-                    {!form.city ? "اختر المحافظة أولاً" : "اختر المركز (اختياري)"}
-                  </option>
-                  {getMarakiz(form.region ?? "", form.city ?? "").map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </SSelect>
-              </FieldGroup>
-
-              {/* حي */}
-              <FieldGroup label="الحي">
-                {getAhyaa(form.region ?? "", form.city ?? "", form.markaz ?? "").length > 0 ? (
-                  <SSelect value={form.district ?? ""} onChange={v => set("district", v)}>
-                    <option value="">اختر الحي (اختياري)</option>
-                    {getAhyaa(form.region ?? "", form.city ?? "", form.markaz ?? "").map(h => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
-                  </SSelect>
+              {/* حي — عمود كامل */}
+              <FieldGroup label="الحي" className="sm:col-span-2">
+                {getAllAhyaaForCity(form.region ?? "", form.city ?? "").length > 0 ? (
+                  <>
+                    <datalist id="form-ahyaa-list">
+                      {getAllAhyaaForCity(form.region ?? "", form.city ?? "").map(h => (
+                        <option key={h} value={h} />
+                      ))}
+                    </datalist>
+                    <input
+                      type="text"
+                      list="form-ahyaa-list"
+                      placeholder="اكتب أو اختر الحي…"
+                      value={form.district ?? ""}
+                      onChange={e => set("district", e.target.value)}
+                      className="h-12 rounded-xl border border-input bg-background px-4 text-sm font-medium w-full focus:ring-2 focus:ring-primary/20 outline-none"
+                    />
+                  </>
                 ) : (
                   <Input
                     placeholder="مثال: حي الملقا"

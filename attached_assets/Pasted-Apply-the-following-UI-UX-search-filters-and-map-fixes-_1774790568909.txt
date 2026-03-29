@@ -1,0 +1,104 @@
+Apply the following UI/UX, search, filters, and map fixes across the entire platform.
+
+==================================================
+1) HERO BACKGROUND
+==================================================
+
+- Change the hero background to a high-quality visual that reflects the real urban development of Riyadh
+- IMPORTANT:
+  - Use ONLY real and recognizable Riyadh visuals (actual landmarks / skyline)
+  - Do NOT use fake, AI-generated, or generic buildings that do not exist in Riyadh
+  - The image must feel authentic and locally accurate
+
+- Make the hero background dynamic based on time of day:
+  - Daytime → real Riyadh daytime image
+  - Nighttime → real Riyadh nighttime image
+- Keep transitions smooth and premium
+
+==================================================
+2) HERO BOX STYLING
+==================================================
+
+- Add a very subtle and light shadow to the hero search box/card
+- Keep it minimal and premium
+
+==================================================
+3) SEARCH FIELDS
+==================================================
+
+- Remove the "المركز" field from all search areas
+- Keep:
+  - المنطقة
+  - المحافظة / المدينة
+  - الحي
+
+- Prioritize "الحي" as the main search unit
+- Add all neighborhoods for all Saudi regions and governorates
+- Add manual input field to allow custom neighborhood entry when needed
+
+==================================================
+4) HERO PRICE-PER-SQM LOGIC
+==================================================
+
+- Remove Riyadh-only logic
+- Show top 5 areas with highest average price per sqm
+- Based ONLY on real platform data
+- Dynamically update ranking (not hardcoded)
+
+==================================================
+5) PROPERTY TYPE CLEANUP
+==================================================
+
+Remove everywhere:
+- عمارة مختلطة
+- بناية
+
+Ensure availability of:
+- صيدلية
+- مستوصف
+- عيادة
+
+Apply consistently across:
+- filters
+- map
+- forms
+- listings
+
+==================================================
+6) MAP FILTER FIXES
+==================================================
+
+- Fix issue where filters return no results
+- Ensure filters correctly update map results
+- Apply fix across ALL maps in the platform
+
+==================================================
+7) GLOBAL CONSISTENCY
+==================================================
+
+Apply all changes across:
+- homepage
+- search
+- map pages
+- listing pages
+- filters
+
+==================================================
+8) DATA RULES
+==================================================
+
+- No fake data
+- No hardcoded rankings
+- Only real platform data
+- System must be scalable
+
+==================================================
+9) FINAL QA
+==================================================
+
+Provide summary of:
+- hero background changes (including real Riyadh images)
+- day/night logic
+- top 5 area logic
+- property types removed
+- filter fixes

@@ -1,4 +1,4 @@
-import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
+import { SAUDI_REGIONS_LIST, getMuhafazat } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS, PROPERTY_TYPES_FLAT } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { useState, useEffect, type FormEvent } from "react";
@@ -31,10 +31,9 @@ export default function Listings() {
   // Read URL params on mount
   const _init = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
 
-  // Filters — التسلسل الإداري: منطقة → محافظة → مركز
+  // Filters — التسلسل الإداري: منطقة → محافظة → حي
   const [region, setRegion]     = useState(_init.get("region") ?? "");
   const [city, setCity]         = useState(_init.get("city") ?? "");
-  const [markaz, setMarkaz]     = useState(_init.get("markaz") ?? "");
   const [district, setDistrict] = useState(_init.get("district") ?? "");
   const [search, setSearch]     = useState(_init.get("q") ?? "");
   const [propertyType, setPropertyType] = useState("");
@@ -59,11 +58,9 @@ export default function Listings() {
     setSearch(q);
     const r = p.get("region") ?? "";
     const c = p.get("city") ?? "";
-    const m = p.get("markaz") ?? "";
     const d = p.get("district") ?? "";
     if (r) setRegion(r);
     if (c) setCity(c);
-    if (m) setMarkaz(m);
     if (d) setDistrict(d);
     if (r || c) setShowFilters(true);
   }, [location]);
@@ -73,7 +70,6 @@ export default function Listings() {
     if (search) params.set("search", search);
     if (region) params.set("region", region);
     if (city) params.set("city", city);
-    if (markaz) params.set("markaz", markaz);
     if (district) params.set("district", district);
     if (propertyType) params.set("propertyType", propertyType);
     if (listingType) params.set("listingType", listingType);
@@ -100,7 +96,7 @@ export default function Listings() {
   useEffect(() => {
     void fetchListings(1);
     setPage(1);
-  }, [region, city, markaz, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms]);
+  }, [region, city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -109,12 +105,12 @@ export default function Listings() {
   };
 
   const resetFilters = () => {
-    setRegion(""); setCity(""); setMarkaz(""); setDistrict("");
+    setRegion(""); setCity(""); setDistrict("");
     setSearch(""); setPropertyType(""); setListingType(""); setMinPrice(""); setMaxPrice(""); setBedrooms("");
   };
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
-  const activeFiltersCount = [region, city, markaz, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
+  const activeFiltersCount = [region, city, district, search, propertyType, listingType, minPrice, maxPrice, bedrooms].filter(Boolean).length;
 
   const handleDeleteListing = async (id: number) => {
     if (!confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟")) return;
@@ -185,10 +181,10 @@ export default function Listings() {
           {showFilters && (
             <div className="p-6 bg-card border border-border shadow-sm rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
               {/* Row 1 — التسلسل الإداري */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-foreground">المنطقة</label>
-                  <select value={region} onChange={(e) => { setRegion(e.target.value); setCity(""); setMarkaz(""); setDistrict(""); }}
+                  <select value={region} onChange={(e) => { setRegion(e.target.value); setCity(""); setDistrict(""); }}
                     className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
                     <option value="">جميع المناطق</option>
                     {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
@@ -196,23 +192,15 @@ export default function Listings() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-foreground">المحافظة</label>
-                  <select value={city} onChange={(e) => { setCity(e.target.value); setMarkaz(""); setDistrict(""); }} disabled={!region}
+                  <select value={city} onChange={(e) => { setCity(e.target.value); setDistrict(""); }} disabled={!region}
                     className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="">{region ? "جميع المحافظات" : "اختر المنطقة أولاً"}</option>
                     {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-foreground">المركز</label>
-                  <select value={markaz} onChange={(e) => { setMarkaz(e.target.value); setDistrict(""); }} disabled={!city}
-                    className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
-                    <option value="">{city ? "جميع المراكز" : "اختر المحافظة أولاً"}</option>
-                    {getMarakiz(region, city).map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-foreground">الحي</label>
-                  <Input placeholder="اكتب الحي…" value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl font-medium" />
+                  <Input placeholder="اكتب اسم الحي…" value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl font-medium" />
                 </div>
               </div>
               {/* Row 2 — نوع + غرض + سعر + غرف */}
