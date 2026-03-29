@@ -1,0 +1,124 @@
+Apply the following UI/UX, search, filters, and map fixes across the entire platform.
+
+==================================================
+1) HERO BACKGROUND
+==================================================
+
+- Change the hero background to a high-quality visual that reflects the urban development and modern growth of Riyadh
+- The hero background must feel premium, realistic, and aligned with a smart real estate platform
+- Make the hero background dynamic based on time of day:
+  - If the user opens the website during daytime, show a daytime Riyadh background
+  - If the user opens the website during الليل, show a nighttime Riyadh background
+- Keep the transition elegant and smooth
+- Do not use a generic stock-style image
+- The final hero must feel modern, calm, and visually rich
+
+==================================================
+2) HERO BOX STYLING
+==================================================
+
+- Add a very subtle and light shadow to the hero search box/card
+- Keep it premium and minimal
+- Do NOT make the shadow heavy or exaggerated
+
+==================================================
+3) SEARCH FIELDS
+==================================================
+
+- Remove the "المركز" field from all search areas
+- Keep search based on:
+  - المنطقة
+  - المحافظة / المدينة
+  - الحي
+- Prioritize "الحي" as the main local search field
+- Add all neighborhoods for all Saudi regions and governorates/cities
+- Add a manual custom-entry option/field so a neighborhood can be added manually when needed
+- Make the neighborhood lists scalable and easy to maintain
+
+==================================================
+4) HERO PRICE-PER-SQM LOGIC
+==================================================
+
+- The current "average price per sqm" numbers in the hero should NOT be limited to Riyadh only
+- Change the logic so the hero displays the top 5 highest areas/regions based on actual internal platform data
+- Example:
+  - If Riyadh is the highest, it appears first
+- Show only the top 5
+- Base this on real internal platform data only
+- Do not hardcode Riyadh
+
+==================================================
+5) PROPERTY TYPE CLEANUP
+==================================================
+
+Remove these property types from the platform everywhere if they exist:
+- عمارة مختلطة
+- بناية
+
+Also add / keep these types properly where needed:
+- صيدلية
+- مستوصف
+- عيادة
+
+Specifically:
+- Remove "عمارة مختلطة" and "بناية" from the property filter on the map
+- If these types appear anywhere else in the platform, remove them there too
+- Ensure type lists are consistent across:
+  - filters
+  - forms
+  - map filters
+  - search
+  - listing creation/edit pages
+
+==================================================
+6) MAP FILTER FIXES
+==================================================
+
+- Fix the issue where applying filters on the map causes no properties to appear
+- Ensure all filters work correctly on the map
+- The map must update results properly when filters are applied
+- This must work across all maps in the platform, not only one page
+
+Filters should work correctly for:
+- region
+- city/governorate
+- district
+- property type
+- listing type
+- price range
+- area range
+- and any other existing relevant filter
+
+==================================================
+7) APPLY CONSISTENCY ACROSS THE WHOLE PLATFORM
+==================================================
+
+Make sure all these updates are applied consistently across the full platform:
+- homepage hero
+- search areas
+- map pages
+- listing pages
+- filter components
+- any duplicated search/filter UI
+
+==================================================
+8) DATA / LOGIC RULES
+==================================================
+
+- Do not use fake values
+- Do not hardcode location ranking unless it is based on actual platform data
+- If some region/neighborhood data is missing, structure the system so it can be added later without breaking anything
+- Keep all logic scalable and maintainable
+
+==================================================
+9) FINAL QA
+==================================================
+
+After implementation, provide a summary of:
+- what was changed in the hero
+- how the day/night background works
+- how the top 5 areas are calculated
+- which property types were removed
+- where medical/commercial property types were added
+- what was fixed in map filters
+- which pages/components were updated
