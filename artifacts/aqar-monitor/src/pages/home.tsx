@@ -450,7 +450,7 @@ export default function Home() {
                 background: "rgba(255,255,255,0.10)",
                 border: "1px solid rgba(255,255,255,0.16)",
                 backdropFilter: "blur(14px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
               }}
             >
               {/* عنوان البطاقة */}
