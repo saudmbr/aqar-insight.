@@ -9,6 +9,50 @@ const LISTING_LABEL_MAP: Record<string, string> = {
   investment: "استثماري",
 };
 
+/** Map singular property type names → Arabic plural with definite article */
+const PROPERTY_TYPE_PLURAL: Record<string, string> = {
+  "شقة":             "الشقق",
+  "فيلا":            "الفلل",
+  "دور":             "الأدوار",
+  "دوبلكس":          "الدوبلكس",
+  "بيت شعبي":        "البيوت الشعبية",
+  "استوديو":         "الاستوديوهات",
+  "غرفة":            "الغرف",
+  "ملحق":            "الملاحق",
+  "روف":             "الروف",
+  "سكن عمالة":       "سكن العمالة",
+  "سكن طلابي":       "سكن الطلاب",
+  "محل تجاري":       "المحلات التجارية",
+  "مكتب":            "المكاتب",
+  "عمارة تجارية":    "العمارات التجارية",
+  "برج تجاري":       "الأبراج التجارية",
+  "مجمع تجاري":      "المجمعات التجارية",
+  "مركز تجاري":      "المراكز التجارية",
+  "معرض":            "المعارض",
+  "عمارة سكنية":     "العمارات السكنية",
+  "مستودع":          "المستودعات",
+  "مصنع":            "المصانع",
+  "ورشة صناعية":     "الورش الصناعية",
+  "أرض صناعية":      "الأراضي الصناعية",
+  "مجمع صناعي":      "المجمعات الصناعية",
+  "أرض":             "الأراضي",
+  "أرض سكنية":       "الأراضي السكنية",
+  "أرض تجارية":      "الأراضي التجارية",
+  "أرض زراعية":      "الأراضي الزراعية",
+  "أرض سياحية":      "الأراضي السياحية",
+  "مزرعة":           "المزارع",
+  "استراحة":         "الاستراحات",
+  "شاليه":           "الشاليهات",
+  "منتجع":           "المنتجعات",
+  "فندق":            "الفنادق",
+  "شقة فندقية":      "الشقق الفندقية",
+};
+
+/** Returns the definite plural form of a property type, or the original if unknown */
+function pluralType(t: string): string {
+  return PROPERTY_TYPE_PLURAL[t] ?? t;
+}
+
 const router: IRouter = Router();
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -135,14 +179,14 @@ function generateSmartInsights(data: {
   // Top property type
   const topType = byPropertyType[0];
   if (topType) {
-    insights.push(`${topType.propertyType} هي الفئة الأكثر عرضاً (${pct(topType.count, kpis.totalListings)}% من الإعلانات)`);
+    insights.push(`${pluralType(topType.propertyType)} هي النوع الأكثر انتشاراً في الإعلانات الحالية (${pct(topType.count, kpis.totalListings)}%)`);
   }
 
   // Top city
   const topCity = byCity[0];
   if (topCity) {
     const cityPct = pct(topCity.count, kpis.totalListings);
-    insights.push(`${topCity.city} تستحوذ على ${cityPct}% من الإعلانات النشطة`);
+    insights.push(`${topCity.city} تستحوذ على ${cityPct}% من إجمالي الإعلانات`);
   }
 
   // Market type distribution
@@ -161,7 +205,7 @@ function generateSmartInsights(data: {
       if (Math.abs(diff) > 10) {
         const higher = diff > 0 ? first : second;
         const lower = diff > 0 ? second : first;
-        insights.push(`متوسط سعر ${higher.propertyType} أعلى من ${lower.propertyType} بنسبة ${Math.abs(diff)}%`);
+        insights.push(`متوسط سعر ${pluralType(higher.propertyType)} أعلى من ${pluralType(lower.propertyType)} بنسبة ${Math.abs(diff)}%`);
       }
     }
   }
