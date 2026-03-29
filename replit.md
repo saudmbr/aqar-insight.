@@ -22,10 +22,15 @@ The application is a monorepo built with pnpm workspaces, utilizing Node.js 24 a
 **Homepage Architecture (Marketplace First):**
 The homepage (`home.tsx`) integrates a hero section with quick search, category pills for filtering, a primary listings showcase, an interactive Leaflet map displaying property locations, platform CTA cards, and secondary market insights powered by analytics.
 
-**Data & Analytics:**
+**Data & Analytics Engine:**
 - Two main database schemas: `properties` for historical analytics and `listings` for live marketplace data.
-- Extensive analytics API endpoints (`/api/analytics/listings-insights`, `/api/analytics/listings-trends`) provide KPIs, trends, and filter options derived from active listings.
-- Geographic analysis includes city/district comparisons and trend charts.
+- Analytics API (`/api/analytics/listings-insights`): Enhanced endpoint returns KPIs, `byRegion`, `byCity`, `byDistrict`, `byPropertyType`, `byListingType`, `smartInsights`, **`marketScore`** (0-100, components: activity/diversity/stability, label: قوي/متوازن/ضعيف), and **`supplyDemand`** (activityRatio, marketBalance, marketBalanceLabel).
+- Analytics API (`/api/analytics/listing-benchmark/:id`): New endpoint compares a single listing's price/pricePerSqm to district, city, and property-type averages; returns `position` with `vsDistrict`, `vsCity`, `vsType` objects each containing `{pct, label, usedPsm}`.
+- Analytics API supports `days` query param (7/30/90/365) to filter listings by recency — affects turnover, KPIs, and derived indicators.
+- Smart insights generator produces 7–8 Arabic insights auto-generated from real data patterns.
+- Frontend `src/hooks/use-analytics.ts` centralizes all analytics fetching: `useAnalytics()`, `useAnalyticsTrends()`, `useAnalyticsFilterOptions()`, `useListingBenchmark()`.
+- Analytics page (`analytics.tsx`): 7 category tabs — A(مؤشر السوق), B(الأسعار), C(الحركة والنشاط), D(العرض والطلب), E(الأنواع), F(الأحياء والمدن), G(الذكاء التحليلي).
+- Listing detail (`listing-detail.tsx`): The static "مؤشرات المنطقة" block is replaced with a live "تقييم السعر" benchmark widget using the `/listing-benchmark/:id` endpoint.
 
 **UI/UX Decisions (Ultra Premium UI):**
 - **Typography:** Uses "Cairo" font (Google Fonts) with various weights.

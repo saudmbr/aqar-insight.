@@ -11,6 +11,7 @@ import { formatCurrency, getImageSrc } from "@/lib/utils";
 import { LISTING_TYPE_MAP as _LTM } from "@/lib/listing-types";
 import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@workspace/db";
+import { useListingBenchmark, positionLabelColor } from "@/hooks/use-analytics";
 import {
   ArrowRight, MapPin, BedDouble, Bath, Maximize2, Phone, MessageSquare,
   Heart, Share2, Edit, Trash2, Building2, Calendar, CheckCircle2,
@@ -120,6 +121,9 @@ export default function ListingDetail() {
   const [statusLoading, setStatusLoading] = useState(false);
 
   const listingId = parseInt(id ?? "");
+
+  // Real market benchmark from API
+  const { data: benchmark, isLoading: benchmarkLoading } = useListingBenchmark(listingId || null);
 
   useEffect(() => {
     return () => { document.title = "عقار إنسايت"; };
@@ -743,54 +747,132 @@ export default function ListingDetail() {
               )}
             </div>
 
-            {/* Market insights — مؤشرات المنطقة */}
+            {/* Market Benchmark — تقييم السعر */}
             <div className="rounded-3xl overflow-hidden border border-primary/20" style={{ background: "linear-gradient(135deg, #0F1C3F, #0a2a4a)" }}>
               <div className="p-7">
                 <div className="flex items-center gap-2.5 mb-6">
                   <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
-                    <TrendingUp className="w-4.5 h-4.5 text-[#94A3B8]" />
+                    <BarChart3 className="w-4.5 h-4.5 text-[#94A3B8]" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-extrabold text-white leading-none">مؤشرات المنطقة</h2>
-                    <p className="text-xs text-white/50 mt-0.5">بيانات السوق العقاري في {listing.city ?? "المنطقة"}</p>
+                    <h2 className="text-lg font-extrabold text-white leading-none">تقييم السعر</h2>
+                    <p className="text-xs text-white/50 mt-0.5">مقارنة بمتوسطات السوق في {listing.city ?? "المنطقة"}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    {
-                      icon: <BarChart3 className="w-4 h-4" />,
-                      label: "متوسط سعر المتر",
-                      value: listing.pricePerSqm ? formatCurrency(listing.pricePerSqm) : "—",
-                      note: "للحي المحدد",
-                      color: "#0F7BA0",
-                    },
-                    {
-                      icon: <TrendingUp className="w-4 h-4" />,
-                      label: "اتجاه السوق",
-                      value: "صاعد",
-                      note: "مؤشر سعر المنطقة",
-                      color: "#34D399",
-                    },
-                    {
-                      icon: <ArrowUpRight className="w-4 h-4" />,
-                      label: "الطلب الحالي",
-                      value: "مرتفع",
-                      note: "إقبال على هذا النوع",
-                      color: "#94A3B8",
-                    },
-                  ].map(item => (
-                    <div key={item.label} className="bg-white/6 border border-white/10 rounded-2xl p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: item.color + "25", color: item.color }}>
-                          {item.icon}
+
+                {benchmarkLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="bg-white/6 border border-white/10 rounded-2xl p-4 animate-pulse h-20" />
+                    ))}
+                  </div>
+                ) : !benchmark?.hasSufficientData ? (
+                  <div className="text-center py-4 text-white/50 text-sm">
+                    بيانات السوق غير كافية بعد — ستظهر مقارنة دقيقة مع تراكم الإعلانات
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* vs District */}
+                    {benchmark?.position?.vsDistrict && benchmark?.districtBenchmark ? (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <MapPin className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالحي</span>
                         </div>
-                        <span className="text-xs text-white/60 font-medium">{item.label}</span>
+                        <p className="text-xl font-extrabold leading-none mb-1"
+                          style={{ color: positionLabelColor(benchmark.position.vsDistrict.label) }}>
+                          {benchmark.position.vsDistrict.label}
+                        </p>
+                        <p className="text-[11px] text-white/45">
+                          {benchmark.position.vsDistrict.pct > 0 ? "+" : ""}{benchmark.position.vsDistrict.pct}% · {benchmark.districtBenchmark.count} إعلان مقارن
+                        </p>
+                        <p className="text-[11px] text-white/30 mt-1">
+                          متوسط الحي: {benchmark.position.vsDistrict.usedPsm
+                            ? `${formatCurrency(benchmark.districtBenchmark.avgPricePerSqm)}/م²`
+                            : formatCurrency(benchmark.districtBenchmark.avgPrice)}
+                        </p>
                       </div>
-                      <p className="text-xl font-extrabold text-white leading-none mb-1">{item.value}</p>
-                      <p className="text-[11px] text-white/45">{item.note}</p>
-                    </div>
-                  ))}
-                </div>
+                    ) : (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <MapPin className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالحي</span>
+                        </div>
+                        <p className="text-[13px] text-white/40">بيانات الحي غير كافية</p>
+                      </div>
+                    )}
+
+                    {/* vs City */}
+                    {benchmark?.position?.vsCity && benchmark?.cityBenchmark ? (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <Building2 className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالمدينة</span>
+                        </div>
+                        <p className="text-xl font-extrabold leading-none mb-1"
+                          style={{ color: positionLabelColor(benchmark.position.vsCity.label) }}>
+                          {benchmark.position.vsCity.label}
+                        </p>
+                        <p className="text-[11px] text-white/45">
+                          {benchmark.position.vsCity.pct > 0 ? "+" : ""}{benchmark.position.vsCity.pct}% · {benchmark.cityBenchmark.count} إعلان مقارن
+                        </p>
+                        <p className="text-[11px] text-white/30 mt-1">
+                          متوسط المدينة: {benchmark.position.vsCity.usedPsm
+                            ? `${formatCurrency(benchmark.cityBenchmark.avgPricePerSqm)}/م²`
+                            : formatCurrency(benchmark.cityBenchmark.avgPrice)}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <Building2 className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالمدينة</span>
+                        </div>
+                        <p className="text-[13px] text-white/40">بيانات المدينة غير كافية</p>
+                      </div>
+                    )}
+
+                    {/* vs Property Type */}
+                    {benchmark?.position?.vsType && benchmark?.typeBenchmark ? (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <TrendingUp className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالنوع</span>
+                        </div>
+                        <p className="text-xl font-extrabold leading-none mb-1"
+                          style={{ color: positionLabelColor(benchmark.position.vsType.label) }}>
+                          {benchmark.position.vsType.label}
+                        </p>
+                        <p className="text-[11px] text-white/45">
+                          {benchmark.position.vsType.pct > 0 ? "+" : ""}{benchmark.position.vsType.pct}% · {benchmark.typeBenchmark.count} إعلان مقارن
+                        </p>
+                        <p className="text-[11px] text-white/30 mt-1">
+                          متوسط {listing.propertyType}: {formatCurrency(benchmark.typeBenchmark.avgPricePerSqm)}/م²
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-white/6 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/10">
+                            <TrendingUp className="w-3.5 h-3.5 text-white/70" />
+                          </div>
+                          <span className="text-xs text-white/60 font-medium">مقارنة بالنوع</span>
+                        </div>
+                        <p className="text-[13px] text-white/40">بيانات النوع غير كافية</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

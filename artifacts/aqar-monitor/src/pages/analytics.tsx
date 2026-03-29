@@ -1,79 +1,55 @@
 import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/layout/layout";
-import { useQuery } from "@tanstack/react-query";
-import { formatCurrency, formatNumber } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Cell, PieChart, Pie, Legend,
 } from "recharts";
 import {
   TrendingUp, TrendingDown, Minus, BarChart3, Building2,
-  MapPin, Activity, AlertTriangle, Lightbulb, Info,
-  ArrowUpRight, ArrowDownRight, Scale,
-  Home, UserCheck, Wrench, Target, Zap, Star,
+  MapPin, Activity, Lightbulb, ArrowUpRight, ArrowDownRight,
+  Scale, Target, Zap, Star, Home, AlertCircle, CheckCircle2,
+  Flame, Clock, Grid3X3, Globe, PieChart as PieChartIcon,
+  Award, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
-
-const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-type KpisData = {
-  totalListings: number; avgPricePerSqm: number; avgPrice: number;
-  maxPrice: number; minPrice: number; medianPrice: number;
-  p25Price: number; p75Price: number; priceStddev: number;
-  saleCount: number; rentCount: number; investCount: number;
-  listingsWithArea: number; turnoverRate: number; areaDataRate: number;
-  newLast7Days: number; newLast30Days: number;
-};
-type InsightsData = {
-  kpis: KpisData;
-  byCity: Array<{ city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
-  byDistrict: Array<{ district: string; city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
-  byPropertyType: Array<{ propertyType: string; count: number; avgPrice: number; avgPricePerSqm: number; percentage: number }>;
-  byListingType: Array<{ listingType: string; count: number; avgPrice: number; percentage: number; label: string }>;
-  smartInsights: string[];
-};
-type TrendPoint = { period: string; label: string; count: number; avgPrice: number; avgPricePerSqm: number };
-type FilterOptions = {
-  cities: string[];
-  districts: Array<{ district: string; city: string }>;
-  propertyTypes: string[];
-  listingTypes: Array<{ value: string; label: string }>;
-};
+import {
+  useAnalytics, useAnalyticsTrends, useAnalyticsFilterOptions,
+  computeMarketDirection, computeActivityLevel, TIME_WINDOWS,
+  type AnalyticsFilters, type InsightsData, type TrendPoint,
+} from "@/hooks/use-analytics";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
+
 const SECTION_TABS = [
-  { id: "A", label: "أ — تحليل السوق",        icon: BarChart3 },
-  { id: "B", label: "ب — مقارنة الأحياء",     icon: MapPin },
-  { id: "C", label: "ج — مؤشرات السوق",       icon: Activity },
-  { id: "D", label: "د — التحليل الكامل",      icon: Lightbulb },
+  { id: "A", label: "مؤشر السوق",       icon: Award },
+  { id: "B", label: "الأسعار",           icon: BarChart3 },
+  { id: "C", label: "الحركة والنشاط",    icon: Activity },
+  { id: "D", label: "العرض والطلب",      icon: Scale },
+  { id: "E", label: "الأنواع",           icon: Grid3X3 },
+  { id: "F", label: "الأحياء والمدن",   icon: MapPin },
+  { id: "G", label: "الذكاء التحليلي",  icon: Lightbulb },
 ] as const;
 
-type SectionId = "A" | "B" | "C" | "D";
+type SectionId = "A" | "B" | "C" | "D" | "E" | "F" | "G";
 
 const PERIOD_TABS = [
-  { value: "day",     label: "يوم" },
-  { value: "week",    label: "أسبوع" },
-  { value: "month",   label: "شهر" },
-  { value: "quarter", label: "ربع سنة" },
-  { value: "year",    label: "سنة" },
+  { value: "day",     label: "يومي" },
+  { value: "week",    label: "أسبوعي" },
+  { value: "month",   label: "شهري" },
+  { value: "quarter", label: "ربع سنوي" },
+  { value: "year",    label: "سنوي" },
 ];
 
-const DIST_SORT_OPTS = [
-  { value: "activity", label: "النشاط" },
-  { value: "price",    label: "السعر" },
-  { value: "sqm",      label: "سعر المتر" },
-];
-
-const BAR_COLORS = ["#0F7BA0", "#0F1C3F", "#94A3B8", "#34D399", "#8B5CF6", "#F97316", "#EF4444", "#64748B"];
+const BAR_COLORS = ["#0F7BA0","#0F1C3F","#34D399","#8B5CF6","#F97316","#EF4444","#64748B","#F59E0B"];
+const PIE_COLORS = ["#0F7BA0","#0F1C3F","#34D399","#8B5CF6","#F97316","#EF4444","#F59E0B","#94A3B8"];
 const INPUT_CLS = "w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
 
-// ── Helper components ─────────────────────────────────────────────────────────
-function KpiBlock({ label, value, sub, color, loading }: {
-  label: string; value: React.ReactNode; sub?: string; color: string; loading?: boolean;
+// ── Helper Components ─────────────────────────────────────────────────────────
+
+function KpiCard({ label, value, sub, color = "#0F7BA0", loading }: {
+  label: string; value: React.ReactNode; sub?: string; color?: string; loading?: boolean;
 }) {
   return (
     <div className="bg-card rounded-[22px] border border-border/60 overflow-hidden shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
@@ -81,7 +57,7 @@ function KpiBlock({ label, value, sub, color, loading }: {
       <div className="p-5">
         <div className="text-[12px] text-muted-foreground mb-2">{label}</div>
         <div className="text-[1.65rem] font-extrabold leading-none mb-1.5 tabular-nums tracking-tight" style={{ color }}>
-          {loading ? <Skeleton className="h-8 w-24" /> : value}
+          {loading ? <Skeleton className="h-8 w-24 inline-block" /> : value}
         </div>
         {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
       </div>
@@ -89,7 +65,7 @@ function KpiBlock({ label, value, sub, color, loading }: {
   );
 }
 
-function IndicatorBadge({ label, color, bg }: { label: string; color: string; bg: string }) {
+function StatusBadge({ label, color, bg }: { label: string; color: string; bg: string }) {
   return (
     <span className="inline-block text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
       style={{ color, background: bg }}>{label}</span>
@@ -103,12 +79,10 @@ function IndicatorCard({ title, value, status, statusColor, statusBg, detail, ic
   return (
     <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
       <div className="flex items-start justify-between mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: statusColor + "14" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${statusColor}14` }}>
           <Icon className="w-4 h-4" style={{ color: statusColor }} />
         </div>
-        {loading ? <Skeleton className="h-5 w-16" /> : (
-          <IndicatorBadge label={status} color={statusColor} bg={statusBg} />
-        )}
+        {loading ? <Skeleton className="h-5 w-16" /> : <StatusBadge label={status} color={statusColor} bg={statusBg} />}
       </div>
       <div className="text-[13px] font-bold text-foreground mb-1">{title}</div>
       {value && <div className="text-xl font-extrabold" style={{ color: statusColor }}>{loading ? <Skeleton className="h-6 w-20 inline-block" /> : value}</div>}
@@ -126,1177 +100,835 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+function SectionContainer({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }} className="space-y-5">
+      {children}
+    </motion.div>
+  );
+}
+
+function ChartCard({ title, children, height = 240 }: { title: string; children: React.ReactNode; height?: number }) {
+  return (
+    <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+      <div className="text-[13px] font-bold text-foreground mb-4">{title}</div>
+      <div style={{ height }}>{children}</div>
+    </div>
+  );
+}
+
+// ── Market Score Widget ───────────────────────────────────────────────────────
+
+function MarketScoreWidget({ score, label, components, explanation, loading }: {
+  score: number; label: string; components: { activity: number; diversity: number; stability: number };
+  explanation?: string; loading?: boolean;
+}) {
+  const color = score >= 65 ? "#22C55E" : score >= 35 ? "#0F7BA0" : "#F59E0B";
+  const bg = score >= 65 ? "#F0FDF4" : score >= 35 ? "#EFF6FF" : "#FFFBEB";
+  const radius = 50;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = loading ? circumference : circumference * (1 - score / 100);
+
+  return (
+    <div className="bg-card rounded-[22px] border border-border/60 p-6 shadow-sm">
+      <div className="flex items-start gap-6">
+        {/* Gauge */}
+        <div className="shrink-0">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="10" />
+            <circle cx="60" cy="60" r={radius} fill="none" stroke={color}
+              strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              transform="rotate(-90 60 60)"
+              style={{ transition: "stroke-dashoffset 1s ease" }} />
+            <text x="60" y="56" textAnchor="middle" fontSize="24" fontWeight="800" fill={color}>{loading ? "—" : score}</text>
+            <text x="60" y="72" textAnchor="middle" fontSize="11" fill="#64748B">/ 100</text>
+          </svg>
+        </div>
+        {/* Info */}
+        <div className="flex-1 min-w-0 pt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[13px] font-bold text-foreground">مؤشر صحة السوق</span>
+            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full" style={{ color, background: bg }}>
+              {loading ? "—" : label}
+            </span>
+          </div>
+          {/* Component bars */}
+          <div className="space-y-2">
+            {[
+              { name: "النشاط", val: components.activity, max: 40, color: "#0F7BA0" },
+              { name: "التنوع", val: components.diversity, max: 30, color: "#8B5CF6" },
+              { name: "الاستقرار", val: components.stability, max: 30, color: "#22C55E" },
+            ].map(c => (
+              <div key={c.name}>
+                <div className="flex items-center justify-between text-[11px] mb-0.5">
+                  <span className="text-muted-foreground">{c.name}</span>
+                  <span className="font-bold tabular-nums" style={{ color: c.color }}>{loading ? "—" : `${c.val}/${c.max}`}</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ width: loading ? "0%" : `${(c.val / c.max) * 100}%`, background: c.color }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {explanation && <div className="text-[10px] text-muted-foreground mt-2">{explanation}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Trend Chart ───────────────────────────────────────────────────────────────
+
+function TrendChart({ trends, loading, metric }: { trends?: TrendPoint[]; loading: boolean; metric: "avgPrice" | "count" | "avgPricePerSqm" }) {
+  const colorMap = { avgPrice: "#0F7BA0", count: "#8B5CF6", avgPricePerSqm: "#22C55E" };
+  const color = colorMap[metric];
+  const labelMap = { avgPrice: "متوسط السعر", count: "عدد الإعلانات", avgPricePerSqm: "سعر المتر" };
+
+  if (loading) return <Skeleton className="w-full h-full rounded-xl" />;
+  if (!trends?.length) return <EmptyState text="لا توجد بيانات كافية للرسم البياني" />;
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={trends} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+        <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+        <YAxis tick={{ fontSize: 11 }} tickFormatter={v => metric === "count" ? formatNumber(v) : (v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v))} />
+        <Tooltip
+          formatter={(v: number) => [metric === "count" ? formatNumber(v) : formatCurrency(v), labelMap[metric]]}
+          contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
+        <Line type="monotone" dataKey={metric} stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+// ── Bar Chart Component ───────────────────────────────────────────────────────
+
+function HBarChart({ data, dataKey, nameKey, label, color = "#0F7BA0", formatter }: {
+  data: Record<string, number | string>[]; dataKey: string; nameKey: string;
+  label: string; color?: string; formatter?: (v: number) => string;
+}) {
+  if (!data.length) return <EmptyState text="لا توجد بيانات" />;
+  const fmt = formatter ?? ((v: number) => formatCurrency(v));
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 8, left: 40, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={false} />
+        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v)} />
+        <YAxis type="category" dataKey={nameKey} tick={{ fontSize: 11 }} width={60} />
+        <Tooltip formatter={(v: number) => [fmt(v), label]} contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
+        <Bar dataKey={dataKey} radius={[0, 6, 6, 0]}>
+          {data.map((_: unknown, i: number) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+// ── Filters Panel ─────────────────────────────────────────────────────────────
+
+function FiltersPanel({ filters, onChange, filterOpts }: {
+  filters: AnalyticsFilters;
+  onChange: (f: AnalyticsFilters) => void;
+  filterOpts?: ReturnType<typeof useAnalyticsFilterOptions>["data"];
+}) {
+  const [open, setOpen] = useState(false);
+
+  const activeCount = [filters.city, filters.district, filters.propertyType, filters.listingType].filter(Boolean).length;
+
+  return (
+    <div className="bg-card rounded-[22px] border border-border/60 overflow-hidden shadow-sm">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          <span>تصفية البيانات</span>
+          {activeCount > 0 && (
+            <span className="text-[11px] font-extrabold bg-primary/10 text-primary rounded-full px-2 py-0.5">{activeCount} فلتر</span>
+          )}
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+            className="overflow-hidden border-t border-border/40">
+            <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">المدينة</label>
+                <select className={INPUT_CLS} value={filters.city ?? ""} onChange={e => onChange({ ...filters, city: e.target.value || undefined, district: undefined })}>
+                  <option value="">الكل</option>
+                  {filterOpts?.cities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">الحي</label>
+                <select className={INPUT_CLS} value={filters.district ?? ""} onChange={e => onChange({ ...filters, district: e.target.value || undefined })}>
+                  <option value="">الكل</option>
+                  {(filters.city
+                    ? filterOpts?.districts.filter(d => d.city === filters.city)
+                    : filterOpts?.districts
+                  )?.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع العقار</label>
+                <select className={INPUT_CLS} value={filters.propertyType ?? ""} onChange={e => onChange({ ...filters, propertyType: e.target.value || undefined })}>
+                  <option value="">الكل</option>
+                  {filterOpts?.propertyTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع الإعلان</label>
+                <select className={INPUT_CLS} value={filters.listingType ?? ""} onChange={e => onChange({ ...filters, listingType: e.target.value || undefined })}>
+                  <option value="">الكل</option>
+                  {filterOpts?.listingTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              {activeCount > 0 && (
+                <div className="col-span-2 md:col-span-4 flex justify-end">
+                  <button onClick={() => onChange({})}
+                    className="text-[12px] text-red-500 hover:text-red-700 font-bold transition-colors">
+                    مسح الفلاتر ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Section A: Market Health Score ───────────────────────────────────────────
+
+function SectionA({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
+  const kpis = insights?.kpis;
+  const ms = insights?.marketScore;
+  const sd = insights?.supplyDemand;
+
+  const turnoverLabel = (kpis?.turnoverRate ?? 0) > 30 ? "سوق متحرك" : (kpis?.turnoverRate ?? 0) > 10 ? "نشاط معتدل" : "سوق هادئ";
+  const turnoverColor = (kpis?.turnoverRate ?? 0) > 30 ? "#22C55E" : (kpis?.turnoverRate ?? 0) > 10 ? "#0F7BA0" : "#F59E0B";
+  const turnoverBg    = (kpis?.turnoverRate ?? 0) > 30 ? "rgba(34,197,94,0.1)" : (kpis?.turnoverRate ?? 0) > 10 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
+
+  const adrLabel = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "سريع الحركة" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "حركة طبيعية" : "بطيء الحركة";
+  const adrColor = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "#22C55E" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "#0F7BA0" : "#F59E0B";
+  const adrBg    = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "rgba(34,197,94,0.1)" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
+
+  const balColor = sd?.marketBalance === "higher_demand" ? "#22C55E" : sd?.marketBalance === "higher_supply" ? "#F59E0B" : "#0F7BA0";
+  const balBg    = sd?.marketBalance === "higher_demand" ? "rgba(34,197,94,0.1)" : sd?.marketBalance === "higher_supply" ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+
+  return (
+    <SectionContainer>
+      {/* Market Score */}
+      <MarketScoreWidget
+        score={ms?.score ?? 0}
+        label={ms?.label ?? "—"}
+        components={ms?.components ?? { activity: 0, diversity: 0, stability: 0 }}
+        explanation={ms?.explanation}
+        loading={loading} />
+
+      {/* KPI Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard label="إجمالي الإعلانات" value={loading ? "—" : formatNumber(kpis?.totalListings ?? 0)} color="#0F1C3F" loading={loading} />
+        <KpiCard label="إعلانات الأسبوع الماضي" value={loading ? "—" : formatNumber(kpis?.newLast7Days ?? 0)} color="#0F7BA0" loading={loading} />
+        <KpiCard label="إعلانات الشهر الماضي" value={loading ? "—" : formatNumber(kpis?.newLast30Days ?? 0)} color="#8B5CF6" loading={loading} />
+        <KpiCard label="إعلانات 90 يوم" value={loading ? "—" : formatNumber(kpis?.newLast90Days ?? 0)} color="#22C55E" loading={loading} />
+      </div>
+
+      {/* Market Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <IndicatorCard title="معدل دوران السوق" value={`${kpis?.turnoverRate ?? 0}%`}
+          status={turnoverLabel} statusColor={turnoverColor} statusBg={turnoverBg}
+          detail="نسبة الإعلانات الجديدة خلال 30 يوم من الإجمالي" icon={Activity} loading={loading} />
+        <IndicatorCard title="توازن العرض والطلب"
+          value={sd?.marketBalanceLabel ?? "—"}
+          status={`نسبة النشاط: ${sd?.activityRatio ?? "—"}`}
+          statusColor={balColor} statusBg={balBg}
+          detail="مقارنة الأسبوع الأخير بمعدل الشهر الماضي" icon={Scale} loading={loading} />
+        <IndicatorCard title="متوسط عمر الإعلان"
+          value={kpis?.avgDaysOnMarket ? `${kpis.avgDaysOnMarket} يوم` : "—"}
+          status={adrLabel} statusColor={adrColor} statusBg={adrBg}
+          detail="متوسط عدد الأيام منذ نشر الإعلان" icon={Clock} loading={loading} />
+      </div>
+    </SectionContainer>
+  );
+}
+
+// ── Section B: Price Intelligence ────────────────────────────────────────────
+
+function SectionB({ insights, trends, loading, loadingTrends, period, setPeriod }: {
+  insights?: InsightsData; trends?: TrendPoint[]; loading: boolean; loadingTrends: boolean;
+  period: string; setPeriod: (p: string) => void;
+}) {
+  const kpis = insights?.kpis;
+  const avg = kpis?.avgPrice ?? 0;
+  const med = kpis?.medianPrice ?? 0;
+  const skew = med > 0 ? avg / med : 1;
+  const skewLabel = skew > 1.2 ? "يميل للغالي" : skew > 1.05 ? "ميل طفيف" : "موزع بانتظام";
+  const skewColor = skew > 1.2 ? "#F59E0B" : skew > 1.05 ? "#0F7BA0" : "#22C55E";
+  const skewBg    = skew > 1.2 ? "rgba(245,158,11,0.1)" : skew > 1.05 ? "rgba(15,123,160,0.1)" : "rgba(34,197,94,0.1)";
+
+  const vol = med > 0 ? Math.round(((( kpis?.p75Price ?? 0) - (kpis?.p25Price ?? 0)) / med) * 100) : 0;
+  const volLabel = vol < 20 ? "مستقر" : vol < 45 ? "متوسط" : "متذبذب";
+  const volColor = vol < 20 ? "#22C55E" : vol < 45 ? "#F59E0B" : "#EF4444";
+  const volBg    = vol < 20 ? "rgba(34,197,94,0.1)" : vol < 45 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+
+  const devPct = kpis?.priceDeviationPct ?? 0;
+  const devLabel = Math.abs(devPct) < 5 ? "توافق عالٍ" : Math.abs(devPct) < 15 ? "فارق معتدل" : "فارق كبير";
+  const devColor = Math.abs(devPct) < 5 ? "#22C55E" : Math.abs(devPct) < 15 ? "#F59E0B" : "#EF4444";
+  const devBg    = Math.abs(devPct) < 5 ? "rgba(34,197,94,0.1)" : Math.abs(devPct) < 15 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+
+  return (
+    <SectionContainer>
+      {/* Price KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard label="متوسط السعر" value={loading ? "—" : formatCurrency(avg)} color="#0F7BA0" loading={loading} />
+        <KpiCard label="الوسيط" value={loading ? "—" : formatCurrency(med)} color="#0F1C3F" loading={loading} />
+        <KpiCard label="متوسط سعر المتر" value={loading ? "—" : formatCurrency(kpis?.avgPricePerSqm ?? 0)} color="#8B5CF6" sub="ريال/م²" loading={loading} />
+        <KpiCard label="الانحراف المعياري" value={loading ? "—" : formatCurrency(kpis?.priceStddev ?? 0)} color="#F59E0B" loading={loading} />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard label="أدنى سعر" value={loading ? "—" : formatCurrency(kpis?.minPrice ?? 0)} color="#22C55E" loading={loading} />
+        <KpiCard label="أعلى سعر" value={loading ? "—" : formatCurrency(kpis?.maxPrice ?? 0)} color="#EF4444" loading={loading} />
+        <KpiCard label="الربيع الأول (Q1)" value={loading ? "—" : formatCurrency(kpis?.p25Price ?? 0)} color="#64748B" loading={loading} />
+        <KpiCard label="الربيع الثالث (Q3)" value={loading ? "—" : formatCurrency(kpis?.p75Price ?? 0)} color="#64748B" loading={loading} />
+      </div>
+
+      {/* Price Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <IndicatorCard title="توزيع الأسعار" value={`${devPct > 0 ? "+" : ""}${devPct}%`}
+          status={devLabel} statusColor={devColor} statusBg={devBg}
+          detail="الفارق بين المتوسط والوسيط — يكشف تأثير العقارات الغالية" icon={BarChart3} loading={loading} />
+        <IndicatorCard title="ميل الأسعار"
+          status={skewLabel} statusColor={skewColor} statusBg={skewBg}
+          detail="وجود عقارات مرتفعة تشد المتوسط فوق الوسيط" icon={TrendingUp} loading={loading} />
+        <IndicatorCard title="تذبذب الأسعار" value={`${vol}%`}
+          status={volLabel} statusColor={volColor} statusBg={volBg}
+          detail="نطاق IQR كنسبة من الوسيط — مقياس تجانس السوق" icon={Activity} loading={loading} />
+      </div>
+
+      {/* Trend Chart */}
+      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+          <span className="text-[13px] font-bold text-foreground">مسار متوسط السعر</span>
+          <div className="flex gap-1">
+            {PERIOD_TABS.map(t => (
+              <button key={t.value} onClick={() => setPeriod(t.value)}
+                className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${period === t.value ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted/60"}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ height: 240 }}>
+          <TrendChart trends={trends} loading={loadingTrends} metric="avgPrice" />
+        </div>
+      </div>
+    </SectionContainer>
+  );
+}
+
+// ── Section C: Activity & Movement ───────────────────────────────────────────
+
+function SectionC({ insights, trends, loading, loadingTrends, period, setPeriod }: {
+  insights?: InsightsData; trends?: TrendPoint[]; loading: boolean; loadingTrends: boolean;
+  period: string; setPeriod: (p: string) => void;
+}) {
+  const kpis = insights?.kpis;
+  const act = computeActivityLevel(kpis?.newLast7Days ?? 0, kpis?.newLast30Days ?? 0);
+  const dir = computeMarketDirection(trends ?? []);
+  const DirIcon = dir.pct > 3 ? ArrowUpRight : dir.pct < -3 ? ArrowDownRight : Minus;
+
+  const adrColor = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "#22C55E" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "#0F7BA0" : "#F59E0B";
+  const adrBg    = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "rgba(34,197,94,0.1)" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
+  const adrLabel = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "سريع الحركة" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "حركة طبيعية" : "بطيء الحركة";
+
+  return (
+    <SectionContainer>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard label="إعلانات آخر 7 أيام" value={loading ? "—" : formatNumber(kpis?.newLast7Days ?? 0)} color="#0F7BA0" loading={loading} />
+        <KpiCard label="إعلانات آخر 30 يوم" value={loading ? "—" : formatNumber(kpis?.newLast30Days ?? 0)} color="#8B5CF6" loading={loading} />
+        <KpiCard label="إعلانات 90 يوم" value={loading ? "—" : formatNumber(kpis?.newLast90Days ?? 0)} color="#22C55E" loading={loading} />
+        <KpiCard label="متوسط الإضافة اليومية" value={loading ? "—" : ((kpis?.newLast30Days ?? 0) / 30).toFixed(1)} color="#F59E0B" sub="إعلان/يوم" loading={loading} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <IndicatorCard title="نشاط الإضافات" value={`نسبة ${act.ratio.toFixed(2)}`}
+          status={act.label} statusColor={act.color} statusBg={`${act.color}18`}
+          detail="مقارنة أسبوع الماضي بمعدل الأسابيع الأربعة" icon={Flame} loading={loading} />
+        <IndicatorCard title="اتجاه السوق (السعري)"
+          value={dir.pct !== 0 ? `${dir.pct > 0 ? "+" : ""}${dir.pct}%` : "ثابت"}
+          status={dir.label} statusColor={dir.color} statusBg={`${dir.color}18`}
+          detail="التغير في متوسط السعر من أول إلى آخر نقطة في مسار الاتجاه" icon={DirIcon} loading={loading} />
+        <IndicatorCard title="متوسط عمر الإعلان"
+          value={kpis?.avgDaysOnMarket ? `${kpis.avgDaysOnMarket} يوم` : "—"}
+          status={adrLabel} statusColor={adrColor} statusBg={adrBg}
+          detail="متوسط عدد الأيام منذ نشر الإعلان" icon={Clock} loading={loading} />
+      </div>
+
+      {/* Count trend chart */}
+      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+          <span className="text-[13px] font-bold text-foreground">مسار حجم الإعلانات</span>
+          <div className="flex gap-1">
+            {PERIOD_TABS.map(t => (
+              <button key={t.value} onClick={() => setPeriod(t.value)}
+                className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${period === t.value ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted/60"}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ height: 240 }}>
+          <TrendChart trends={trends} loading={loadingTrends} metric="count" />
+        </div>
+      </div>
+    </SectionContainer>
+  );
+}
+
+// ── Section D: Supply & Demand ────────────────────────────────────────────────
+
+function SectionD({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
+  const sd = insights?.supplyDemand;
+  const kpis = insights?.kpis;
+  const byListingType = insights?.byListingType ?? [];
+
+  const balColor = sd?.marketBalance === "higher_demand" ? "#22C55E" : sd?.marketBalance === "higher_supply" ? "#F59E0B" : "#0F7BA0";
+  const balBg    = sd?.marketBalance === "higher_demand" ? "rgba(34,197,94,0.1)" : sd?.marketBalance === "higher_supply" ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+
+  const pieData = [
+    { name: "للبيع",      value: kpis?.saleCount ?? 0 },
+    { name: "للإيجار",    value: kpis?.rentCount ?? 0 },
+    { name: "استثماري",   value: kpis?.investCount ?? 0 },
+  ].filter(d => d.value > 0);
+
+  return (
+    <SectionContainer>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KpiCard label="إجمالي العرض" value={loading ? "—" : formatNumber(sd?.totalSupply ?? 0)} color="#0F7BA0" loading={loading} />
+        <KpiCard label="عرض جديد (30 يوم)" value={loading ? "—" : formatNumber(sd?.newSupply ?? 0)} color="#22C55E" loading={loading} />
+        <KpiCard label="نسبة البيع" value={loading ? "—" : `${kpis?.saleCount && kpis.totalListings ? Math.round((kpis.saleCount/kpis.totalListings)*100) : 0}%`} color="#8B5CF6" loading={loading} />
+        <KpiCard label="نسبة الإيجار" value={loading ? "—" : `${kpis?.rentCount && kpis.totalListings ? Math.round((kpis.rentCount/kpis.totalListings)*100) : 0}%`} color="#F97316" loading={loading} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Supply/Demand Balance */}
+        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+          <div className="text-[13px] font-bold text-foreground mb-4">توازن العرض والطلب</div>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: balBg }}>
+              <span className="text-[13px] font-bold" style={{ color: balColor }}>{sd?.marketBalanceLabel ?? "—"}</span>
+              <span className="text-[12px] text-muted-foreground">نسبة النشاط: {sd?.activityRatio ?? "—"}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-muted/30 text-center">
+                <div className="text-[11px] text-muted-foreground mb-1">أسبوع الماضي</div>
+                <div className="text-2xl font-extrabold text-primary">{sd?.newLast7Days ?? "—"}</div>
+                <div className="text-[11px] text-muted-foreground">إعلان</div>
+              </div>
+              <div className="p-3 rounded-xl bg-muted/30 text-center">
+                <div className="text-[11px] text-muted-foreground mb-1">معدل الشهر (أسبوعي)</div>
+                <div className="text-2xl font-extrabold text-primary">
+                  {sd?.newSupply ? Math.round(sd.newSupply / 4) : "—"}
+                </div>
+                <div className="text-[11px] text-muted-foreground">إعلان/أسبوع</div>
+              </div>
+            </div>
+            <div className="text-[11px] text-muted-foreground text-center">
+              الفارق: {sd?.supplyDemandGap !== undefined ? (sd.supplyDemandGap > 0 ? `+${sd.supplyDemandGap}` : sd.supplyDemandGap) : "—"} إعلان عن معدل الأسابيع
+            </div>
+          </div>
+        </div>
+
+        {/* Listing Type Pie */}
+        <ChartCard title="توزيع أنواع الإعلانات" height={200}>
+          {loading ? <Skeleton className="w-full h-full rounded-xl" /> : pieData.length === 0 ? <EmptyState text="لا توجد بيانات" /> : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${Math.round(percent * 100)}%`} labelLine={false}>
+                  {pieData.map((_: unknown, i: number) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
+      </div>
+
+      {/* Listing type breakdown */}
+      {byListingType.length > 0 && (
+        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+          <div className="text-[13px] font-bold text-foreground mb-4">تفصيل أنواع الإعلانات</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {byListingType.map((t, i) => (
+              <div key={t.listingType} className="p-3 rounded-xl border border-border/40 bg-muted/20">
+                <div className="text-[11px] text-muted-foreground mb-1">{t.label}</div>
+                <div className="text-xl font-extrabold tabular-nums" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{t.count}</div>
+                <div className="text-[11px] text-muted-foreground">{t.percentage}% من السوق</div>
+                <div className="text-[11px] font-bold text-foreground mt-1">{formatCurrency(t.avgPrice)} متوسط</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </SectionContainer>
+  );
+}
+
+// ── Section E: Property Types ─────────────────────────────────────────────────
+
+function SectionE({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
+  const byType = [...(insights?.byPropertyType ?? [])].sort((a, b) => b.count - a.count).slice(0, 10);
+  const bySqm  = [...(insights?.byPropertyType ?? [])].filter(t => t.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 10);
+
+  return (
+    <SectionContainer>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ChartCard title="أكثر الأنواع إعلاناً" height={280}>
+          {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
+            <HBarChart data={byType.map(t => ({ ...t, name: t.propertyType }))}
+              dataKey="count" nameKey="name" label="عدد الإعلانات" formatter={v => formatNumber(v)} />}
+        </ChartCard>
+        <ChartCard title="متوسط سعر المتر حسب النوع" height={280}>
+          {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
+            <HBarChart data={bySqm.map(t => ({ ...t, name: t.propertyType }))}
+              dataKey="avgPricePerSqm" nameKey="name" label="سعر المتر" />}
+        </ChartCard>
+      </div>
+
+      {byType.length > 0 && (
+        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+          <div className="text-[13px] font-bold text-foreground mb-4">تفاصيل أنواع العقارات</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {byType.map((t, i) => (
+              <div key={t.propertyType} className="p-3 rounded-xl border border-border/40 hover:border-primary/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: BAR_COLORS[i % BAR_COLORS.length] }} />
+                  <span className="text-[12px] font-bold text-foreground truncate">{t.propertyType}</span>
+                </div>
+                <div className="text-xl font-extrabold tabular-nums" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{t.count}</div>
+                <div className="text-[11px] text-muted-foreground">{t.percentage}% · متوسط {formatCurrency(t.avgPrice)}</div>
+                {t.avgPricePerSqm > 0 && <div className="text-[11px] text-muted-foreground">{formatCurrency(t.avgPricePerSqm)}/م²</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </SectionContainer>
+  );
+}
+
+// ── Section F: Location Intelligence ─────────────────────────────────────────
+
+function SectionF({ insights, loading, distSort, setDistSort }: {
+  insights?: InsightsData; loading: boolean; distSort: string; setDistSort: (s: string) => void;
+}) {
+  const byCity = [...(insights?.byCity ?? [])].sort((a, b) => b.count - a.count).slice(0, 10);
+  const byDistrict = [...(insights?.byDistrict ?? [])];
+  const sortedDistricts = useMemo(() => {
+    const arr = [...byDistrict];
+    if (distSort === "price") return arr.sort((a, b) => b.avgPrice - a.avgPrice).slice(0, 10);
+    if (distSort === "sqm") return arr.sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 10);
+    return arr.sort((a, b) => b.count - a.count).slice(0, 10);
+  }, [byDistrict, distSort]);
+
+  const topBudget   = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 3);
+  const topPremium  = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 3);
+
+  return (
+    <SectionContainer>
+      {/* Quick highlights */}
+      {(topBudget.length > 0 || topPremium.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {topBudget.length > 0 && (
+            <div className="bg-card rounded-[22px] border border-emerald-200/60 p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <Star className="w-4 h-4 text-emerald-600" />
+                </div>
+                <span className="text-[13px] font-bold text-foreground">أحياء الفرص</span>
+                <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">أقل سعر للمتر</span>
+              </div>
+              <div className="space-y-2">
+                {topBudget.map((d, i) => (
+                  <div key={d.district} className="flex items-center justify-between">
+                    <span className="text-[13px] font-bold text-foreground">
+                      <span className="text-emerald-400 ml-2">{i + 1}.</span>
+                      {d.district} <span className="text-muted-foreground font-normal text-[11px]">({d.city})</span>
+                    </span>
+                    <span className="text-[13px] font-extrabold text-emerald-600 tabular-nums">{formatCurrency(d.avgPricePerSqm)}/م²</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {topPremium.length > 0 && (
+            <div className="bg-card rounded-[22px] border border-purple-200/60 p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center">
+                  <Award className="w-4 h-4 text-purple-600" />
+                </div>
+                <span className="text-[13px] font-bold text-foreground">أحياء بريميوم</span>
+                <span className="text-[11px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full">أعلى سعر للمتر</span>
+              </div>
+              <div className="space-y-2">
+                {topPremium.map((d, i) => (
+                  <div key={d.district} className="flex items-center justify-between">
+                    <span className="text-[13px] font-bold text-foreground">
+                      <span className="text-purple-400 ml-2">{i + 1}.</span>
+                      {d.district} <span className="text-muted-foreground font-normal text-[11px]">({d.city})</span>
+                    </span>
+                    <span className="text-[13px] font-extrabold text-purple-600 tabular-nums">{formatCurrency(d.avgPricePerSqm)}/م²</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Cities chart */}
+      <ChartCard title="أبرز المدن — متوسط سعر المتر" height={280}>
+        {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
+          byCity.length === 0 ? <EmptyState text="لا توجد بيانات للمدن" /> :
+          <HBarChart data={byCity.map(c => ({ ...c, name: c.city }))}
+            dataKey="avgPricePerSqm" nameKey="name" label="سعر المتر" />}
+      </ChartCard>
+
+      {/* Districts table */}
+      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <span className="text-[13px] font-bold text-foreground">تحليل الأحياء</span>
+          <div className="flex gap-1">
+            {[{ v: "activity", l: "الأكثر نشاطاً" }, { v: "price", l: "الأعلى سعراً" }, { v: "sqm", l: "سعر المتر" }].map(s => (
+              <button key={s.v} onClick={() => setDistSort(s.v)}
+                className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${distSort === s.v ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted/60"}`}>
+                {s.l}
+              </button>
+            ))}
+          </div>
+        </div>
+        {loading ? <Skeleton className="h-40 w-full rounded-xl" /> :
+         sortedDistricts.length === 0 ? <EmptyState text="لا توجد بيانات للأحياء" /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/40">
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2 pr-2">#</th>
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2">الحي</th>
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2">المدينة</th>
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2">الإعلانات</th>
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2">متوسط السعر</th>
+                  <th className="text-right text-[11px] font-bold text-muted-foreground pb-2">سعر المتر</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDistricts.map((d, i) => (
+                  <tr key={`${d.district}-${d.city}`} className="border-b border-border/20 hover:bg-muted/20 transition-colors">
+                    <td className="py-2.5 pr-2 text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
+                    <td className="py-2.5 font-bold text-[13px]">{d.district}</td>
+                    <td className="py-2.5 text-muted-foreground text-[12px]">{d.city}</td>
+                    <td className="py-2.5 tabular-nums font-bold" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{d.count}</td>
+                    <td className="py-2.5 tabular-nums text-[12px]">{formatCurrency(d.avgPrice)}</td>
+                    <td className="py-2.5 tabular-nums text-[12px] font-bold">{d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}<span className="text-muted-foreground font-normal">/م²</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </SectionContainer>
+  );
+}
+
+// ── Section G: Smart Insights ─────────────────────────────────────────────────
+
+function SectionG({ insights, loading, filters }: { insights?: InsightsData; loading: boolean; filters: AnalyticsFilters }) {
+  const smartInsights = insights?.smartInsights ?? [];
+  const kpis = insights?.kpis;
+  const hasData = (kpis?.totalListings ?? 0) > 0;
+
+  const buyerRec = useMemo(() => {
+    if (!hasData || (kpis?.totalListings ?? 0) < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
+    const parts: string[] = [];
+    const byD = insights?.byDistrict ?? [];
+    const avgSqm = kpis?.avgPricePerSqm ?? 0;
+    const cheap = byD.filter(d => d.avgPricePerSqm > 0 && avgSqm > 0 && d.avgPricePerSqm < avgSqm * 0.9);
+    if (cheap.length > 0) parts.push(`أفضل قيمة للمال في: ${cheap.slice(0, 2).map(d => d.district).join(" و")}.`);
+    const topT = insights?.byPropertyType?.[0];
+    if (topT) parts.push(`الأوفر توفراً: ${topT.propertyType} (${topT.percentage}% من الإعلانات).`);
+    if (parts.length === 0) parts.push("البيانات كافية لقرار مدروس — تحقق من الأحياء والأسعار في الفئات المختلفة.");
+    return parts.join(" ");
+  }, [insights, kpis, hasData]);
+
+  const marketerRec = useMemo(() => {
+    if (!hasData || (kpis?.totalListings ?? 0) < 3) return "ستتحسن توصيات التسعير مع زيادة الإعلانات.";
+    const avg = kpis?.avgPrice ?? 0;
+    const med = kpis?.medianPrice ?? 0;
+    if (!avg || !med) return "بيانات التسعير غير كافية بعد.";
+    const skew = avg / med;
+    return skew > 1.15
+      ? `المتوسط (${formatCurrency(avg)}) أعلى من الوسيط (${formatCurrency(med)}) — سعّر قريباً من الوسيط لبيع أسرع.`
+      : skew < 0.88
+      ? `الوسيط أعلى — يمكنك التسعير فوق المتوسط دون الخروج من السوق.`
+      : `السوق متوازن — ضع سعرك ضمن ±10% من الوسيط (${formatCurrency(med)}).`;
+  }, [kpis, hasData]);
+
+  return (
+    <SectionContainer>
+      {/* Insights list */}
+      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Zap className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <div className="text-[13px] font-bold text-foreground">ملاحظات ذكية</div>
+            <div className="text-[11px] text-muted-foreground">مستخلصة من بيانات السوق الحالية</div>
+          </div>
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}</div>
+        ) : smartInsights.length === 0 ? (
+          <EmptyState text="لا توجد بيانات كافية لاستخلاص ملاحظات ذكية" />
+        ) : (
+          <div className="space-y-2">
+            {smartInsights.map((insight, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
+                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-[10px] font-extrabold text-primary">{i + 1}</span>
+                </div>
+                <p className="text-[13px] text-foreground leading-relaxed">{insight}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Role-based recommendations */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-card rounded-[22px] border border-blue-200/60 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Home className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <div className="text-[13px] font-bold text-foreground">توصية للمشتري / المستأجر</div>
+            </div>
+          </div>
+          {loading ? <Skeleton className="h-16 w-full rounded-xl" /> :
+            <p className="text-[13px] text-foreground leading-relaxed">{buyerRec}</p>}
+        </div>
+        <div className="bg-card rounded-[22px] border border-emerald-200/60 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <Target className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <div className="text-[13px] font-bold text-foreground">توصية للمُسوّق / البائع</div>
+            </div>
+          </div>
+          {loading ? <Skeleton className="h-16 w-full rounded-xl" /> :
+            <p className="text-[13px] text-foreground leading-relaxed">{marketerRec}</p>}
+        </div>
+      </div>
+
+      {/* Data quality notice */}
+      <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200/60">
+        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="text-[12px] text-amber-700 leading-relaxed">
+          <strong>ملاحظة:</strong> جميع المؤشرات مستخلصة من إعلانات المنصة فقط وتعكس نشاط المنصة — وليست بيانات السوق الشاملة. كلما زادت الإعلانات، كانت التحليلات أكثر دقة.
+          {filters.city && <span> النطاق المحدد: <strong>{filters.city}</strong>{filters.district && ` — ${filters.district}`}.</span>}
+        </div>
+      </div>
+    </SectionContainer>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function Analytics() {
   const [section, setSection] = useState<SectionId>("A");
   const [period, setPeriod] = useState("month");
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
-  const [propertyType, setPropertyType] = useState("");
-  const [listingType, setListingType] = useState("");
-  const [districtSort, setDistrictSort] = useState("price");
-  const [userRole, setUserRole] = useState<"buyer" | "marketer" | "provider">("buyer");
+  const [distSort, setDistSort] = useState("activity");
+  const [filters, setFilters] = useState<AnalyticsFilters>({});
 
   useEffect(() => {
     document.title = "تحليلات السوق – عقار إنسايت";
     return () => { document.title = "عقار إنسايت"; };
   }, []);
 
-  const queryStr = useMemo(() => {
-    const p = new URLSearchParams();
-    if (city) p.set("city", city);
-    if (district) p.set("district", district);
-    if (propertyType) p.set("propertyType", propertyType);
-    if (listingType) p.set("listingType", listingType);
-    return p.toString();
-  }, [city, district, propertyType, listingType]);
+  const { insights, isLoading: loadingInsights } = useAnalytics(filters);
+  const { data: trends, isLoading: loadingTrends } = useAnalyticsTrends(filters, period);
+  const { data: filterOpts } = useAnalyticsFilterOptions();
 
-  const { data: insights, isLoading: loadingInsights } = useQuery<InsightsData>({
-    queryKey: ["mkt-insights", queryStr],
-    queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-insights${queryStr ? `?${queryStr}` : ""}`);
-      if (!res.ok) throw new Error("فشل");
-      return res.json();
-    },
-    staleTime: 60_000,
-  });
-
-  const { data: trends, isLoading: loadingTrends } = useQuery<TrendPoint[]>({
-    queryKey: ["mkt-trends", queryStr, period],
-    queryFn: async () => {
-      const p = new URLSearchParams(queryStr);
-      p.set("period", period);
-      const res = await fetch(`${BASE()}/api/analytics/listings-trends?${p.toString()}`);
-      if (!res.ok) throw new Error("فشل");
-      return res.json();
-    },
-    staleTime: 60_000,
-  });
-
-  const { data: filterOpts } = useQuery<FilterOptions>({
-    queryKey: ["mkt-filter-options"],
-    queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-filter-options`);
-      if (!res.ok) throw new Error("فشل");
-      return res.json();
-    },
-    staleTime: 300_000,
-  });
-
-  // ── Computed indicators ──────────────────────────────────────────────────────
   const kpis = insights?.kpis;
-  const hasData = (kpis?.totalListings ?? 0) > 0;
 
-  const avgP   = kpis?.avgPrice ?? 0;
-  const medP   = kpis?.medianPrice ?? 0;
-  const avgSqm = kpis?.avgPricePerSqm ?? 0;
-  const p25    = kpis?.p25Price ?? 0;
-  const p75    = kpis?.p75Price ?? 0;
-  const new7   = kpis?.newLast7Days ?? 0;
-  const new30  = kpis?.newLast30Days ?? 0;
-  const tot    = kpis?.totalListings ?? 0;
-  const saleC  = kpis?.saleCount ?? 0;
-
-  // Price volatility: IQR as % of median (platform-internal, no external data)
-  const volatility = medP > 0 ? Math.round(((p75 - p25) / medP) * 100) : 0;
-  const stabilityLabel = volatility < 20 ? "مستقر" : volatility < 45 ? "متوسط التذبذب" : "متذبذب";
-  const stabilityColor = volatility < 20 ? "#22C55E" : volatility < 45 ? "#F59E0B" : "#EF4444";
-  const stabilityBg    = volatility < 20 ? "rgba(34,197,94,0.1)" : volatility < 45 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
-
-  // Market direction from trend data
-  const trendLen  = trends?.length ?? 0;
-  const firstAvg  = trends?.[0]?.avgPrice ?? 0;
-  const lastAvg   = trends?.[trendLen - 1]?.avgPrice ?? 0;
-  const priceChange = firstAvg > 0 ? Math.round(((lastAvg - firstAvg) / firstAvg) * 100) : 0;
-  const marketDirLabel = priceChange > 3 ? "صاعد ↑" : priceChange < -3 ? "هابط ↓" : "مستقر →";
-  const marketDirColor = priceChange > 3 ? "#22C55E" : priceChange < -3 ? "#EF4444" : "#0F7BA0";
-  const marketDirBg    = priceChange > 3 ? "rgba(34,197,94,0.1)" : priceChange < -3 ? "rgba(239,68,68,0.1)" : "rgba(15,123,160,0.1)";
-  const marketDirIcon  = priceChange > 3 ? TrendingUp : priceChange < -3 ? TrendingDown : Minus;
-
-  // نشاط الإعلانات الأسبوعي (ليس الطلب — نحن نقيس نشاط العرض فقط)
-  const weeklyRate    = new30 > 0 ? new30 / 4 : 0;
-  const demandRate    = weeklyRate > 0 ? new7 / weeklyRate : 0;
-  const activityLabel = demandRate > 1.2 ? "نشاط مرتفع" : demandRate < 0.8 ? "نشاط هادئ" : "نشاط عادي";
-  const activityColor = demandRate > 1.2 ? "#22C55E" : demandRate < 0.8 ? "#F59E0B" : "#0F7BA0";
-  const activityBg    = demandRate > 1.2 ? "rgba(34,197,94,0.1)" : demandRate < 0.8 ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
-  // نحتفظ بالمتغيرات القديمة للأجزاء التي تعتمد عليها (Section D)
-  const demandLabel = activityLabel;
-  const demandColor = activityColor;
-  const demandBg    = activityBg;
-
-  // معدل دوران السوق: نسبة الإعلانات الجديدة هذا الشهر من الإجمالي
-  const turnoverRate  = kpis?.turnoverRate ?? (tot > 0 ? Math.round((new30 / tot) * 100) : 0);
-  const turnoverLabel = turnoverRate > 30 ? "سوق متحرك" : turnoverRate > 10 ? "نشاط معتدل" : "سوق هادئ";
-  const turnoverColor = turnoverRate > 30 ? "#22C55E" : turnoverRate > 10 ? "#0F7BA0" : "#F59E0B";
-  const turnoverBg    = turnoverRate > 30 ? "rgba(34,197,94,0.1)" : turnoverRate > 10 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
-
-  // تشتت الأسعار: نطاق IQR كنسبة من الوسيط (مقياس تنوع الأسعار — ليس "مخاطرة")
-  const spreadLabel = volatility < 20 ? "أسعار متجانسة" : volatility < 45 ? "تنوع معتدل" : "أسعار متنوعة";
-  const spreadColor = volatility < 20 ? "#22C55E" : volatility < 45 ? "#0F7BA0" : "#F59E0B";
-  const spreadBg    = volatility < 20 ? "rgba(34,197,94,0.1)" : volatility < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
-
-  // ميل توزيع الأسعار: هل يوجد عقارات غالية تشد المتوسط للأعلى؟ (skewness indicator)
-  // skewRatio = avgP / medP: إذا > 1.15 يعني وجود إعلانات غالية تؤثر على المتوسط
-  const skewRatio = medP > 0 ? avgP / medP : 1;
-  const skewLabel = skewRatio > 1.20 ? "يميل للغالي" : skewRatio > 1.05 ? "ميل طفيف" : "موزع بانتظام";
-  const skewColor = skewRatio > 1.20 ? "#F59E0B" : skewRatio > 1.05 ? "#0F7BA0" : "#22C55E";
-  const skewBg    = skewRatio > 1.20 ? "rgba(245,158,11,0.1)" : skewRatio > 1.05 ? "rgba(15,123,160,0.1)" : "rgba(34,197,94,0.1)";
-  // للتوافق مع بقية الكود
-  const fairRatio = skewRatio;
-  const fairLabel = skewLabel;
-  const fairColor = skewColor;
-  const fairBg    = skewBg;
-
-  // Investment opportunity: districts below market price-per-sqm average
-  const byDistrict = insights?.byDistrict ?? [];
-  const cheapDistricts = byDistrict.filter(d => d.avgPricePerSqm > 0 && avgSqm > 0 && d.avgPricePerSqm < avgSqm * 0.9);
-  const investLabel = cheapDistricts.length > 0 ? "فرصة متاحة" : "السوق متوازن";
-  const investColor = cheapDistricts.length > 0 ? "#22C55E" : "#0F7BA0";
-  const investBg    = cheapDistricts.length > 0 ? "rgba(34,197,94,0.1)" : "rgba(15,123,160,0.1)";
-
-  // ── Role-based insight computations ─────────────────────────────────────────
-  // Shared
-  const topCheapDistricts4 = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 4);
-  const topActiveDistricts4 = [...byDistrict].sort((a, b) => b.count - a.count).slice(0, 4);
-  const hotPropertyTypes = [...(insights?.byPropertyType ?? [])].sort((a, b) => b.percentage - a.percentage).slice(0, 4);
-
-  // Buyer
-  const buyTimingStatus = priceChange < -3 ? "ممتاز للشراء" : priceChange < 2 ? "مناسب للشراء" : "السوق صاعد";
-  const buyTimingColor  = priceChange < -3 ? "#22C55E" : priceChange < 2 ? "#0F7BA0" : "#F59E0B";
-  const buyTimingDesc   = priceChange < -5
-    ? `الأسعار انخفضت ${Math.abs(priceChange)}% مؤخراً — فرصة للدخول قبل التعافي.`
-    : priceChange < 0
-    ? `الأسعار في تراجع طفيف — مناسب للمفاوضة والحصول على سعر أفضل.`
-    : priceChange < 5
-    ? `الأسعار مستقرة — السوق معقول ومناسب للشراء.`
-    : `السوق في ارتفاع (${priceChange}%) — سارع في القرار أو انتظر تصحيحاً.`;
-  const buyerRecommendation = (() => {
-    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
-    const parts: string[] = [];
-    if (priceChange < -3) parts.push(`الأسعار في تراجع — نافذة جيدة للشراء.`);
-    else if (priceChange > 5) parts.push(`الأسعار ترتفع — سارع لاتخاذ قرارك.`);
-    else parts.push(`السوق في حالة استقرار نسبي.`);
-    if (topCheapDistricts4.length > 0) parts.push(`أفضل قيمة للمال في ${topCheapDistricts4.slice(0, 2).map(d => d.district).join(" و")}.`);
-    if (hotPropertyTypes[0]) parts.push(`النوع الأوفر توفراً: ${hotPropertyTypes[0].propertyType} (${hotPropertyTypes[0].percentage}% من الإعلانات).`);
-    return parts.join(" ");
-  })();
-
-  // Marketer
-  const pricingSkew     = (avgP > 0 && medP > 0) ? avgP / medP : 1;
-  const pricingTipColor = pricingSkew > 1.15 ? "#F59E0B" : pricingSkew < 0.88 ? "#22C55E" : "#0F7BA0";
-  const pricingTipBadge = pricingSkew > 1.15 ? "سعّر أقل من المتوسط" : pricingSkew < 0.88 ? "هامش للرفع" : "السوق متوازن";
-  const pricingTip = avgP > 0 && medP > 0
-    ? pricingSkew > 1.15
-      ? `المتوسط (${formatCurrency(avgP)}) أعلى من الوسيط (${formatCurrency(medP)}) — وجود إعلانات مرتفعة تشوّه السوق. ضع سعرك قريباً من الوسيط لتحقيق بيع أسرع.`
-      : pricingSkew < 0.88
-      ? `معظم الإعلانات منخفضة السعر — هامش للتسعير فوق المتوسط دون الخروج من السوق.`
-      : `الأسعار متوازنة — ضع سعرك ضمن ±10% من الوسيط (${formatCurrency(medP)}) للحصول على أفضل استجابة.`
-    : "بيانات التسعير غير كافية بعد.";
-  const listingMomentumLabel = demandRate > 1.3 ? "نشاط مرتفع" : demandRate > 1 ? "نشاط جيد" : demandRate > 0.7 ? "معتدل" : "هادئ";
-  const listingMomentumColor = demandRate > 1.3 ? "#22C55E" : demandRate > 1 ? "#0F7BA0" : demandRate > 0.7 ? "#F59E0B" : "#EF4444";
-  const listingMomentumDesc  = demandRate > 1.3
-    ? `نشاط إضافات مرتفع — الإعلانات تلقى استجابة أسرع هذا الأسبوع.`
-    : demandRate > 1
-    ? `السوق نشط — وقت مناسب لنشر إعلاناتك.`
-    : demandRate > 0.7
-    ? `النشاط معتدل — ركّز على جودة الصور والوصف لتميّز إعلانك.`
-    : `السوق هادئ — ركّز على تحسين العروض لجذب المهتمين.`;
-  const cityAvgCount  = (insights?.byCity?.length ?? 0) > 0 ? tot / (insights!.byCity.length) : 0;
-  const lowSupplyCities = [...(insights?.byCity ?? [])].filter(c => c.count < cityAvgCount * 0.6).sort((a, b) => a.count - b.count).slice(0, 3);
-  const marketerRecommendation = (() => {
-    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
-    const parts: string[] = [];
-    parts.push(pricingSkew > 1.15 ? "التسعير عند أو أسفل الوسيط يزيد فرص البيع." : "التسعير ضمن نطاق السوق يضمن الظهور الجيد.");
-    if (lowSupplyCities.length > 0) parts.push(`مناطق ${lowSupplyCities.map(c => c.city).join("، ")} فيها عدد قليل من الإعلانات — منافسة أقل.`);
-    if (demandRate > 1.2) parts.push(`السوق نشط — الوقت مناسب لنشر إعلانات جديدة.`);
-    if (hotPropertyTypes[0]) parts.push(`النوع الأعلى طلباً: ${hotPropertyTypes[0].propertyType} — ينصح بالتركيز عليه.`);
-    return parts.join(" ");
-  })();
-
-  // Service Provider
-  const highValueTypes = [...(insights?.byPropertyType ?? [])].filter(t => t.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 3);
-  const growthSignal  = demandRate > 1.2 ? "نمو إيجابي" : demandRate < 0.8 ? "تباطؤ نسبي" : "مستقر";
-  const growthColor   = demandRate > 1.2 ? "#22C55E" : demandRate < 0.8 ? "#F59E0B" : "#0F7BA0";
-  const providerGrowthDesc = demandRate > 1.2
-    ? `السوق ينمو بمعدل ${Math.round(demandRate * 100)}% مقارنة بالمعدل الطبيعي — الطلب على الخدمات العقارية في تصاعد.`
-    : demandRate < 0.8
-    ? `النشاط أبطأ من المعتاد — ركّز على الجودة وبناء العلاقات مع المسوّقين.`
-    : `السوق مستقر — حافظ على حضورك وتابع الأحياء النشطة.`;
-  const providerRecommendation = (() => {
-    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
-    const parts: string[] = [];
-    if (topActiveDistricts4.length > 0) parts.push(`ركّز تسويقك في ${topActiveDistricts4.slice(0, 2).map(d => d.district).join(" و")} حيث النشاط العقاري أعلى.`);
-    if (highValueTypes.length > 0) parts.push(`خدمات ${highValueTypes[0].propertyType} مجدية مالياً لارتفاع قيمتها (${formatCurrency(highValueTypes[0].avgPricePerSqm)}/م²).`);
-    if (demandRate > 1.2) parts.push(`السوق في نمو — توقع طلباً متزايداً على التشطيب والصيانة.`);
-    else parts.push(`ركّز على تحسين جودة خدماتك وبناء قاعدة عملاء راسخة.`);
-    return parts.join(" ");
-  })();
-
-  // District sorting for section B
-  const sortedDistricts = useMemo(() => {
-    const arr = [...byDistrict];
-    if (districtSort === "price")    return arr.sort((a, b) => b.avgPrice - a.avgPrice);
-    if (districtSort === "sqm")      return arr.sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm);
-    return arr.sort((a, b) => b.count - a.count);
-  }, [byDistrict, districtSort]);
-
-  // Market summary for section D
-  const marketSummary = (() => {
-    if (!hasData) return "البيانات الحالية غير كافية لإصدار ملخص دقيق.";
-    const parts: string[] = [];
-    if (priceChange > 3) parts.push(`السوق في اتجاه صاعد بنسبة ${priceChange}% خلال الفترة المحددة.`);
-    else if (priceChange < -3) parts.push(`الأسعار في تراجع نسبي بنسبة ${Math.abs(priceChange)}%.`);
-    else parts.push("الأسعار مستقرة نسبيًا خلال الفترة المحددة.");
-    if (volatility < 20) parts.push("تذبذب الأسعار منخفض مما يعكس سوقًا متجانسًا.");
-    else if (volatility > 45) parts.push("يُلاحظ تفاوت كبير في الأسعار، ينصح بالدراسة الدقيقة قبل أي قرار.");
-    if (demandRate > 1.2) parts.push("نشاط الإضافات الأسبوعية مرتفع مما يشير إلى طلب قوي.");
-    if (cheapDistricts.length > 0) {
-      parts.push(`رُصدت فرصة سعرية في ${cheapDistricts.length} ${cheapDistricts.length === 1 ? "حي" : "أحياء"} تقل أسعارها عن متوسط السوق.`);
-    }
-    return parts.join(" ");
-  })();
-
-  // Recommendation text for section D
-  const recommendation = (() => {
-    if (!hasData) return "البيانات الحالية غير كافية لإصدار توصية. أضف المزيد من الإعلانات لتفعيل التحليل.";
-    if (tot < 3) return "البيانات الحالية محدودة جدًا. نتائج التحليل ستتحسن مع تراكم الإعلانات.";
-    if (priceChange > 5 && demandRate > 1.2) return "السوق في زخم إيجابي — ارتفاع في الأسعار مع نشاط إضافات مرتفع. قد يكون الوقت مناسباً للبيع.";
-    if (priceChange < -5) return "الأسعار في تراجع — قد يمثل ذلك فرصة شراء بأسعار أقل من المعتاد.";
-    if (volatility > 50) return "السوق يُظهر تفاوتًا سعريًا كبيرًا — ينصح بمقارنة الأحياء بعناية قبل اتخاذ أي قرار.";
-    if (cheapDistricts.length > 0) return `توجد فرصة سعرية في ${cheapDistricts.map(d => d.district).slice(0, 2).join(" و")} حيث الأسعار أقل من متوسط السوق.`;
-    return "السوق مستقر نسبيًا بناءً على البيانات المتاحة. يُنصح بمتابعة الاتجاهات دوريًا لاتخاذ قرار مدروس.";
-  })();
-
-  const filteredDistricts = city
-    ? (filterOpts?.districts ?? []).filter(d => d.city === city)
-    : (filterOpts?.districts ?? []);
-
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Layout>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="space-y-6 pb-14"
-        dir="rtl"
-      >
-        {/* ── Hero ──────────────────────────────────────────────────────── */}
-        <div
-          className="relative rounded-[2rem] overflow-hidden p-8 md:p-10"
-          style={{ background: "linear-gradient(140deg, #0F1C3F 0%, #0F1C3F 55%, #0F7BA0 100%)" }}
-        >
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.035 }} />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_top_right,rgba(201,168,76,0.12),transparent)] pointer-events-none" />
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-bold mb-4">
-              <BarChart3 className="w-3.5 h-3.5" />
-              مبني حصراً على بيانات المنصة الداخلية
+      <div className="max-w-6xl mx-auto px-4 py-8">
+
+        {/* Page Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">مؤشرات السوق العقاري</h1>
-            <p className="text-white/70 mt-2 text-sm max-w-xl">تحليل شامل مبني على إعلانات المنصة — لا يعتمد على أي بيانات خارجية أو حكومية</p>
+            <div>
+              <h1 className="text-2xl font-extrabold text-foreground">تحليلات السوق العقاري</h1>
+              <p className="text-[13px] text-muted-foreground">
+                {loadingInsights ? "جاري التحميل..." : kpis?.totalListings
+                  ? `${formatNumber(kpis.totalListings)} إعلان نشط • ${formatNumber(kpis.newLast30Days)} إعلان الشهر الماضي`
+                  : "لا توجد إعلانات نشطة حالياً"}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* ── Filters ───────────────────────────────────────────────────── */}
-        <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <select value={city} onChange={e => { setCity(e.target.value); setDistrict(""); }} className={INPUT_CLS}>
-              <option value="">كل المدن</option>
-              {(filterOpts?.cities ?? []).map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <select value={district} onChange={e => setDistrict(e.target.value)} className={INPUT_CLS}>
-              <option value="">كل الأحياء</option>
-              {filteredDistricts.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
-            </select>
-            <select value={propertyType} onChange={e => setPropertyType(e.target.value)} className={INPUT_CLS}>
-              <option value="">كل الأنواع</option>
-              {(filterOpts?.propertyTypes ?? []).map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select value={listingType} onChange={e => setListingType(e.target.value)} className={INPUT_CLS}>
-              <option value="">كل الصفقات</option>
-              {LISTING_TYPE_GROUPS.map(g => (
-                <optgroup key={g.label} label={`── ${g.label}`}>
-                  {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-          {(city || district || propertyType || listingType) && (
-            <button
-              onClick={() => { setCity(""); setDistrict(""); setPropertyType(""); setListingType(""); }}
-              className="mt-3 text-xs text-muted-foreground hover:text-destructive border border-border rounded-lg px-3 py-1.5 transition-all"
-            >
-              مسح الفلاتر
-            </button>
-          )}
+        {/* Filters */}
+        <div className="mb-5">
+          <FiltersPanel filters={filters} onChange={setFilters} filterOpts={filterOpts} />
         </div>
 
-        {/* ── Section Tabs ──────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {/* Section Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-hide">
           {SECTION_TABS.map(tab => {
             const Icon = tab.icon;
-            const active = section === tab.id;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setSection(tab.id)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all border shrink-0"
-                style={active ? {
-                  background: "#0F7BA0",
-                  color: "#fff",
-                  borderColor: "#0F7BA0",
-                } : {
-                  background: "transparent",
-                  color: "var(--muted-foreground)",
-                  borderColor: "var(--border)",
-                }}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+              <button key={tab.id} onClick={() => setSection(tab.id as SectionId)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all shrink-0 ${
+                  section === tab.id
+                    ? "bg-primary text-white shadow-md"
+                    : "bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/40"
+                }`}>
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════
-            SECTION A — تحليل السوق
-        ══════════════════════════════════════════════════════════════ */}
-        {section === "A" && (
-          <div className="space-y-6">
-            {!hasData && !loadingInsights ? (
-              <EmptyState text="لا توجد إعلانات نشطة تطابق الفلاتر الحالية. سيظهر التحليل تلقائياً فور نشر الإعلانات." />
-            ) : (
-              <>
-                {/* A1: Main KPIs */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <KpiBlock label="متوسط سعر العقار" color="#0F7BA0" loading={loadingInsights}
-                    value={formatCurrency(avgP)} sub="متوسط أسعار جميع الإعلانات النشطة" />
-                  <KpiBlock label="الوسيط السعري" color="#94A3B8" loading={loadingInsights}
-                    value={formatCurrency(medP)} sub="50% من الإعلانات أقل من هذا السعر" />
-                  <KpiBlock label="متوسط سعر المتر" color="#34D399" loading={loadingInsights}
-                    value={formatCurrency(avgSqm)} sub="ريال سعودي / م²" />
-                  <KpiBlock label="إجمالي الإعلانات النشطة" color="#8B5CF6" loading={loadingInsights}
-                    value={formatNumber(tot)} sub={`${saleC} للبيع · ${kpis?.rentCount ?? 0} للإيجار`} />
-                </div>
-
-                {/* A2: Stability + Trend direction */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-                    <div className="text-[12px] text-muted-foreground mb-2">استقرار السوق</div>
-                    {loadingInsights ? <Skeleton className="h-6 w-24" /> : (
-                      <>
-                        <div className="text-xl font-extrabold mb-1" style={{ color: stabilityColor }}>{stabilityLabel}</div>
-                        <div className="text-[11px] text-muted-foreground">معامل التذبذب: {volatility}%</div>
-                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-2">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, volatility)}%`, background: stabilityColor }} />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-                    <div className="text-[12px] text-muted-foreground mb-2">اتجاه الأسعار</div>
-                    {loadingTrends ? <Skeleton className="h-6 w-24" /> : trendLen < 2 ? (
-                      <div className="text-sm text-muted-foreground">بيانات غير كافية</div>
-                    ) : (
-                      <>
-                        <div className="text-xl font-extrabold mb-1" style={{ color: marketDirColor }}>{marketDirLabel}</div>
-                        <div className="text-[11px] text-muted-foreground">{priceChange > 0 ? "+" : ""}{priceChange}% خلال الفترة المحددة</div>
-                      </>
-                    )}
-                  </div>
-                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-                    <div className="text-[12px] text-muted-foreground mb-2">نطاق الأسعار (ر.س)</div>
-                    {loadingInsights ? <Skeleton className="h-14 w-full" /> : p25 > 0 ? (
-                      <>
-                        <div className="flex items-center gap-1 mb-1">
-                          <ArrowDownRight className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                          <div className="text-sm font-bold text-foreground">{formatCurrency(p25)}</div>
-                          <div className="text-[11px] text-muted-foreground">منخفض</div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ArrowUpRight className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                          <div className="text-sm font-bold text-foreground">{formatCurrency(p75)}</div>
-                          <div className="text-[11px] text-muted-foreground">مرتفع</div>
-                        </div>
-                      </>
-                    ) : <div className="text-sm text-muted-foreground">بيانات غير كافية</div>}
-                  </div>
-                  <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-                    <div className="text-[12px] text-muted-foreground mb-2">معدل تغير الأسعار</div>
-                    {loadingTrends ? <Skeleton className="h-6 w-24" /> : trendLen < 2 ? (
-                      <div className="text-sm text-muted-foreground">بيانات غير كافية</div>
-                    ) : (
-                      <>
-                        <div className="text-xl font-extrabold mb-1" style={{ color: marketDirColor }}>
-                          {priceChange > 0 ? "+" : ""}{priceChange}%
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">من أول نقطة إلى آخر نقطة في البيانات</div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* A3: Trend Chart with period toggle */}
-                <div className="bg-card rounded-2xl border border-border/60 shadow-sm">
-                  <div className="p-5 border-b border-border/40 flex items-center justify-between gap-4 flex-wrap">
-                    <div>
-                      <div className="text-base font-bold text-foreground">اتجاهات السوق</div>
-                      <div className="text-[12px] text-muted-foreground mt-0.5">متوسط الأسعار وعدد الإعلانات بمرور الوقت</div>
-                    </div>
-                    <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-                      {PERIOD_TABS.map(pt => (
-                        <button
-                          key={pt.value}
-                          onClick={() => setPeriod(pt.value)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                          style={period === pt.value ? {
-                            background: "#0F7BA0", color: "#fff",
-                          } : {
-                            color: "var(--muted-foreground)",
-                          }}
-                        >
-                          {pt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <div className="h-[280px]" dir="ltr">
-                      {loadingTrends ? (
-                        <Skeleton className="w-full h-full rounded-xl" />
-                      ) : (trends?.length ?? 0) < 2 ? (
-                        <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-                          <Info className="w-7 h-7 opacity-30" />
-                          <p className="text-sm text-center">البيانات التاريخية غير كافية لعرض الاتجاه لهذه الفترة</p>
-                          <p className="text-xs text-center opacity-70">ستظهر الرسوم البيانية مع تراكم الإعلانات عبر الزمن</p>
-                        </div>
-                      ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={trends} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.6} />
-                            <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} dy={8} />
-                            <YAxis yAxisId="l" orientation="left" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                            <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} dx={8} />
-                            <Tooltip
-                              contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}
-                              formatter={(v: number, name: string) => [
-                                name === "count" ? `${v} إعلان` : formatCurrency(v),
-                                name === "count" ? "عدد الإعلانات" : "متوسط السعر",
-                              ]}
-                            />
-                            <Line yAxisId="l" type="monotone" dataKey="count" stroke="#94A3B8" strokeWidth={2.5} dot={{ r: 3, fill: "#94A3B8", strokeWidth: 0 }} name="count" />
-                            <Line yAxisId="r" type="monotone" dataKey="avgPrice" stroke="#0F7BA0" strokeWidth={2.5} dot={{ r: 3, fill: "#0F7BA0", strokeWidth: 0 }} name="avgPrice" />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center gap-6 mt-2">
-                      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                        <span className="w-5 h-0.5 bg-[#94A3B8] rounded-full inline-block" /> عدد الإعلانات
-                      </div>
-                      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                        <span className="w-5 h-0.5 bg-[#0F7BA0] rounded-full inline-block" /> متوسط السعر
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+        {/* Section Content */}
+        <AnimatePresence mode="wait">
+          <div key={section}>
+            {section === "A" && <SectionA insights={insights} loading={loadingInsights} />}
+            {section === "B" && <SectionB insights={insights} trends={trends} loading={loadingInsights} loadingTrends={loadingTrends} period={period} setPeriod={setPeriod} />}
+            {section === "C" && <SectionC insights={insights} trends={trends} loading={loadingInsights} loadingTrends={loadingTrends} period={period} setPeriod={setPeriod} />}
+            {section === "D" && <SectionD insights={insights} loading={loadingInsights} />}
+            {section === "E" && <SectionE insights={insights} loading={loadingInsights} />}
+            {section === "F" && <SectionF insights={insights} loading={loadingInsights} distSort={distSort} setDistSort={setDistSort} />}
+            {section === "G" && <SectionG insights={insights} loading={loadingInsights} filters={filters} />}
           </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════
-            SECTION B — مقارنة الأحياء
-        ══════════════════════════════════════════════════════════════ */}
-        {section === "B" && (
-          <div className="space-y-5">
-            {(byDistrict.length === 0 && !loadingInsights) ? (
-              <EmptyState text="لا توجد بيانات أحياء لعرضها. تأكد من أن الإعلانات تحتوي على اسم الحي، أو غيّر الفلاتر." />
-            ) : (
-              <>
-                {/* Sort */}
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <div className="text-base font-bold text-foreground">مقارنة الأحياء</div>
-                    <div className="text-[12px] text-muted-foreground mt-0.5">مبنية على إعلانات المنصة النشطة فقط</div>
-                  </div>
-                  <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1">
-                    {DIST_SORT_OPTS.map(s => (
-                      <button key={s.value} onClick={() => setDistrictSort(s.value)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        style={districtSort === s.value ? { background: "#0F7BA0", color: "#fff" } : { color: "var(--muted-foreground)" }}
-                      >
-                        ترتيب بـ {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bar chart */}
-                {sortedDistricts.length >= 2 && (
-                  <div className="bg-card rounded-2xl border border-border/60 shadow-sm p-5">
-                    <div className="text-sm font-bold text-foreground mb-4">
-                      {districtSort === "sqm" ? "متوسط سعر المتر لكل حي" :
-                       districtSort === "price" ? "متوسط السعر الكلي لكل حي" :
-                       "عدد الإعلانات لكل حي"}
-                    </div>
-                    <div className="h-[220px]" dir="ltr">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={sortedDistricts.slice(0, 10)} margin={{ top: 0, right: 16, bottom: 0, left: 0 }} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.5} />
-                          <XAxis type="number" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false}
-                            tickFormatter={v => districtSort === "activity" ? `${v}` : `${(v / 1000).toFixed(0)}k`} />
-                          <YAxis type="category" dataKey="district" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={80} />
-                          <Tooltip
-                            contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid var(--border)" }}
-                            formatter={(v: number) => [
-                              districtSort === "activity" ? `${v} إعلان` : formatCurrency(v),
-                              districtSort === "activity" ? "عدد الإعلانات" : districtSort === "sqm" ? "سعر المتر" : "متوسط السعر",
-                            ]}
-                          />
-                          <Bar dataKey={districtSort === "activity" ? "count" : districtSort === "sqm" ? "avgPricePerSqm" : "avgPrice"} radius={[0, 4, 4, 0]}>
-                            {sortedDistricts.slice(0, 10).map((_, i) => (
-                              <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
-                {/* Comparison table */}
-                <div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
-                  {loadingInsights ? (
-                    <div className="p-5 space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-                  ) : (
-                    <table className="w-full text-sm text-right">
-                      <thead className="bg-muted/30 border-b border-border">
-                        <tr>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">#</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">الحي</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">المدينة</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">إعلانات</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">متوسط السعر</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">سعر المتر</th>
-                          <th className="px-5 py-3 text-[11px] font-bold text-muted-foreground tracking-wide">فرق عن السوق</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/40">
-                        {sortedDistricts.map((d, i) => {
-                          const diff = avgSqm > 0 && d.avgPricePerSqm > 0
-                            ? Math.round(((d.avgPricePerSqm - avgSqm) / avgSqm) * 100)
-                            : null;
-                          const diffColor = diff === null ? "var(--muted-foreground)" : diff > 10 ? "#EF4444" : diff < -10 ? "#22C55E" : "var(--muted-foreground)";
-                          return (
-                            <tr key={`${d.district}-${i}`} className="hover:bg-muted/20 transition-colors">
-                              <td className="px-5 py-3.5 text-muted-foreground text-[12px]">{i + 1}</td>
-                              <td className="px-5 py-3.5 font-semibold text-foreground">{d.district}</td>
-                              <td className="px-5 py-3.5 text-muted-foreground text-[12px]">{d.city}</td>
-                              <td className="px-5 py-3.5">
-                                <span className="inline-flex items-center bg-primary/10 text-primary text-[12px] font-bold rounded-lg px-2 py-0.5">{d.count}</span>
-                              </td>
-                              <td className="px-5 py-3.5 font-semibold text-foreground">{d.avgPrice > 0 ? formatCurrency(d.avgPrice) : "—"}</td>
-                              <td className="px-5 py-3.5 text-muted-foreground">{d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}</td>
-                              <td className="px-5 py-3.5 font-bold text-[13px]" style={{ color: diffColor }}>
-                                {diff === null ? "—" : diff > 0 ? `+${diff}%` : `${diff}%`}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-
-                {byDistrict.length > 0 && (
-                  <div className="text-[11px] text-muted-foreground px-1">
-                    * عمود "فرق عن السوق" يقارن سعر المتر للحي بمتوسط سعر المتر العام في الفلاتر الحالية
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════
-            SECTION C — مؤشرات السوق
-        ══════════════════════════════════════════════════════════════ */}
-        {section === "C" && (
-          <div className="space-y-5">
-            {!hasData && !loadingInsights ? (
-              <EmptyState text="لا توجد بيانات كافية لحساب المؤشرات. أضف إعلانات لتفعيل هذا القسم." />
-            ) : (
-              <>
-                <div>
-                  <div className="text-base font-bold text-foreground mb-1">مؤشرات السوق العقاري</div>
-                  <div className="text-[12px] text-muted-foreground">جميع المؤشرات مبنية حصراً على بيانات الإعلانات المنشورة داخل المنصة</div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                  {/* 1. ميل توزيع الأسعار — بديل "القيمة العادلة" المضلل */}
-                  <IndicatorCard
-                    title="ميل توزيع الأسعار"
-                    value={skewLabel}
-                    status={skewLabel}
-                    statusColor={skewColor}
-                    statusBg={skewBg}
-                    detail={
-                      medP > 0
-                        ? `المتوسط أعلى من الوسيط بنسبة ${Math.round((skewRatio - 1) * 100)}%. ${skewRatio > 1.20 ? "وجود إعلانات غالية ترفع المتوسط — الوسيط أكثر تمثيلاً للسوق." : "توزيع الأسعار منتظم — المتوسط والوسيط متقاربان."}`
-                        : "البيانات غير كافية لحساب التوزيع السعري."
-                    }
-                    icon={Scale}
-                    loading={loadingInsights}
-                  />
-
-                  {/* 2. فرص الاستثمار — صحيح منطقياً */}
-                  <IndicatorCard
-                    title="مؤشر فرصة الاستثمار"
-                    value={cheapDistricts.length > 0 ? `${cheapDistricts.length} حي` : "—"}
-                    status={investLabel}
-                    statusColor={investColor}
-                    statusBg={investBg}
-                    detail={cheapDistricts.length > 0
-                      ? `أحياء بسعر مترٍ أقل من متوسط السوق (< 90%): ${cheapDistricts.slice(0, 3).map(d => d.district).join("، ")}`
-                      : "لم تُرصد أحياء بفجوة سعرية واضحة عن المتوسط — السوق متوازن."}
-                    icon={Lightbulb}
-                    loading={loadingInsights}
-                  />
-
-                  {/* 3. نشاط الإعلانات — بديل "قوة الطلب" المضلل */}
-                  <IndicatorCard
-                    title="نشاط الإعلانات الأسبوعي"
-                    value={activityLabel}
-                    status={activityLabel}
-                    statusColor={activityColor}
-                    statusBg={activityBg}
-                    detail={`الأسبوع الحالي: ${new7} إعلان جديد. المعدل الأسبوعي المعتاد: ${Math.round(weeklyRate)} إعلان. يقيس حركة الإضافات في المنصة — لا يعكس طلب المشترين.`}
-                    icon={Activity}
-                    loading={loadingInsights}
-                  />
-
-                  {/* 4. معدل دوران السوق — بديل "مؤشر العرض" المكرر */}
-                  <IndicatorCard
-                    title="معدل دوران السوق"
-                    value={turnoverLabel}
-                    status={`${turnoverRate}%`}
-                    statusColor={turnoverColor}
-                    statusBg={turnoverBg}
-                    detail={`${new30} إعلان جديد في آخر 30 يوماً من ${tot} إجمالاً (${turnoverRate}%). ${turnoverRate > 30 ? "السوق نشط وسريع الحركة." : turnoverRate > 10 ? "مستوى حركة طبيعي." : "السوق هادئ — الإعلانات تبقى مدة أطول."}`}
-                    icon={TrendingUp}
-                    loading={loadingInsights}
-                  />
-
-                  {/* 5. تشتت الأسعار — بديل "مؤشر المخاطرة" المضلل */}
-                  <IndicatorCard
-                    title="تشتت الأسعار"
-                    value={spreadLabel}
-                    status={`${volatility}%`}
-                    statusColor={spreadColor}
-                    statusBg={spreadBg}
-                    detail={`نطاق الربيع السعري (IQR) يمثل ${volatility}% من الوسيط. ${volatility < 20 ? "السوق متجانس — العقارات متشابهة الأسعار." : volatility < 45 ? "تنوع معتدل — شريحتان سعريتان واضحتان." : "تنوع واسع — فجوات كبيرة بين العقارات، يستوجب مقارنة دقيقة."}`}
-                    icon={AlertTriangle}
-                    loading={loadingInsights}
-                  />
-
-                  {/* 6. اتجاه السوق — صحيح منطقياً */}
-                  <IndicatorCard
-                    title="اتجاه السوق العام"
-                    value={trendLen >= 2 ? marketDirLabel : "بيانات غير كافية"}
-                    status={trendLen >= 2 ? marketDirLabel : "غير محدد"}
-                    statusColor={trendLen >= 2 ? marketDirColor : "#64748B"}
-                    statusBg={trendLen >= 2 ? marketDirBg : "rgba(100,116,139,0.1)"}
-                    detail={trendLen >= 2
-                      ? `تغيير ${priceChange > 0 ? "+" : ""}${priceChange}% من أول نقطة إلى آخرها في الفترة المختارة. مبني على متوسط أسعار الإعلانات فقط.`
-                      : "البيانات التاريخية غير كافية. ستظهر النتيجة مع تراكم الإعلانات عبر الوقت."}
-                    icon={marketDirIcon}
-                    loading={loadingTrends}
-                  />
-                </div>
-                <div className="flex items-start gap-2 bg-muted/40 rounded-xl px-4 py-3 text-[12px] text-muted-foreground">
-                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" />
-                  <span>جميع هذه المؤشرات مستخرجة حصرياً من قاعدة بيانات المنصة الداخلية — لا يُستخدم أي مصدر خارجي أو افتراض لا تدعمه البيانات الفعلية.</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════
-            SECTION D — الفرص والتوصيات الذكية
-        ══════════════════════════════════════════════════════════════ */}
-        {section === "D" && (
-          <div className="space-y-5">
-            {!hasData && !loadingInsights ? (
-              <EmptyState text="لا توجد بيانات كافية. أضف إعلانات لتفعيل الفرص والتوصيات." />
-            ) : (
-              <>
-                {/* Role selector card */}
-                <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm">
-                  <div className="flex items-center gap-2 p-5 pb-4">
-                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Target className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <div className="text-base font-bold text-foreground">الفرص والتوصيات الذكية</div>
-                      <div className="text-[11px] text-muted-foreground">مبنية حصرياً على بيانات إعلانات المنصة — اختر شخصيتك</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 border-t border-border/60">
-                    {([
-                      { id: "buyer",    label: "عميل",        sub: "شراء / إيجار",        Icon: Home,      color: "#0F7BA0" },
-                      { id: "marketer", label: "مسوّق",        sub: "تسويق عقاري",         Icon: UserCheck, color: "#7C3AED" },
-                      { id: "provider", label: "مزود خدمة",   sub: "بناء وتشطيب وصيانة", Icon: Wrench,    color: "#D97706" },
-                    ] as const).map((r) => (
-                      <button
-                        key={r.id}
-                        onClick={() => setUserRole(r.id)}
-                        className={`flex flex-col items-center gap-1 py-4 px-2 text-center transition-all border-r last:border-r-0 border-border/60 relative ${
-                          userRole === r.id ? "bg-muted/40" : "hover:bg-muted/20"
-                        }`}
-                      >
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all"
-                          style={userRole === r.id ? { background: `${r.color}18`, border: `1.5px solid ${r.color}40` } : { background: "transparent" }}
-                        >
-                          <r.Icon className="w-4.5 h-4.5" style={{ color: userRole === r.id ? r.color : "#94A3B8" }} />
-                        </div>
-                        <div className="text-[13px] font-bold text-foreground">{r.label}</div>
-                        <div className="text-[10px] text-muted-foreground leading-tight">{r.sub}</div>
-                        {userRole === r.id && (
-                          <div className="absolute bottom-0 inset-x-0 h-0.5 rounded-full" style={{ background: r.color }} />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* ── BUYER INSIGHTS ──────────────────────────────────── */}
-                {userRole === "buyer" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* B1: Timing */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                              <Zap className="w-4 h-4 text-primary" />
-                            </div>
-                            <span className="text-sm font-bold text-foreground">توقيت الشراء الآن</span>
-                          </div>
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                            style={{ background: `${buyTimingColor}18`, color: buyTimingColor }}>
-                            {buyTimingStatus}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{buyTimingDesc}</p>
-                        {trendLen >= 2 && (
-                          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-border/50 text-[12px]">
-                            <span className="text-muted-foreground">تغير أسعار السوق:</span>
-                            <span className="font-extrabold" style={{ color: priceChange < 0 ? "#22C55E" : priceChange > 5 ? "#EF4444" : "#0F7BA0" }}>
-                              {priceChange > 0 ? "+" : ""}{priceChange}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* B2: Best value areas */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-                            <MapPin className="w-4 h-4 text-green-600" />
-                          </div>
-                          <span className="text-sm font-bold text-foreground">أذكى الأحياء سعراً</span>
-                        </div>
-                        {topCheapDistricts4.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">لا توجد بيانات أحياء كافية بعد</p>
-                        ) : (
-                          <div className="space-y-2.5">
-                            {topCheapDistricts4.map((d, i) => {
-                              const savings = avgSqm > 0 ? Math.round((1 - d.avgPricePerSqm / avgSqm) * 100) : 0;
-                              return (
-                                <div key={i} className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                                    <span className="text-sm font-medium text-foreground">{d.district}</span>
-                                    <span className="text-[11px] text-muted-foreground">{d.city}</span>
-                                  </div>
-                                  {savings > 0 && (
-                                    <span className="text-[11px] font-bold bg-green-500/8 text-green-600 px-2 py-0.5 rounded-full shrink-0">
-                                      وفر {savings}%
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                            <div className="text-[11px] text-muted-foreground pt-2 border-t border-border/50">
-                              متوسط السوق: {formatCurrency(avgSqm)} / م²
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {/* B3: Available listings */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Building2 className="w-4 h-4 text-primary" />
-                          <span className="text-xs font-bold text-foreground">حجم الخيارات المتاحة</span>
-                        </div>
-                        <div className="text-2xl font-extrabold text-foreground mt-1">{formatNumber(tot)}</div>
-                        <div className="text-[12px] text-muted-foreground">إعلان متاح حالياً</div>
-                        <div className="mt-2 text-[12px]">
-                          <span className="font-bold" style={{ color: new7 >= weeklyRate ? "#22C55E" : "#F59E0B" }}>
-                            {new7} إعلان
-                          </span>
-                          <span className="text-muted-foreground"> أضيفت هذا الأسبوع</span>
-                        </div>
-                      </div>
-
-                      {/* B4: Price range */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Scale className="w-4 h-4 text-primary" />
-                          <span className="text-xs font-bold text-foreground">نطاق الأسعار</span>
-                        </div>
-                        {p25 > 0 ? (
-                          <div className="space-y-1.5 mt-1">
-                            <div className="flex justify-between text-[12px]">
-                              <span className="text-green-600 font-semibold">الأفضل سعراً</span>
-                              <span className="font-bold text-foreground">{formatCurrency(p25)}</span>
-                            </div>
-                            <div className="flex justify-between text-[12px]">
-                              <span className="text-primary font-semibold">وسيط السوق</span>
-                              <span className="font-bold text-foreground">{formatCurrency(medP)}</span>
-                            </div>
-                            <div className="flex justify-between text-[12px]">
-                              <span className="text-amber-600 font-semibold">الفئة المرتفعة</span>
-                              <span className="font-bold text-foreground">{formatCurrency(p75)}</span>
-                            </div>
-                          </div>
-                        ) : <p className="text-sm text-muted-foreground mt-1">بيانات غير كافية</p>}
-                      </div>
-
-                      {/* B5: Most available types */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Star className="w-4 h-4 text-amber-500" />
-                          <span className="text-xs font-bold text-foreground">أكثر الأنواع توفراً</span>
-                        </div>
-                        <div className="space-y-1.5 mt-1">
-                          {hotPropertyTypes.slice(0, 3).map((t, i) => (
-                            <div key={i} className="flex items-center justify-between text-[12px]">
-                              <span className="text-foreground">{t.propertyType}</span>
-                              <span className="font-bold text-muted-foreground">{t.percentage}%</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Buyer recommendation */}
-                    <div className="rounded-2xl border p-5" style={{ background: "rgba(15,123,160,0.04)", borderColor: "rgba(15,123,160,0.2)" }}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-bold text-foreground">توصية للعميل (مشتري / مستأجر)</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : buyerRecommendation}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── MARKETER INSIGHTS ───────────────────────────────── */}
-                {userRole === "marketer" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* M1: Pricing advice */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
-                              <BarChart3 className="w-4 h-4" style={{ color: "#7C3AED" }} />
-                            </div>
-                            <span className="text-sm font-bold text-foreground">توصية التسعير</span>
-                          </div>
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                            style={{ background: `${pricingTipColor}18`, color: pricingTipColor }}>
-                            {pricingTipBadge}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{pricingTip}</p>
-                        {avgP > 0 && medP > 0 && (
-                          <div className="mt-3 grid grid-cols-2 gap-2 pt-3 border-t border-border/50">
-                            <div className="bg-muted/30 rounded-xl p-2.5 text-center">
-                              <div className="text-[10px] text-muted-foreground mb-1">متوسط السوق</div>
-                              <div className="text-[13px] font-bold text-foreground">{formatCurrency(avgP)}</div>
-                            </div>
-                            <div className="rounded-xl p-2.5 text-center" style={{ background: "rgba(124,58,237,0.08)" }}>
-                              <div className="text-[10px] mb-1" style={{ color: "#7C3AED" }}>وسيط السوق</div>
-                              <div className="text-[13px] font-bold text-foreground">{formatCurrency(medP)}</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* M2: Listing momentum */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                              <Activity className="w-4 h-4 text-primary" />
-                            </div>
-                            <span className="text-sm font-bold text-foreground">حركة السوق الأسبوعية</span>
-                          </div>
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                            style={{ background: `${listingMomentumColor}18`, color: listingMomentumColor }}>
-                            {listingMomentumLabel}
-                          </span>
-                        </div>
-                        <div className="flex items-end gap-4 mb-3">
-                          <div>
-                            <div className="text-2xl font-extrabold text-foreground">{new7}</div>
-                            <div className="text-[12px] text-muted-foreground">إعلان هذا الأسبوع</div>
-                          </div>
-                          <div className="text-[12px] text-muted-foreground pb-0.5">
-                            مقابل معدل {Math.round(weeklyRate)} / أسبوع
-                          </div>
-                        </div>
-                        <p className="text-[12px] text-muted-foreground leading-relaxed">{listingMomentumDesc}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* M3: Hot property types */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-3">
-                          <TrendingUp className="w-4 h-4" style={{ color: "#7C3AED" }} />
-                          <span className="text-sm font-bold text-foreground">أنواع العقارات الأعلى طلباً</span>
-                        </div>
-                        <div className="space-y-2.5">
-                          {hotPropertyTypes.map((t, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                              <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0"
-                                style={{ background: "rgba(124,58,237,0.1)", color: "#7C3AED" }}>{i + 1}</span>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-0.5">
-                                  <span className="text-[13px] font-medium text-foreground truncate">{t.propertyType}</span>
-                                  <span className="text-[12px] font-bold shrink-0 mr-2" style={{ color: "#7C3AED" }}>{t.percentage}%</span>
-                                </div>
-                                <div className="h-1 bg-muted rounded-full overflow-hidden">
-                                  <div className="h-full rounded-full" style={{ width: `${t.percentage}%`, background: "#7C3AED88" }} />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* M4: Low supply = opportunity */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-3">
-                          <MapPin className="w-4 h-4 text-amber-500" />
-                          <span className="text-sm font-bold text-foreground">مناطق شُح العرض — فرصة للمسوّق</span>
-                        </div>
-                        {lowSupplyCities.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">العرض موزع بشكل متوازن بين المناطق</p>
-                        ) : (
-                          <>
-                            <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">
-                              المناطق التالية لديها إعلانات أقل من المتوسط — منافسة أضعف وفرصة تسويقية أفضل:
-                            </p>
-                            <div className="space-y-2">
-                              {lowSupplyCities.map((c, i) => (
-                                <div key={i} className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-foreground">{c.city}</span>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[12px] text-muted-foreground">{c.count} إعلان</span>
-                                    <span className="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full">فرصة</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* M5: Competition in districts */}
-                    {topActiveDistricts4.length > 0 && (
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Building2 className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-bold text-foreground">مستوى المنافسة في الأحياء</span>
-                          <span className="text-[11px] text-muted-foreground mr-auto">عدد أعلى = منافسة أشد</span>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {topActiveDistricts4.map((d, i) => (
-                            <div key={i} className="rounded-xl p-3 text-center border border-border/60"
-                              style={{ background: i === 0 ? "rgba(124,58,237,0.06)" : "rgba(100,116,139,0.05)" }}>
-                              <div className="text-xl font-extrabold text-foreground">{d.count}</div>
-                              <div className="text-[12px] font-semibold text-foreground mt-0.5">{d.district}</div>
-                              <div className="text-[10px] text-muted-foreground">{d.city}</div>
-                              {i === 0 && <div className="text-[10px] font-bold mt-1" style={{ color: "#7C3AED" }}>الأعلى منافسة</div>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Marketer recommendation */}
-                    <div className="rounded-2xl border p-5" style={{ background: "rgba(124,58,237,0.04)", borderColor: "rgba(124,58,237,0.2)" }}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="w-4 h-4" style={{ color: "#7C3AED" }} />
-                        <span className="text-sm font-bold text-foreground">توصية للمسوّق العقاري</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : marketerRecommendation}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── SERVICE PROVIDER INSIGHTS ───────────────────────── */}
-                {userRole === "provider" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* P1: Most active districts */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(217,119,6,0.1)" }}>
-                            <MapPin className="w-4 h-4" style={{ color: "#D97706" }} />
-                          </div>
-                          <span className="text-sm font-bold text-foreground">أكثر الأحياء نشاطاً</span>
-                        </div>
-                        <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">النشاط العالي = طلب أعلى على خدمات التشطيب والصيانة والتجديد:</p>
-                        <div className="space-y-2.5">
-                          {topActiveDistricts4.map((d, i) => {
-                            const pct = byDistrict[0]?.count > 0 ? Math.round((d.count / byDistrict[0].count) * 100) : 0;
-                            return (
-                              <div key={i} className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0"
-                                  style={{ background: "rgba(217,119,6,0.1)", color: "#D97706" }}>{i + 1}</span>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between mb-0.5">
-                                    <div>
-                                      <span className="text-[13px] font-medium text-foreground">{d.district}</span>
-                                      <span className="text-[11px] text-muted-foreground mr-1">{d.city}</span>
-                                    </div>
-                                    <span className="text-[12px] font-bold shrink-0" style={{ color: "#D97706" }}>{d.count}</span>
-                                  </div>
-                                  <div className="h-1 bg-muted rounded-full overflow-hidden">
-                                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#D97706AA" }} />
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* P2: Growth signal */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(217,119,6,0.1)" }}>
-                              <TrendingUp className="w-4 h-4" style={{ color: "#D97706" }} />
-                            </div>
-                            <span className="text-sm font-bold text-foreground">مؤشر نمو السوق</span>
-                          </div>
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                            style={{ background: `${growthColor}18`, color: growthColor }}>
-                            {growthSignal}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                          <div className="bg-muted/30 rounded-xl p-3 text-center">
-                            <div className="text-xl font-extrabold text-foreground">{new7}</div>
-                            <div className="text-[11px] text-muted-foreground">إعلان هذا الأسبوع</div>
-                          </div>
-                          <div className="bg-muted/30 rounded-xl p-3 text-center">
-                            <div className="text-xl font-extrabold text-foreground">{new30}</div>
-                            <div className="text-[11px] text-muted-foreground">إعلان هذا الشهر</div>
-                          </div>
-                        </div>
-                        <p className="text-[12px] text-muted-foreground leading-relaxed">{providerGrowthDesc}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* P3: High value property types */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Star className="w-4 h-4 text-amber-500" />
-                          <span className="text-sm font-bold text-foreground">الأنواع الأعلى قيمة</span>
-                        </div>
-                        <p className="text-[12px] text-muted-foreground mb-3">العقارات الأعلى سعراً تتطلب خدمات أرقى بميزانيات أكبر:</p>
-                        {highValueTypes.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">بيانات غير كافية</p>
-                        ) : (
-                          <div className="space-y-2.5">
-                            {highValueTypes.map((t, i) => (
-                              <div key={i} className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                                  <span className="text-sm font-medium text-foreground">{t.propertyType}</span>
-                                </div>
-                                <span className="text-[12px] font-bold text-amber-600">{formatCurrency(t.avgPricePerSqm)} / م²</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* P4: Deal type distribution */}
-                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Activity className="w-4 h-4" style={{ color: "#D97706" }} />
-                          <span className="text-sm font-bold text-foreground">توزيع نوع الصفقة</span>
-                        </div>
-                        <p className="text-[12px] text-muted-foreground mb-3">صفقات البيع والتجديد تستهدف خدماتك أكثر من الإيجار:</p>
-                        {(insights?.byListingType?.length ?? 0) > 0 ? (
-                          <div className="space-y-2">
-                            {insights!.byListingType.slice(0, 5).map((t, i) => (
-                              <div key={i} className="flex items-center gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between mb-0.5">
-                                    <span className="text-[13px] text-foreground truncate">{t.label || t.listingType}</span>
-                                    <span className="text-[12px] font-bold text-foreground shrink-0 mr-2">{t.count}</span>
-                                  </div>
-                                  <div className="h-1 bg-muted rounded-full overflow-hidden">
-                                    <div className="h-full rounded-full" style={{ width: `${t.percentage}%`, background: "#D97706AA" }} />
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">بيانات غير متوفرة</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Provider recommendation */}
-                    <div className="rounded-2xl border p-5" style={{ background: "rgba(217,119,6,0.04)", borderColor: "rgba(217,119,6,0.25)" }}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="w-4 h-4 text-amber-600" />
-                        <span className="text-sm font-bold text-foreground">توصية لعارض الخدمات</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : providerRecommendation}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Disclaimer */}
-                <div className="flex items-start gap-2 bg-muted/30 rounded-xl px-4 py-3 text-[11px] text-muted-foreground">
-                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" />
-                  <span>جميع الفرص والتوصيات مستنتجة حصرياً من بيانات إعلانات المنصة الداخلية — لا تعكس مصادر خارجية وليست استشارة مالية أو استثمارية.</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-      </motion.div>
+        </AnimatePresence>
+      </div>
     </Layout>
   );
 }

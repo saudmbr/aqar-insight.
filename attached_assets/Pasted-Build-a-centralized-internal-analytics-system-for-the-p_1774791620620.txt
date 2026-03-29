@@ -1,0 +1,291 @@
+Build a centralized internal analytics system for the platform.
+
+Goal:
+Create a robust Analytics Engine that automatically calculates real estate market indicators using ONLY internal platform data, then connects these indicators consistently across the dashboard, map, search, neighborhood pages, and listing pages.
+
+==================================================
+1) CENTRAL ANALYTICS ENGINE
+==================================================
+
+Create a centralized Analytics Engine responsible for calculating all market indicators automatically.
+
+This engine must depend ONLY on internal platform data:
+- listing data
+- prices
+- listing created date
+- listing updated date
+- listing status
+- location (city, district/neighborhood)
+- property type
+- listing purpose (sale / rent if available)
+
+Requirements:
+- one central logic source for all indicators
+- reusable across all pages
+- no duplicated indicator logic in multiple components
+- scalable and maintainable
+- all outputs must be explainable and data-driven
+
+==================================================
+2) REAL ESTATE INDICATOR CATEGORIES
+==================================================
+
+Implement the following indicators and organize them under these exact categories:
+
+--------------------------------------------------
+A) Price Intelligence
+--------------------------------------------------
+
+- Average price per sqm
+- Median price
+- Price deviation (difference between average and median)
+- Price range:
+  - minimum
+  - maximum
+  - Q1
+  - Q3
+- Price distribution by price bands
+- Price trend indicator (change over selected period)
+
+--------------------------------------------------
+B) Market Dynamics
+--------------------------------------------------
+
+- Price growth rate
+- Market activity indicator (new listings)
+- Market turnover rate (removed / disappeared / inactive listings)
+- Average listing age
+- Real estate liquidity indicator
+
+--------------------------------------------------
+C) Supply & Demand
+--------------------------------------------------
+
+- Supply volume (active listings)
+- New supply inflow
+- Demand indicator (based on listing disappearance speed / turnover)
+- Supply-demand gap
+- Market balance indicator:
+  - balanced
+  - higher demand
+  - higher supply
+
+--------------------------------------------------
+D) Property Insights
+--------------------------------------------------
+
+- Property type distribution
+- Average price by property type
+- Growth rate by property type
+- Liquidity by property type (speed of sale / disappearance)
+
+--------------------------------------------------
+E) Location Intelligence
+--------------------------------------------------
+
+- Average price per neighborhood
+- Top 5 neighborhoods by:
+  - price
+  - growth
+  - demand
+- Neighborhood growth indicator
+- Listing density in neighborhood
+- Neighborhood attractiveness score (composite score)
+
+--------------------------------------------------
+F) Performance Metrics
+--------------------------------------------------
+
+- Rate of price changes
+- Percentage of price reductions
+- Percentage of price increases
+- Average change percentage
+
+--------------------------------------------------
+G) Smart Insights
+--------------------------------------------------
+
+- Detect undervalued listings
+- Detect overpriced listings
+- Market recommendation:
+  - buy
+  - sell
+  - wait
+- General market direction:
+  - rising
+  - declining
+  - stable
+
+==================================================
+3) CONNECT INDICATORS ACROSS THE WHOLE PLATFORM
+==================================================
+
+--------------------------------------------------
+A) Dashboard
+--------------------------------------------------
+
+- Show all major indicators visually using:
+  - KPI cards
+  - charts
+- Highlight the most important indicators such as:
+  - market direction
+  - liquidity
+  - market score
+  - supply-demand balance
+
+--------------------------------------------------
+B) Map
+--------------------------------------------------
+
+When user changes:
+- location
+- filters
+- property type
+- listing purpose
+- time range
+
+Then:
+- recalculate relevant indicators instantly
+- display:
+  - average price
+  - neighborhood attractiveness
+  - supply / demand
+  - relevant insights
+
+--------------------------------------------------
+C) Search Results Page
+--------------------------------------------------
+
+When filters are applied:
+- recalculate indicators based on filtered results only
+- show an analytics summary above results
+- make summary useful and decision-oriented
+
+--------------------------------------------------
+D) Neighborhood Pages
+--------------------------------------------------
+
+Show:
+- average prices
+- neighborhood growth
+- liquidity
+- neighborhood ranking
+- demand/supply condition
+- attractiveness score
+
+--------------------------------------------------
+E) Listing Details Page
+--------------------------------------------------
+
+Compare the listing against:
+- neighborhood average
+- price per sqm benchmark
+- fair value indication
+
+Show result clearly as:
+- below market
+- near market
+- above market
+
+==================================================
+4) TIME FILTER SUPPORT
+==================================================
+
+Add time filter support for all relevant indicators:
+- 7 days
+- 30 days
+- 90 days
+- 1 year
+
+Requirements:
+- all metrics and charts must recalculate based on selected period
+- no fake historical values
+- if insufficient data exists, show a truthful message
+
+==================================================
+5) GENERAL MARKET SCORE
+==================================================
+
+Create a general market score from 0 to 100.
+
+This score must depend only on:
+- growth
+- liquidity
+- supply and demand
+
+Display result as:
+- قوي
+- متوازن
+- ضعيف
+
+Requirements:
+- score logic must be explainable
+- no random scoring
+- same logic used consistently everywhere
+
+==================================================
+6) SMART TEXT INSIGHTS
+==================================================
+
+Add a smart text insights section that generates short readable summaries automatically based on calculated indicators.
+
+Examples:
+- "السوق يشهد ارتفاعًا بسبب زيادة الطلب في شمال الرياض"
+- "الحي يظهر نشاطًا مرتفعًا مع نمو سعري ملحوظ"
+- "الأسعار مستقرة والسيولة متوسطة خلال آخر 30 يومًا"
+
+Requirements:
+- text must be generated only from actual indicator logic
+- no unsupported claims
+- wording should be professional, clear, and Arabic RTL
+- insights should help user understand what the numbers mean
+
+==================================================
+7) DATA / LOGIC RULES
+==================================================
+
+Important rules:
+- Use ONLY internal platform data
+- Do NOT use external sources
+- Do NOT generate indicators without enough data
+- Do NOT show misleading conclusions
+- If data is weak, show:
+  "البيانات الحالية غير كافية لإظهار مؤشر دقيق"
+- Keep all metrics consistent across all pages
+
+==================================================
+8) UI / UX REQUIREMENTS
+==================================================
+
+- Arabic RTL first
+- premium analytics design
+- clear hierarchy
+- meaningful charts only
+- no clutter
+- strong labels and metric descriptions
+- elegant cards and data visuals
+- charts must be readable and useful
+
+==================================================
+9) TECHNICAL REQUIREMENTS
+==================================================
+
+- Centralize all calculations in one analytics layer / service
+- Reuse this engine across dashboard, map, search, neighborhoods, and listing pages
+- Make it efficient and production-ready
+- Avoid duplicated logic
+- Make the system easy to extend later
+
+==================================================
+10) FINAL DELIVERABLE
+==================================================
+
+After implementation, provide a complete summary of:
+- how the Analytics Engine was structured
+- which indicators were added under each category
+- how indicators are calculated
+- where they appear in the platform
+- how time filters work
+- how the market score works
+- how smart text insights are generated
+- what data validation and fallback logic were added
