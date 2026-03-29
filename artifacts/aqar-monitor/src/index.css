@@ -261,6 +261,66 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Premium shimmer effect */
+  .shimmer {
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.7) 50%, transparent 60%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Premium card hover */
+  .card-premium {
+    transition: box-shadow 0.4s cubic-bezier(.4,0,.2,1), transform 0.4s cubic-bezier(.4,0,.2,1), border-color 0.3s ease;
+  }
+  .card-premium:hover {
+    box-shadow: 0 20px 60px rgba(11,22,40,0.16), 0 4px 16px rgba(11,22,40,0.08);
+    transform: translateY(-5px);
+  }
+
+  /* Gold gradient text */
+  .gradient-gold {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Teal gradient text */
+  .gradient-teal {
+    background: linear-gradient(135deg, #0F7BA0, #0ea5e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Floating animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Glow pulse */
+  .animate-glow {
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(15,123,160,0.3); }
+    50% { box-shadow: 0 0 24px rgba(15,123,160,0.6); }
+  }
+
+  /* Section divider */
+  .divider-gradient {
+    height: 1px;
+    background: linear-gradient(to left, transparent, rgba(148,163,184,0.3), transparent);
+  }
 }
 
 /* Global smooth transitions for interactive elements */

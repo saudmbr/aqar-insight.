@@ -435,12 +435,29 @@ export default function Home() {
             {/* Teal glow accent */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse 55% 65% at 18% 48%, rgba(15,123,160,0.20) 0%, transparent 70%)" }}
+              style={{ background: "radial-gradient(ellipse 55% 65% at 18% 48%, rgba(15,123,160,0.22) 0%, transparent 70%)" }}
             />
             {/* Cool blue accent */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse 40% 35% at 12% 20%, rgba(100,160,220,0.07) 0%, transparent 70%)" }}
+              style={{ background: "radial-gradient(ellipse 40% 35% at 12% 20%, rgba(100,160,220,0.08) 0%, transparent 70%)" }}
+            />
+            {/* Subtle grid overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+              style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+            {/* Animated floating orb 1 */}
+            <motion.div
+              className="absolute pointer-events-none rounded-full"
+              style={{ width: 380, height: 380, top: "10%", right: "8%", background: "radial-gradient(circle, rgba(15,123,160,0.18) 0%, transparent 70%)", filter: "blur(50px)" }}
+              animate={{ y: [0, -20, 0], opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            />
+            {/* Animated floating orb 2 */}
+            <motion.div
+              className="absolute pointer-events-none rounded-full"
+              style={{ width: 240, height: 240, bottom: "15%", left: "20%", background: "radial-gradient(circle, rgba(100,200,255,0.12) 0%, transparent 70%)", filter: "blur(40px)" }}
+              animate={{ y: [0, 16, 0], opacity: [0.5, 0.9, 0.5] }}
+              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             />
 
             {/* ── Floating ambient glass cards ── */}
@@ -703,41 +720,58 @@ export default function Home() {
               {/* CTA row */}
               <div className="flex flex-wrap items-center gap-4">
                 <Link href="/listings/new">
-                  <button
-                    className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-bold text-sm text-white border border-[#94A3B8]/60 bg-[#94A3B8]/15 hover:bg-[#94A3B8]/25 transition-all"
-                    style={{ boxShadow: "0 2px 12px rgba(201,168,76,0.2)" }}
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-white transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                      boxShadow: "0 6px 24px rgba(245,158,11,0.45), 0 2px 8px rgba(245,158,11,0.25)",
+                    }}
                   >
-                    <PlusCircle className="w-4 h-4 text-[#94A3B8]" />
+                    <PlusCircle className="w-4 h-4" />
                     أضف عقارك الآن
-                  </button>
+                  </motion.button>
                 </Link>
                 <Link href="/listings">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white/75 hover:text-white transition-colors">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-sm text-white/80 hover:text-white transition-all backdrop-blur-md"
+                    style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)" }}
+                  >
                     تصفح جميع العقارات
                     <ArrowLeft className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </Link>
               </div>
 
-              {/* Stats strip */}
+              {/* Stats strip — premium */}
               {hasData && (
-                <div className="hidden md:flex items-center gap-8 mt-8 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="hidden md:flex items-center gap-6 mt-8 pt-6"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}
+                >
                   {[
-                    { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2 },
-                    { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm), icon: Banknote },
-                    { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity },
-                  ].map(s => (
-                    <div key={s.label} className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(15,123,160,0.20)", border: "1px solid rgba(15,123,160,0.30)" }}>
-                        <s.icon className="w-4 h-4 text-cyan-300" />
+                    { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2, color: "#0F7BA0" },
+                    { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm), icon: Banknote, color: "#10b981" },
+                    { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity, color: "#8b5cf6" },
+                  ].map((s, i) => (
+                    <div key={s.label} className="flex items-center gap-3 group/stat">
+                      {i > 0 && <div className="w-px h-8 opacity-20" style={{ background: "rgba(255,255,255,0.4)" }} />}
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover/stat:scale-110"
+                        style={{ background: `rgba(${s.color === "#0F7BA0" ? "15,123,160" : s.color === "#10b981" ? "16,185,129" : "139,92,246"},0.18)`, border: `1px solid ${s.color}40`, boxShadow: `0 0 12px ${s.color}25` }}>
+                        <s.icon className="w-4.5 h-4.5" style={{ color: s.color }} />
                       </div>
                       <div>
-                        <div className="text-lg font-extrabold text-white leading-none">{s.value}</div>
-                        <div className="text-[11px] text-white/55 mt-0.5">{s.label}</div>
+                        <div className="text-[1.15rem] font-extrabold text-white leading-none tracking-tight tabular-nums">{s.value}</div>
+                        <div className="text-[10.5px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{s.label}</div>
                       </div>
                     </div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </div>
           </div>

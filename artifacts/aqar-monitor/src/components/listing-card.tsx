@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { MapPin, BedDouble, Bath, Maximize2, Verified, Star, Building2, Pencil, Trash2 } from "lucide-react";
+import { MapPin, BedDouble, Bath, Maximize2, Verified, Star, Building2, Pencil, Trash2, Eye, TrendingUp } from "lucide-react";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -33,12 +33,12 @@ const LISTING_TYPE_LABELS: Record<string, string> = {
   auction: "مزاد",
 };
 
-const LISTING_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  sale:         { bg: "bg-primary",     text: "text-white" },
-  rent:         { bg: "bg-accent",      text: "text-white" },
-  monthly_rent: { bg: "bg-teal-600",    text: "text-white" },
-  investment:   { bg: "bg-purple-600",  text: "text-white" },
-  auction:      { bg: "bg-rose-500",    text: "text-white" },
+const LISTING_TYPE_COLORS: Record<string, { bg: string; glow: string }> = {
+  sale:         { bg: "linear-gradient(135deg,#0F7BA0,#0a5f7d)", glow: "rgba(15,123,160,0.5)" },
+  rent:         { bg: "linear-gradient(135deg,#059669,#047857)", glow: "rgba(5,150,105,0.5)" },
+  monthly_rent: { bg: "linear-gradient(135deg,#0d9488,#0f766e)", glow: "rgba(13,148,136,0.5)" },
+  investment:   { bg: "linear-gradient(135deg,#7c3aed,#6d28d9)", glow: "rgba(124,58,237,0.5)" },
+  auction:      { bg: "linear-gradient(135deg,#e11d48,#be123c)",  glow: "rgba(225,29,72,0.5)" },
 };
 
 function getFirstImage(images?: string | null): string | null {
@@ -47,11 +47,20 @@ function getFirstImage(images?: string | null): string | null {
   return getImageSrc(urls[0]) ?? null;
 }
 
-function ImagePlaceholder() {
+function ImagePlaceholder({ propertyType }: { propertyType: string }) {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-secondary to-muted gap-3">
-      <Building2 className="w-12 h-12 text-muted-foreground/25" strokeWidth={1.5} />
-      <span className="text-xs text-muted-foreground/50 font-medium">لا توجد صورة</span>
+    <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
+      style={{ background: "linear-gradient(145deg, #0F1C3F 0%, #0B2545 50%, #0F2D5E 100%)" }}>
+      {/* Decorative grid */}
+      <div className="absolute inset-0 opacity-[0.07]"
+        style={{ backgroundImage: "linear-gradient(rgba(15,123,160,1) 1px, transparent 1px), linear-gradient(90deg, rgba(15,123,160,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+      {/* Glowing orb */}
+      <div className="absolute w-32 h-32 rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, #0F7BA0, transparent)", top: "20%", left: "50%", transform: "translateX(-50%)" }} />
+      <Building2 className="w-14 h-14 relative z-10 mb-3" style={{ color: "rgba(15,123,160,0.6)", strokeWidth: 1.2 }} />
+      <span className="text-xs font-bold relative z-10 tracking-wider" style={{ color: "rgba(148,163,184,0.6)" }}>
+        {propertyType}
+      </span>
     </div>
   );
 }
@@ -65,58 +74,64 @@ interface ListingCardProps {
 export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
   const firstImage = getFirstImage(listing.images);
   const typeLabel = LISTING_TYPE_LABELS[listing.listingType] ?? listing.listingType;
-  const typeStyle = LISTING_TYPE_COLORS[listing.listingType] ?? { bg: "bg-muted", text: "text-muted-foreground" };
+  const typeStyle = LISTING_TYPE_COLORS[listing.listingType] ?? { bg: "linear-gradient(135deg,#64748b,#475569)", glow: "rgba(100,116,139,0.4)" };
 
   return (
     <div
-      className="group bg-card rounded-[22px] overflow-hidden h-full flex flex-col relative"
+      className="group relative flex flex-col h-full"
       style={{
-        border: "1.5px solid var(--border)",
-        boxShadow: "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)",
-        transition: "box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease",
+        borderRadius: "24px",
+        background: "var(--card)",
+        border: "1px solid rgba(148,163,184,0.12)",
+        boxShadow: "0 4px 24px rgba(11,22,40,0.08), 0 1px 4px rgba(11,22,40,0.04)",
+        transition: "box-shadow 0.4s cubic-bezier(.4,0,.2,1), transform 0.4s cubic-bezier(.4,0,.2,1), border-color 0.4s ease",
+        overflow: "hidden",
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 40px rgba(15,28,63,0.14), 0 3px 12px rgba(15,28,63,0.07)";
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(15,123,160,0.2)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = `0 20px 60px rgba(11,22,40,0.16), 0 4px 16px rgba(11,22,40,0.08), 0 0 0 1px rgba(15,123,160,0.18)`;
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-6px)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(15,123,160,0.25)";
       }}
       onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(15,28,63,0.06), 0 1px 4px rgba(15,28,63,0.03)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 24px rgba(11,22,40,0.08), 0 1px 4px rgba(11,22,40,0.04)";
         (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(148,163,184,0.12)";
       }}
     >
-      {/* Owner action buttons — hover overlay */}
+      {/* Featured glow border */}
+      {listing.featured && (
+        <div className="absolute inset-0 pointer-events-none z-0 rounded-[24px]"
+          style={{ boxShadow: "inset 0 0 0 1.5px rgba(234,179,8,0.45), 0 0 20px rgba(234,179,8,0.12)" }} />
+      )}
+
+      {/* Owner action buttons */}
       {canEdit && (
-        <div className="absolute top-3.5 left-3.5 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button
-            asChild
-            size="icon"
-            className="h-8 w-8 rounded-xl bg-white/90 hover:bg-white text-primary shadow-md border border-white/30 backdrop-blur-md"
+        <div className="absolute top-3.5 left-3.5 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
+          <Button asChild size="icon"
+            className="h-8 w-8 rounded-xl shadow-lg border border-white/30 backdrop-blur-md"
+            style={{ background: "rgba(255,255,255,0.92)", color: "#0F7BA0" }}
             title="تعديل الإعلان"
-            onClick={e => e.stopPropagation()}
-          >
+            onClick={e => e.stopPropagation()}>
             <Link href={`/listings/${listing.id}/edit`}>
               <Pencil className="w-3.5 h-3.5" />
             </Link>
           </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 rounded-xl bg-white/90 hover:bg-red-50 text-destructive shadow-md border border-white/30 backdrop-blur-md"
+          <Button size="icon" variant="ghost"
+            className="h-8 w-8 rounded-xl shadow-lg border border-white/30 backdrop-blur-md"
+            style={{ background: "rgba(255,255,255,0.92)" }}
             title="حذف الإعلان"
-            onClick={e => { e.stopPropagation(); e.preventDefault(); onDelete?.(listing.id); }}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
+            onClick={e => { e.stopPropagation(); e.preventDefault(); onDelete?.(listing.id); }}>
+            <Trash2 className="w-3.5 h-3.5 text-rose-500" />
           </Button>
         </div>
       )}
 
       <Link href={`/listings/${listing.id}`} className="flex flex-col flex-1">
         {/* Image Area */}
-        <div className="relative h-56 shrink-0 overflow-hidden bg-muted">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent z-10 pointer-events-none" />
+        <div className="relative shrink-0 overflow-hidden" style={{ height: "220px" }}>
+          {/* Multi-layer gradient overlay */}
+          <div className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: "linear-gradient(to top, rgba(11,22,40,0.85) 0%, rgba(11,22,40,0.25) 40%, transparent 70%)" }} />
 
           {firstImage ? (
             <img
@@ -124,71 +139,90 @@ export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
               alt={listing.title}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+              style={{ transform: "scale(1)", transition: "transform 0.7s cubic-bezier(.4,0,.2,1)" }}
+              onMouseEnter={e => { (e.target as HTMLImageElement).style.transform = "scale(1.07)"; }}
+              onMouseLeave={e => { (e.target as HTMLImageElement).style.transform = "scale(1)"; }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
           ) : (
-            <ImagePlaceholder />
+            <ImagePlaceholder propertyType={listing.propertyType} />
           )}
 
-          {/* Top Badges */}
+          {/* Type badge — top right */}
           <div className="absolute top-3.5 right-3.5 z-20 flex gap-1.5">
-            <span className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-sm ${typeStyle.bg} ${typeStyle.text}`}>
+            <span className="text-[11.5px] font-black px-3 py-1.5 rounded-full text-white shadow-lg tracking-wide"
+              style={{ background: typeStyle.bg, boxShadow: `0 4px 14px ${typeStyle.glow}` }}>
               {typeLabel}
             </span>
             {listing.featured && (
-              <span className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-yellow-400 text-yellow-900 shadow-sm flex items-center gap-1">
-                <Star className="w-3 h-3 fill-yellow-900" />
+              <span className="text-[11px] font-black px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow-lg"
+                style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#fff", boxShadow: "0 4px 14px rgba(245,158,11,0.5)" }}>
+                <Star className="w-3 h-3 fill-white" />
                 مميز
               </span>
             )}
           </div>
 
+          {/* Verified badge — top left */}
           {listing.verified && !canEdit && (
             <div className="absolute top-3.5 left-3.5 z-20">
-              <span className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-white/95 text-primary shadow-sm flex items-center gap-1">
-                <Verified className="w-3.5 h-3.5 fill-primary text-white" />
+              <span className="text-[11px] font-bold px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow-lg backdrop-blur-md"
+                style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff" }}>
+                <Verified className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" />
                 موثّق
               </span>
             </div>
           )}
 
-          {/* Property type chip at bottom */}
-          <div className="absolute bottom-3.5 right-3.5 z-20">
-            <span className="text-xs font-semibold px-2.5 py-1 bg-black/30 backdrop-blur-md text-white rounded-lg border border-white/20">
+          {/* Property type + views — bottom bar */}
+          <div className="absolute bottom-0 right-0 left-0 z-20 flex items-center justify-between px-4 pb-3">
+            <span className="text-[11.5px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md text-white"
+              style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.18)" }}>
               {listing.propertyType}
             </span>
+            {listing.views != null && listing.views > 0 && (
+              <span className="text-[11px] font-medium flex items-center gap-1 text-white/70">
+                <Eye className="w-3 h-3" />
+                {listing.views.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-5 flex flex-col flex-1">
-          <h3 className="font-bold text-foreground text-[15px] leading-snug line-clamp-2 mb-2.5 group-hover:text-primary transition-colors duration-200">
+        <div className="p-5 flex flex-col flex-1 gap-3">
+          {/* Title */}
+          <h3 className="font-bold text-foreground text-[15px] leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
             {listing.title}
           </h3>
 
-          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground font-medium mb-4">
-            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+          {/* Location */}
+          <div className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground font-medium">
+            <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "#0F7BA0" }} />
             <span className="truncate">{listing.city}{listing.district ? ` ، ${listing.district}` : ""}</span>
           </div>
 
-          {/* Features Row */}
+          {/* Features chips */}
           {(listing.areaSqm || listing.bedrooms || listing.bathrooms) && (
-            <div className="flex items-center gap-2 flex-wrap text-[12.5px] text-foreground font-semibold mb-4 pb-4 border-b border-border/60">
+            <div className="flex items-center gap-2 flex-wrap">
               {listing.areaSqm && (
-                <span className="flex items-center gap-1 bg-muted/70 px-2.5 py-1 rounded-lg">
+                <span className="flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg text-foreground"
+                  style={{ background: "rgba(15,123,160,0.08)", border: "1px solid rgba(15,123,160,0.12)" }}>
                   <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
                   {listing.areaSqm.toLocaleString("en-US")} م²
                 </span>
               )}
               {listing.bedrooms && (
-                <span className="flex items-center gap-1 bg-muted/70 px-2.5 py-1 rounded-lg">
+                <span className="flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg text-foreground"
+                  style={{ background: "rgba(15,123,160,0.08)", border: "1px solid rgba(15,123,160,0.12)" }}>
                   <BedDouble className="w-3.5 h-3.5 text-muted-foreground" />
                   {listing.bedrooms}
                 </span>
               )}
               {listing.bathrooms && (
-                <span className="flex items-center gap-1 bg-muted/70 px-2.5 py-1 rounded-lg">
+                <span className="flex items-center gap-1 text-[12px] font-semibold px-2.5 py-1 rounded-lg text-foreground"
+                  style={{ background: "rgba(15,123,160,0.08)", border: "1px solid rgba(15,123,160,0.12)" }}>
                   <Bath className="w-3.5 h-3.5 text-muted-foreground" />
                   {listing.bathrooms}
                 </span>
@@ -196,20 +230,26 @@ export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
             </div>
           )}
 
-          {/* Price */}
-          <div className="mt-auto flex items-end justify-between gap-2">
+          {/* Separator */}
+          <div style={{ height: "1px", background: "linear-gradient(to left, transparent, rgba(148,163,184,0.2), transparent)" }} />
+
+          {/* Price row */}
+          <div className="flex items-end justify-between gap-2 mt-auto">
             <div>
-              <p className="text-[1.35rem] font-extrabold text-primary leading-none tracking-tight tabular-nums">
+              <p className="text-[1.3rem] font-extrabold leading-none tracking-tight tabular-nums"
+                style={{ background: "linear-gradient(135deg, #0F7BA0, #0a9fd8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 {formatCurrency(listing.price)}
               </p>
               {listing.pricePerSqm && listing.areaSqm && (
-                <p className="text-[11.5px] text-muted-foreground font-medium mt-1.5">
+                <p className="text-[11.5px] text-muted-foreground font-medium mt-1 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
                   المتر: {formatCurrency(listing.pricePerSqm)}
                 </p>
               )}
             </div>
             {listing.furnishingStatus && (
-              <span className="text-[11.5px] font-semibold px-2.5 py-1 bg-secondary text-secondary-foreground rounded-lg shrink-0">
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0"
+                style={{ background: "rgba(15,123,160,0.08)", border: "1px solid rgba(15,123,160,0.15)", color: "#0F7BA0" }}>
                 {listing.furnishingStatus}
               </span>
             )}
