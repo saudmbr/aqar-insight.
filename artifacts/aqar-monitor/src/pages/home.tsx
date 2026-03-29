@@ -39,7 +39,9 @@ type InsightsData = {
     totalListings: number; avgPricePerSqm: number; avgPrice: number;
     maxPrice: number; minPrice: number; medianPrice: number;
     p25Price: number; p75Price: number; saleCount: number;
-    rentCount: number; newLast7Days: number; newLast30Days: number;
+    rentCount: number; investCount: number; listingsWithArea: number;
+    turnoverRate: number; areaDataRate: number;
+    newLast7Days: number; newLast30Days: number;
   };
   byCity: Array<{ city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
   byDistrict: Array<{ district: string; city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
@@ -317,21 +319,29 @@ export default function Home() {
   const mkt_tot    = kpis?.totalListings ?? 0;
   const mkt_saleC  = kpis?.saleCount ?? 0;
 
-  const mkt_fairRatio  = mkt_avgP > 0 ? mkt_medP / mkt_avgP : 1;
-  const mkt_fairLabel  = mkt_fairRatio > 1.12 ? "مرتفع" : mkt_fairRatio < 0.88 ? "منخفض" : "عادل";
-  const mkt_fairColor  = mkt_fairRatio > 1.12 ? "#EF4444" : mkt_fairRatio < 0.88 ? "#22C55E" : "#0F7BA0";
-  const mkt_fairBg     = mkt_fairRatio > 1.12 ? "rgba(239,68,68,0.07)" : mkt_fairRatio < 0.88 ? "rgba(34,197,94,0.07)" : "rgba(15,123,160,0.07)";
+  // ميل توزيع الأسعار: هل المتوسط مشدود للأعلى بسبب إعلانات غالية؟ (skewness)
+  const mkt_skewRatio  = mkt_medP > 0 ? mkt_avgP / mkt_medP : 1;
+  const mkt_fairLabel  = mkt_skewRatio > 1.20 ? "يميل للغالي" : mkt_skewRatio > 1.05 ? "ميل طفيف" : "موزع بانتظام";
+  const mkt_fairColor  = mkt_skewRatio > 1.20 ? "#F59E0B" : mkt_skewRatio > 1.05 ? "#0F7BA0" : "#22C55E";
+  const mkt_fairBg     = mkt_skewRatio > 1.20 ? "rgba(245,158,11,0.07)" : mkt_skewRatio > 1.05 ? "rgba(15,123,160,0.07)" : "rgba(34,197,94,0.07)";
+  const mkt_fairRatio  = mkt_skewRatio; // للتوافق مع الكود القديم
 
-  const weeklyRate     = mkt_new30 > 0 ? mkt_new30 / 4 : 0;
-  const mkt_demandRate = weeklyRate > 0 ? mkt_new7 / weeklyRate : 0;
-  const mkt_demandLabel = mkt_demandRate > 1.2 ? "مرتفع 🔥" : mkt_demandRate < 0.8 ? "منخفض" : "متوسط";
-  const mkt_demandColor = mkt_demandRate > 1.2 ? "#22C55E" : mkt_demandRate < 0.8 ? "#EF4444" : "#0F7BA0";
+  const weeklyRate      = mkt_new30 > 0 ? mkt_new30 / 4 : 0;
+  const mkt_demandRate  = weeklyRate > 0 ? mkt_new7 / weeklyRate : 0;
+  // نشاط الإعلانات الأسبوعي (ليس "طلب" — نقيس حركة العرض فقط)
+  const mkt_demandLabel = mkt_demandRate > 1.2 ? "نشاط مرتفع" : mkt_demandRate < 0.8 ? "نشاط هادئ" : "نشاط عادي";
+  const mkt_demandColor = mkt_demandRate > 1.2 ? "#22C55E" : mkt_demandRate < 0.8 ? "#F59E0B" : "#0F7BA0";
 
-  const mkt_saleRatio  = mkt_tot > 0 ? Math.round((mkt_saleC / mkt_tot) * 100) : 0;
-  const mkt_rentRatio  = 100 - mkt_saleRatio;
+  // نسب فئات الصفقات (بيع / إيجار / استثمار)
+  const mkt_investC    = kpis?.investCount ?? 0;
+  const mkt_saleRatio  = mkt_tot > 0 ? Math.round((mkt_saleC  / mkt_tot) * 100) : 0;
+  const mkt_rentRatio  = mkt_tot > 0 ? Math.round(((kpis?.rentCount ?? 0) / mkt_tot) * 100) : 0;
+  const mkt_investRatio= mkt_tot > 0 ? Math.round((mkt_investC / mkt_tot) * 100) : 0;
 
-  const mkt_supplyTrend = mkt_new7 > weeklyRate * 1.1 ? "متزايد ↑" : mkt_new7 < weeklyRate * 0.9 ? "متناقص ↓" : "مستقر →";
-  const mkt_supplyColor = mkt_new7 > weeklyRate * 1.1 ? "#22C55E" : mkt_new7 < weeklyRate * 0.9 ? "#EF4444" : "#0F7BA0";
+  // معدل دوران السوق: نسبة الإعلانات الجديدة من الإجمالي
+  const mkt_turnoverRate  = kpis?.turnoverRate ?? (mkt_tot > 0 ? Math.round((mkt_new30 / mkt_tot) * 100) : 0);
+  const mkt_supplyTrend   = mkt_turnoverRate > 30 ? "سوق متحرك" : mkt_turnoverRate > 10 ? "نشاط معتدل" : "سوق هادئ";
+  const mkt_supplyColor   = mkt_turnoverRate > 30 ? "#22C55E" : mkt_turnoverRate > 10 ? "#0F7BA0" : "#F59E0B";
 
   const filteredDistricts = applied.city
     ? (filterOpts?.districts ?? []).filter(d => d.city === applied.city)
@@ -1046,17 +1056,19 @@ export default function Home() {
                   <span className="text-sm font-extrabold text-foreground">ب — ذكاء الأسعار</span>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {/* Fair Value */}
+                  {/* ميل توزيع الأسعار — بديل "القيمة العادلة" المضلل */}
                   <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300" style={{ borderColor: mkt_fairColor + "30" }}>
                     <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_fairColor}, ${mkt_fairColor}44)` }} />
-                    <p className="text-[12px] text-muted-foreground mb-2">مستوى السعر في السوق</p>
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <div className="text-2xl font-extrabold" style={{ color: mkt_fairColor }}>{loadingInsights ? <Skeleton className="h-7 w-14" /> : mkt_fairLabel}</div>
+                    <p className="text-[12px] text-muted-foreground mb-2">ميل توزيع الأسعار</p>
+                    <div className="text-2xl font-extrabold mb-1" style={{ color: mkt_fairColor }}>
+                      {loadingInsights ? <Skeleton className="h-7 w-24" /> : mkt_fairLabel}
                     </div>
-                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700" style={{ width: loadingInsights ? "0%" : `${Math.min(100, Math.round(mkt_fairRatio * 50))}%`, background: mkt_fairColor }} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-2">مقارنةً بمتوسط السوق العام</p>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      {loadingInsights ? <Skeleton className="h-3 w-32" /> :
+                        mkt_skewRatio > 1.20
+                          ? `المتوسط أعلى من الوسيط بـ ${Math.round((mkt_skewRatio - 1) * 100)}% — إعلانات غالية تشد المتوسط للأعلى`
+                          : `المتوسط والوسيط متقاربان — توزيع متجانس`}
+                    </p>
                   </div>
 
                   {/* Price Distribution */}
@@ -1091,18 +1103,45 @@ export default function Home() {
                     <div className="text-[11px] text-muted-foreground mt-1">أدنى سعر مدرج</div>
                   </div>
 
-                  {/* Sale vs Rent */}
+                  {/* توزيع الصفقات: بيع / إيجار / استثماري */}
                   <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
                     <div className="h-[3px] w-full rounded-full mb-4" style={{ background: "linear-gradient(90deg, #0F7BA0, #0F7BA044)" }} />
-                    <p className="text-[12px] text-muted-foreground mb-2">نسبة بيع / إيجار</p>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <div className="text-2xl font-extrabold text-primary">{loadingInsights ? <Skeleton className="h-7 w-10" /> : `${mkt_saleRatio}%`}</div>
-                      <div className="text-sm text-muted-foreground">للبيع</div>
-                    </div>
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${mkt_saleRatio}%` }} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">{mkt_rentRatio}% إعلانات للإيجار</p>
+                    <p className="text-[12px] text-muted-foreground mb-3">توزيع نوع الصفقة</p>
+                    {loadingInsights ? (
+                      <div className="space-y-2">{[0,1,2].map(i=><Skeleton key={i} className="h-4 w-full" />)}</div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        <div>
+                          <div className="flex justify-between text-[11px] mb-1">
+                            <span className="text-muted-foreground">للبيع</span>
+                            <span className="font-bold text-primary">{mkt_saleRatio}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${mkt_saleRatio}%`, background: "#0F7BA0" }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[11px] mb-1">
+                            <span className="text-muted-foreground">للإيجار</span>
+                            <span className="font-bold" style={{ color: "#5B8DB8" }}>{mkt_rentRatio}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${mkt_rentRatio}%`, background: "#5B8DB8" }} />
+                          </div>
+                        </div>
+                        {mkt_investRatio > 0 && (
+                          <div>
+                            <div className="flex justify-between text-[11px] mb-1">
+                              <span className="text-muted-foreground">استثماري</span>
+                              <span className="font-bold" style={{ color: "#D4A017" }}>{mkt_investRatio}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full rounded-full transition-all" style={{ width: `${mkt_investRatio}%`, background: "#D4A017" }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1120,17 +1159,21 @@ export default function Home() {
                   <KpiCard icon={<Activity className="w-4 h-4" />} title="جديد خلال 30 يوماً" color="#0F7BA0"
                     value={loadingInsights ? <Skeleton className="h-7 w-14" /> : formatNumber(mkt_new30)}
                     sub="إعلان أضيف هذا الشهر" />
+                  {/* معدل دوران السوق — بديل "اتجاه العرض" المكرر */}
                   <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
                     <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_supplyColor}, ${mkt_supplyColor}44)` }} />
-                    <div className="text-[12px] text-muted-foreground mb-2">اتجاه العرض</div>
+                    <div className="text-[12px] text-muted-foreground mb-1">معدل دوران السوق</div>
                     <div className="text-xl font-extrabold mt-1" style={{ color: mkt_supplyColor }}>{loadingInsights ? <Skeleton className="h-6 w-20" /> : mkt_supplyTrend}</div>
-                    <div className="text-[11px] text-muted-foreground mt-2">مقارنة بمعدل الشهر الماضي</div>
+                    <div className="text-[11px] text-muted-foreground mt-2">
+                      {loadingInsights ? <Skeleton className="h-3 w-24" /> : `${mkt_turnoverRate}% من الإعلانات جديدة هذا الشهر`}
+                    </div>
                   </div>
+                  {/* نشاط الإعلانات — بديل "مستوى الطلب" المضلل */}
                   <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-300">
                     <div className="h-[3px] w-full rounded-full mb-4" style={{ background: `linear-gradient(90deg, ${mkt_demandColor}, ${mkt_demandColor}44)` }} />
-                    <div className="text-[12px] text-muted-foreground mb-2">مستوى الطلب</div>
+                    <div className="text-[12px] text-muted-foreground mb-1">نشاط الإعلانات</div>
                     <div className="text-xl font-extrabold mt-1" style={{ color: mkt_demandColor }}>{loadingInsights ? <Skeleton className="h-6 w-20" /> : mkt_demandLabel}</div>
-                    <div className="text-[11px] text-muted-foreground mt-2">بناءً على نشاط الإعلانات الأسبوعي</div>
+                    <div className="text-[11px] text-muted-foreground mt-2">حركة الإضافات الأسبوعية في المنصة</div>
                   </div>
                 </div>
               </div>

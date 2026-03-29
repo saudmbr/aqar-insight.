@@ -60,6 +60,17 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - Admin Reports page (`/admin/reports`) has 8 tabs (overview, users, listings, requests, services, market, operational, alerts) with period filter, KPI cards, charts, and tables.
 - `records.tsx` uses direct `fetch()` to `/api/listings` (not legacy hooks); supports status filter and client-side CSV export.
 
+**Analytics Indicators (corrected for logical accuracy):**
+- `listings-analytics.ts` API: `saleCount` now counts all sale types (`sale + installment + auction`); `rentCount` counts all 5 rent variants; added `investCount` (investment + partnership); added `listingsWithArea`, `turnoverRate`, `areaDataRate` to kpis response.
+- `byListingType` labels now use `LISTING_LABEL_MAP` covering all 10 listing types.
+- `generateSmartInsights` uses aggregated counts for sale/rent/invest distribution text.
+- Analytics page Section C (مؤشرات السوق): 4 illogical indicators renamed/replaced:
+  - "مؤشر القيمة العادلة" → "ميل توزيع الأسعار" (avg/median skewness, not "fair value")
+  - "مؤشر قوة الطلب" → "نشاط الإعلانات الأسبوعي" (listing activity, not demand — we have no buyer data)
+  - "مؤشر العرض" → "معدل دوران السوق" (new30/total% — market turnover, removes duplicate)
+  - "مؤشر المخاطرة" → "تشتت الأسعار" (price dispersion, not risk)
+- Home page market indicators: same fixes applied; "نسبة بيع/إيجار" → 3-way breakdown (بيع/إيجار/استثماري).
+
 **TypeScript Quality:**
 - `lib/api-zod` rebuilt — `RequestUploadUrlBody`/`RequestUploadUrlResponse` now properly exported from dist.
 - All `parseInt(req.params.xxx)` calls wrapped with `String()` to satisfy strict Express param typings.

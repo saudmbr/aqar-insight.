@@ -2,6 +2,13 @@ import { Router, type IRouter } from "express";
 import { db, listingsTable } from "@workspace/db";
 import { eq, and, gte, lte, sql, count, avg, min, max, desc } from "drizzle-orm";
 
+const LISTING_LABEL_MAP: Record<string, string> = {
+  sale: "للبيع", installment: "بيع بالتقسيط", auction: "مزاد علني",
+  rent: "للإيجار", rent_annual: "إيجار سنوي", rent_monthly: "إيجار شهري",
+  rent_daily: "إيجار يومي", rent_seasonal: "إيجار موسمي",
+  investment: "استثماري", partnership: "شراكة / مشاركة",
+};
+
 const router: IRouter = Router();
 
 type FilterParams = {
@@ -74,11 +81,14 @@ function generateSmartInsights(data: {
     insights.push(`مدينة ${topCity.city} تستحوذ على ${cityPct}% من إجمالي الإعلانات المنشورة`);
   }
 
-  const saleEntry = byListingType.find(x => x.listingType === "sale");
-  const rentEntry = byListingType.find(x => x.listingType === "rent");
-  if (saleEntry && rentEntry && kpis.totalListings > 0) {
-    const rentPct = pct(rentEntry.count, kpis.totalListings);
-    insights.push(`العقارات المعروضة للإيجار تمثل ${rentPct}% من إجمالي الإعلانات`);
+  // استخدام الأعداد المجمّعة من kpis (تشمل جميع الأنواع في كل فئة)
+  if (kpis.totalListings > 0) {
+    const salePct   = pct(kpis.saleCount,   kpis.totalListings);
+    const rentPct   = pct(kpis.rentCount,   kpis.totalListings);
+    const investPct = pct(kpis.investCount, kpis.totalListings);
+    if (salePct > 0 || rentPct > 0) {
+      insights.push(`السوق يتوزع بين ${salePct}% صفقات بيع و${rentPct}% إيجار${investPct > 0 ? ` و${investPct}% استثماري` : ""}`);
+    }
   }
 
   if (byPropertyType.length >= 2) {
@@ -133,12 +143,14 @@ router.get("/listings-insights", async (req, res) => {
       avgPrice: avg(listingsTable.price),
       maxPrice: max(listingsTable.price),
       minPrice: min(listingsTable.price),
-      saleCount: sql<number>`sum(case when listing_type = 'sale' then 1 else 0 end)::int`,
-      rentCount: sql<number>`sum(case when listing_type = 'rent' then 1 else 0 end)::int`,
-      medianPrice: sql<number>`percentile_cont(0.5) within group (order by price)`,
-      p25: sql<number>`percentile_cont(0.25) within group (order by price)`,
-      p75: sql<number>`percentile_cont(0.75) within group (order by price)`,
-      priceStddev: sql<number>`stddev(price)`,
+      saleCount:       sql<number>`sum(case when listing_type in ('sale','installment','auction') then 1 else 0 end)::int`,
+      rentCount:       sql<number>`sum(case when listing_type in ('rent','rent_annual','rent_monthly','rent_daily','rent_seasonal') then 1 else 0 end)::int`,
+      investCount:     sql<number>`sum(case when listing_type in ('investment','partnership') then 1 else 0 end)::int`,
+      listingsWithArea:sql<number>`sum(case when price_per_sqm is not null and price_per_sqm > 0 then 1 else 0 end)::int`,
+      medianPrice:     sql<number>`percentile_cont(0.5) within group (order by price)`,
+      p25:             sql<number>`percentile_cont(0.25) within group (order by price)`,
+      p75:             sql<number>`percentile_cont(0.75) within group (order by price)`,
+      priceStddev:     sql<number>`stddev(price)`,
     }).from(listingsTable).where(where),
 
     db.select({
@@ -184,20 +196,28 @@ router.get("/listings-insights", async (req, res) => {
   ]);
 
   const k = kpiRows[0];
+  const totalListings = k?.totalListings ?? 0;
+  const newLast30 = trend30[0]?.count ?? 0;
   const kpis = {
-    totalListings: k?.totalListings ?? 0,
-    avgPricePerSqm: Math.round(parseFloat(String(k?.avgPricePerSqm ?? "0"))),
-    avgPrice: Math.round(parseFloat(String(k?.avgPrice ?? "0"))),
-    maxPrice: Math.round(parseFloat(String(k?.maxPrice ?? "0"))),
-    minPrice: Math.round(parseFloat(String(k?.minPrice ?? "0"))),
-    medianPrice: Math.round(parseFloat(String(k?.medianPrice ?? "0"))),
-    p25Price: Math.round(parseFloat(String(k?.p25 ?? "0"))),
-    p75Price: Math.round(parseFloat(String(k?.p75 ?? "0"))),
-    priceStddev: Math.round(parseFloat(String(k?.priceStddev ?? "0"))),
-    saleCount: Number(k?.saleCount ?? 0),
-    rentCount: Number(k?.rentCount ?? 0),
-    newLast7Days: trend7[0]?.count ?? 0,
-    newLast30Days: trend30[0]?.count ?? 0,
+    totalListings,
+    avgPricePerSqm:   Math.round(parseFloat(String(k?.avgPricePerSqm ?? "0"))),
+    avgPrice:         Math.round(parseFloat(String(k?.avgPrice ?? "0"))),
+    maxPrice:         Math.round(parseFloat(String(k?.maxPrice ?? "0"))),
+    minPrice:         Math.round(parseFloat(String(k?.minPrice ?? "0"))),
+    medianPrice:      Math.round(parseFloat(String(k?.medianPrice ?? "0"))),
+    p25Price:         Math.round(parseFloat(String(k?.p25 ?? "0"))),
+    p75Price:         Math.round(parseFloat(String(k?.p75 ?? "0"))),
+    priceStddev:      Math.round(parseFloat(String(k?.priceStddev ?? "0"))),
+    saleCount:        Number(k?.saleCount ?? 0),
+    rentCount:        Number(k?.rentCount ?? 0),
+    investCount:      Number(k?.investCount ?? 0),
+    listingsWithArea: Number(k?.listingsWithArea ?? 0),
+    newLast7Days:     trend7[0]?.count ?? 0,
+    newLast30Days:    newLast30,
+    // معدل دوران السوق: نسبة الإعلانات الجديدة هذا الشهر من إجمالي الإعلانات
+    turnoverRate:     totalListings > 0 ? Math.round((newLast30 / totalListings) * 100) : 0,
+    // نسبة الإعلانات التي تحتوي على بيانات المساحة
+    areaDataRate:     totalListings > 0 ? Math.round((Number(k?.listingsWithArea ?? 0) / totalListings) * 100) : 0,
   };
 
   const byCity = byCityRows.map(r => ({
@@ -223,13 +243,15 @@ router.get("/listings-insights", async (req, res) => {
     percentage: pct(r.count, kpis.totalListings),
   }));
 
-  const byListingType = byListingTypeRows.map(r => ({
-    listingType: r.listingType,
-    count: r.count,
-    avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
-    percentage: pct(r.count, kpis.totalListings),
-    label: r.listingType === "sale" ? "بيع" : r.listingType === "rent" ? "إيجار" : r.listingType,
-  }));
+  const byListingType = byListingTypeRows
+    .map(r => ({
+      listingType: r.listingType,
+      count: r.count,
+      avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
+      percentage: pct(r.count, kpis.totalListings),
+      label: LISTING_LABEL_MAP[r.listingType] ?? r.listingType,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   const smartInsights = generateSmartInsights({ kpis, byCity, byDistrict, byPropertyType, byListingType });
 

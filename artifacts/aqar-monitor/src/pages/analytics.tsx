@@ -24,7 +24,9 @@ type KpisData = {
   totalListings: number; avgPricePerSqm: number; avgPrice: number;
   maxPrice: number; minPrice: number; medianPrice: number;
   p25Price: number; p75Price: number; priceStddev: number;
-  saleCount: number; rentCount: number; newLast7Days: number; newLast30Days: number;
+  saleCount: number; rentCount: number; investCount: number;
+  listingsWithArea: number; turnoverRate: number; areaDataRate: number;
+  newLast7Days: number; newLast30Days: number;
 };
 type InsightsData = {
   kpis: KpisData;
@@ -211,27 +213,39 @@ export default function Analytics() {
   const marketDirBg    = priceChange > 3 ? "rgba(34,197,94,0.1)" : priceChange < -3 ? "rgba(239,68,68,0.1)" : "rgba(15,123,160,0.1)";
   const marketDirIcon  = priceChange > 3 ? TrendingUp : priceChange < -3 ? TrendingDown : Minus;
 
-  // Demand/supply (platform data: listing counts by time)
-  const weeklyRate = new30 > 0 ? new30 / 4 : 0;
-  const demandRate = weeklyRate > 0 ? new7 / weeklyRate : 0;
-  const demandLabel = demandRate > 1.2 ? "مرتفع" : demandRate < 0.8 ? "منخفض" : "متوسط";
-  const demandColor = demandRate > 1.2 ? "#22C55E" : demandRate < 0.8 ? "#EF4444" : "#0F7BA0";
-  const demandBg    = demandRate > 1.2 ? "rgba(34,197,94,0.1)" : demandRate < 0.8 ? "rgba(239,68,68,0.1)" : "rgba(15,123,160,0.1)";
+  // نشاط الإعلانات الأسبوعي (ليس الطلب — نحن نقيس نشاط العرض فقط)
+  const weeklyRate    = new30 > 0 ? new30 / 4 : 0;
+  const demandRate    = weeklyRate > 0 ? new7 / weeklyRate : 0;
+  const activityLabel = demandRate > 1.2 ? "نشاط مرتفع" : demandRate < 0.8 ? "نشاط هادئ" : "نشاط عادي";
+  const activityColor = demandRate > 1.2 ? "#22C55E" : demandRate < 0.8 ? "#F59E0B" : "#0F7BA0";
+  const activityBg    = demandRate > 1.2 ? "rgba(34,197,94,0.1)" : demandRate < 0.8 ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+  // نحتفظ بالمتغيرات القديمة للأجزاء التي تعتمد عليها (Section D)
+  const demandLabel = activityLabel;
+  const demandColor = activityColor;
+  const demandBg    = activityBg;
 
-  const supplyLabel = new7 > weeklyRate * 1.1 ? "متزايد" : new7 < weeklyRate * 0.9 ? "متناقص" : "مستقر";
-  const supplyColor = new7 > weeklyRate * 1.1 ? "#22C55E" : new7 < weeklyRate * 0.9 ? "#F59E0B" : "#0F7BA0";
-  const supplyBg    = new7 > weeklyRate * 1.1 ? "rgba(34,197,94,0.1)" : new7 < weeklyRate * 0.9 ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+  // معدل دوران السوق: نسبة الإعلانات الجديدة هذا الشهر من الإجمالي
+  const turnoverRate  = kpis?.turnoverRate ?? (tot > 0 ? Math.round((new30 / tot) * 100) : 0);
+  const turnoverLabel = turnoverRate > 30 ? "سوق متحرك" : turnoverRate > 10 ? "نشاط معتدل" : "سوق هادئ";
+  const turnoverColor = turnoverRate > 30 ? "#22C55E" : turnoverRate > 10 ? "#0F7BA0" : "#F59E0B";
+  const turnoverBg    = turnoverRate > 30 ? "rgba(34,197,94,0.1)" : turnoverRate > 10 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
 
-  // Risk: based on price volatility + data density
-  const riskLabel = volatility < 20 ? "منخفض" : volatility < 40 ? "متوسط" : "مرتفع";
-  const riskColor = volatility < 20 ? "#22C55E" : volatility < 40 ? "#F59E0B" : "#EF4444";
-  const riskBg    = volatility < 20 ? "rgba(34,197,94,0.1)" : volatility < 40 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+  // تشتت الأسعار: نطاق IQR كنسبة من الوسيط (مقياس تنوع الأسعار — ليس "مخاطرة")
+  const spreadLabel = volatility < 20 ? "أسعار متجانسة" : volatility < 45 ? "تنوع معتدل" : "أسعار متنوعة";
+  const spreadColor = volatility < 20 ? "#22C55E" : volatility < 45 ? "#0F7BA0" : "#F59E0B";
+  const spreadBg    = volatility < 20 ? "rgba(34,197,94,0.1)" : volatility < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
 
-  // Fair value: median vs avg ratio (platform-internal only)
-  const fairRatio  = avgP > 0 ? medP / avgP : 1;
-  const fairLabel  = fairRatio > 1.12 ? "مرتفع عن السوق" : fairRatio < 0.88 ? "أقل من السوق" : "ضمن متوسط السوق";
-  const fairColor  = fairRatio > 1.12 ? "#EF4444" : fairRatio < 0.88 ? "#22C55E" : "#0F7BA0";
-  const fairBg     = fairRatio > 1.12 ? "rgba(239,68,68,0.1)" : fairRatio < 0.88 ? "rgba(34,197,94,0.1)" : "rgba(15,123,160,0.1)";
+  // ميل توزيع الأسعار: هل يوجد عقارات غالية تشد المتوسط للأعلى؟ (skewness indicator)
+  // skewRatio = avgP / medP: إذا > 1.15 يعني وجود إعلانات غالية تؤثر على المتوسط
+  const skewRatio = medP > 0 ? avgP / medP : 1;
+  const skewLabel = skewRatio > 1.20 ? "يميل للغالي" : skewRatio > 1.05 ? "ميل طفيف" : "موزع بانتظام";
+  const skewColor = skewRatio > 1.20 ? "#F59E0B" : skewRatio > 1.05 ? "#0F7BA0" : "#22C55E";
+  const skewBg    = skewRatio > 1.20 ? "rgba(245,158,11,0.1)" : skewRatio > 1.05 ? "rgba(15,123,160,0.1)" : "rgba(34,197,94,0.1)";
+  // للتوافق مع بقية الكود
+  const fairRatio = skewRatio;
+  const fairLabel = skewLabel;
+  const fairColor = skewColor;
+  const fairBg    = skewBg;
 
   // Investment opportunity: districts below market price-per-sqm average
   const byDistrict = insights?.byDistrict ?? [];
@@ -719,16 +733,24 @@ export default function Analytics() {
                   <div className="text-[12px] text-muted-foreground">جميع المؤشرات مبنية حصراً على بيانات الإعلانات المنشورة داخل المنصة</div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                  {/* 1. ميل توزيع الأسعار — بديل "القيمة العادلة" المضلل */}
                   <IndicatorCard
-                    title="مؤشر القيمة العادلة"
-                    value={fairLabel}
-                    status={fairLabel}
-                    statusColor={fairColor}
-                    statusBg={fairBg}
-                    detail={`نسبة الوسيط السعري إلى متوسط السوق: ${Math.round(fairRatio * 100)}%. القيم بين 88–112% تعتبر ضمن النطاق الطبيعي.`}
+                    title="ميل توزيع الأسعار"
+                    value={skewLabel}
+                    status={skewLabel}
+                    statusColor={skewColor}
+                    statusBg={skewBg}
+                    detail={
+                      medP > 0
+                        ? `المتوسط أعلى من الوسيط بنسبة ${Math.round((skewRatio - 1) * 100)}%. ${skewRatio > 1.20 ? "وجود إعلانات غالية ترفع المتوسط — الوسيط أكثر تمثيلاً للسوق." : "توزيع الأسعار منتظم — المتوسط والوسيط متقاربان."}`
+                        : "البيانات غير كافية لحساب التوزيع السعري."
+                    }
                     icon={Scale}
                     loading={loadingInsights}
                   />
+
+                  {/* 2. فرص الاستثمار — صحيح منطقياً */}
                   <IndicatorCard
                     title="مؤشر فرصة الاستثمار"
                     value={cheapDistricts.length > 0 ? `${cheapDistricts.length} حي` : "—"}
@@ -736,50 +758,58 @@ export default function Analytics() {
                     statusColor={investColor}
                     statusBg={investBg}
                     detail={cheapDistricts.length > 0
-                      ? `أحياء بأسعار أقل من متوسط السوق: ${cheapDistricts.slice(0, 3).map(d => d.district).join("، ")}`
-                      : "لم تُرصد أحياء بفجوة سعرية واضحة عن المتوسط العام."}
+                      ? `أحياء بسعر مترٍ أقل من متوسط السوق (< 90%): ${cheapDistricts.slice(0, 3).map(d => d.district).join("، ")}`
+                      : "لم تُرصد أحياء بفجوة سعرية واضحة عن المتوسط — السوق متوازن."}
                     icon={Lightbulb}
                     loading={loadingInsights}
                   />
+
+                  {/* 3. نشاط الإعلانات — بديل "قوة الطلب" المضلل */}
                   <IndicatorCard
-                    title="مؤشر قوة الطلب"
-                    value={demandLabel}
-                    status={demandLabel}
-                    statusColor={demandColor}
-                    statusBg={demandBg}
-                    detail={`إضافات الأسبوع الحالي: ${new7} إعلان. المعدل الأسبوعي للشهر الماضي: ${Math.round(weeklyRate)} إعلان. البيانات تعتمد على نشاط الإضافات الداخلي للمنصة.`}
+                    title="نشاط الإعلانات الأسبوعي"
+                    value={activityLabel}
+                    status={activityLabel}
+                    statusColor={activityColor}
+                    statusBg={activityBg}
+                    detail={`الأسبوع الحالي: ${new7} إعلان جديد. المعدل الأسبوعي المعتاد: ${Math.round(weeklyRate)} إعلان. يقيس حركة الإضافات في المنصة — لا يعكس طلب المشترين.`}
                     icon={Activity}
                     loading={loadingInsights}
                   />
+
+                  {/* 4. معدل دوران السوق — بديل "مؤشر العرض" المكرر */}
                   <IndicatorCard
-                    title="مؤشر العرض"
-                    value={supplyLabel}
-                    status={supplyLabel}
-                    statusColor={supplyColor}
-                    statusBg={supplyBg}
-                    detail={`${new30} إعلان في آخر 30 يوماً — ${new7} في آخر 7 أيام. الاتجاه مستنتج من معدل الإضافات فقط.`}
-                    icon={Building2}
+                    title="معدل دوران السوق"
+                    value={turnoverLabel}
+                    status={`${turnoverRate}%`}
+                    statusColor={turnoverColor}
+                    statusBg={turnoverBg}
+                    detail={`${new30} إعلان جديد في آخر 30 يوماً من ${tot} إجمالاً (${turnoverRate}%). ${turnoverRate > 30 ? "السوق نشط وسريع الحركة." : turnoverRate > 10 ? "مستوى حركة طبيعي." : "السوق هادئ — الإعلانات تبقى مدة أطول."}`}
+                    icon={TrendingUp}
                     loading={loadingInsights}
                   />
+
+                  {/* 5. تشتت الأسعار — بديل "مؤشر المخاطرة" المضلل */}
                   <IndicatorCard
-                    title="مؤشر المخاطرة"
-                    value={riskLabel}
-                    status={riskLabel}
-                    statusColor={riskColor}
-                    statusBg={riskBg}
-                    detail={`معامل التذبذب السعري: ${volatility}% (IQR ÷ وسيط). أقل من 20% = منخفض. 20–40% = متوسط. أعلى من 40% = مرتفع.`}
+                    title="تشتت الأسعار"
+                    value={spreadLabel}
+                    status={`${volatility}%`}
+                    statusColor={spreadColor}
+                    statusBg={spreadBg}
+                    detail={`نطاق الربيع السعري (IQR) يمثل ${volatility}% من الوسيط. ${volatility < 20 ? "السوق متجانس — العقارات متشابهة الأسعار." : volatility < 45 ? "تنوع معتدل — شريحتان سعريتان واضحتان." : "تنوع واسع — فجوات كبيرة بين العقارات، يستوجب مقارنة دقيقة."}`}
                     icon={AlertTriangle}
                     loading={loadingInsights}
                   />
+
+                  {/* 6. اتجاه السوق — صحيح منطقياً */}
                   <IndicatorCard
                     title="اتجاه السوق العام"
                     value={trendLen >= 2 ? marketDirLabel : "بيانات غير كافية"}
-                    status={trendLen >= 2 ? marketDirLabel : "يحتاج حذر"}
+                    status={trendLen >= 2 ? marketDirLabel : "غير محدد"}
                     statusColor={trendLen >= 2 ? marketDirColor : "#64748B"}
                     statusBg={trendLen >= 2 ? marketDirBg : "rgba(100,116,139,0.1)"}
                     detail={trendLen >= 2
-                      ? `معدل التغيير: ${priceChange > 0 ? "+" : ""}${priceChange}% من أول نقطة تاريخية إلى آخرها. مبني على بيانات الإعلانات فقط.`
-                      : "البيانات التاريخية غير كافية لحساب اتجاه السوق. ستظهر النتيجة مع تراكم الإعلانات عبر الوقت."}
+                      ? `تغيير ${priceChange > 0 ? "+" : ""}${priceChange}% من أول نقطة إلى آخرها في الفترة المختارة. مبني على متوسط أسعار الإعلانات فقط.`
+                      : "البيانات التاريخية غير كافية. ستظهر النتيجة مع تراكم الإعلانات عبر الوقت."}
                     icon={marketDirIcon}
                     loading={loadingTrends}
                   />
