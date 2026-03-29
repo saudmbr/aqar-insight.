@@ -13,6 +13,7 @@ import {
   TrendingUp, TrendingDown, Minus, BarChart3, Building2,
   MapPin, Activity, AlertTriangle, Lightbulb, Info,
   ArrowUpRight, ArrowDownRight, Scale,
+  Home, UserCheck, Wrench, Target, Zap, Star,
 } from "lucide-react";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
@@ -132,6 +133,7 @@ export default function Analytics() {
   const [propertyType, setPropertyType] = useState("");
   const [listingType, setListingType] = useState("");
   const [districtSort, setDistrictSort] = useState("activity");
+  const [userRole, setUserRole] = useState<"buyer" | "marketer" | "provider">("buyer");
 
   useEffect(() => {
     document.title = "تحليلات السوق – عقار إنسايت";
@@ -237,6 +239,84 @@ export default function Analytics() {
   const investLabel = cheapDistricts.length > 0 ? "فرصة متاحة" : "السوق متوازن";
   const investColor = cheapDistricts.length > 0 ? "#22C55E" : "#0F7BA0";
   const investBg    = cheapDistricts.length > 0 ? "rgba(34,197,94,0.1)" : "rgba(15,123,160,0.1)";
+
+  // ── Role-based insight computations ─────────────────────────────────────────
+  // Shared
+  const topCheapDistricts4 = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 4);
+  const topActiveDistricts4 = [...byDistrict].sort((a, b) => b.count - a.count).slice(0, 4);
+  const hotPropertyTypes = [...(insights?.byPropertyType ?? [])].sort((a, b) => b.percentage - a.percentage).slice(0, 4);
+
+  // Buyer
+  const buyTimingStatus = priceChange < -3 ? "ممتاز للشراء" : priceChange < 2 ? "مناسب للشراء" : "السوق صاعد";
+  const buyTimingColor  = priceChange < -3 ? "#22C55E" : priceChange < 2 ? "#0F7BA0" : "#F59E0B";
+  const buyTimingDesc   = priceChange < -5
+    ? `الأسعار انخفضت ${Math.abs(priceChange)}% مؤخراً — فرصة للدخول قبل التعافي.`
+    : priceChange < 0
+    ? `الأسعار في تراجع طفيف — مناسب للمفاوضة والحصول على سعر أفضل.`
+    : priceChange < 5
+    ? `الأسعار مستقرة — السوق معقول ومناسب للشراء.`
+    : `السوق في ارتفاع (${priceChange}%) — سارع في القرار أو انتظر تصحيحاً.`;
+  const buyerRecommendation = (() => {
+    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
+    const parts: string[] = [];
+    if (priceChange < -3) parts.push(`الأسعار في تراجع — نافذة جيدة للشراء.`);
+    else if (priceChange > 5) parts.push(`الأسعار ترتفع — سارع لاتخاذ قرارك.`);
+    else parts.push(`السوق في حالة استقرار نسبي.`);
+    if (topCheapDistricts4.length > 0) parts.push(`أفضل قيمة للمال في ${topCheapDistricts4.slice(0, 2).map(d => d.district).join(" و")}.`);
+    if (hotPropertyTypes[0]) parts.push(`النوع الأوفر توفراً: ${hotPropertyTypes[0].propertyType} (${hotPropertyTypes[0].percentage}% من الإعلانات).`);
+    return parts.join(" ");
+  })();
+
+  // Marketer
+  const pricingSkew     = (avgP > 0 && medP > 0) ? avgP / medP : 1;
+  const pricingTipColor = pricingSkew > 1.15 ? "#F59E0B" : pricingSkew < 0.88 ? "#22C55E" : "#0F7BA0";
+  const pricingTipBadge = pricingSkew > 1.15 ? "سعّر أقل من المتوسط" : pricingSkew < 0.88 ? "هامش للرفع" : "السوق متوازن";
+  const pricingTip = avgP > 0 && medP > 0
+    ? pricingSkew > 1.15
+      ? `المتوسط (${formatCurrency(avgP)}) أعلى من الوسيط (${formatCurrency(medP)}) — وجود إعلانات مرتفعة تشوّه السوق. ضع سعرك قريباً من الوسيط لتحقيق بيع أسرع.`
+      : pricingSkew < 0.88
+      ? `معظم الإعلانات منخفضة السعر — هامش للتسعير فوق المتوسط دون الخروج من السوق.`
+      : `الأسعار متوازنة — ضع سعرك ضمن ±10% من الوسيط (${formatCurrency(medP)}) للحصول على أفضل استجابة.`
+    : "بيانات التسعير غير كافية بعد.";
+  const listingMomentumLabel = demandRate > 1.3 ? "نشاط مرتفع" : demandRate > 1 ? "نشاط جيد" : demandRate > 0.7 ? "معتدل" : "هادئ";
+  const listingMomentumColor = demandRate > 1.3 ? "#22C55E" : demandRate > 1 ? "#0F7BA0" : demandRate > 0.7 ? "#F59E0B" : "#EF4444";
+  const listingMomentumDesc  = demandRate > 1.3
+    ? `نشاط إضافات مرتفع — الإعلانات تلقى استجابة أسرع هذا الأسبوع.`
+    : demandRate > 1
+    ? `السوق نشط — وقت مناسب لنشر إعلاناتك.`
+    : demandRate > 0.7
+    ? `النشاط معتدل — ركّز على جودة الصور والوصف لتميّز إعلانك.`
+    : `السوق هادئ — ركّز على تحسين العروض لجذب المهتمين.`;
+  const cityAvgCount  = (insights?.byCity?.length ?? 0) > 0 ? tot / (insights!.byCity.length) : 0;
+  const lowSupplyCities = [...(insights?.byCity ?? [])].filter(c => c.count < cityAvgCount * 0.6).sort((a, b) => a.count - b.count).slice(0, 3);
+  const marketerRecommendation = (() => {
+    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
+    const parts: string[] = [];
+    parts.push(pricingSkew > 1.15 ? "التسعير عند أو أسفل الوسيط يزيد فرص البيع." : "التسعير ضمن نطاق السوق يضمن الظهور الجيد.");
+    if (lowSupplyCities.length > 0) parts.push(`مناطق ${lowSupplyCities.map(c => c.city).join("، ")} فيها عدد قليل من الإعلانات — منافسة أقل.`);
+    if (demandRate > 1.2) parts.push(`السوق نشط — الوقت مناسب لنشر إعلانات جديدة.`);
+    if (hotPropertyTypes[0]) parts.push(`النوع الأعلى طلباً: ${hotPropertyTypes[0].propertyType} — ينصح بالتركيز عليه.`);
+    return parts.join(" ");
+  })();
+
+  // Service Provider
+  const highValueTypes = [...(insights?.byPropertyType ?? [])].filter(t => t.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 3);
+  const growthSignal  = demandRate > 1.2 ? "نمو إيجابي" : demandRate < 0.8 ? "تباطؤ نسبي" : "مستقر";
+  const growthColor   = demandRate > 1.2 ? "#22C55E" : demandRate < 0.8 ? "#F59E0B" : "#0F7BA0";
+  const providerGrowthDesc = demandRate > 1.2
+    ? `السوق ينمو بمعدل ${Math.round(demandRate * 100)}% مقارنة بالمعدل الطبيعي — الطلب على الخدمات العقارية في تصاعد.`
+    : demandRate < 0.8
+    ? `النشاط أبطأ من المعتاد — ركّز على الجودة وبناء العلاقات مع المسوّقين.`
+    : `السوق مستقر — حافظ على حضورك وتابع الأحياء النشطة.`;
+  const providerRecommendation = (() => {
+    if (!hasData || tot < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
+    const parts: string[] = [];
+    if (topActiveDistricts4.length > 0) parts.push(`ركّز تسويقك في ${topActiveDistricts4.slice(0, 2).map(d => d.district).join(" و")} حيث النشاط العقاري أعلى.`);
+    if (highValueTypes.length > 0) parts.push(`خدمات ${highValueTypes[0].propertyType} مجدية مالياً لارتفاع قيمتها (${formatCurrency(highValueTypes[0].avgPricePerSqm)}/م²).`);
+    if (demandRate > 1.2) parts.push(`السوق في نمو — توقع طلباً متزايداً على التشطيب والصيانة.`);
+    else parts.push(`ركّز على تحسين جودة خدماتك وبناء قاعدة عملاء راسخة.`);
+    return parts.join(" ");
+  })();
 
   // District sorting for section B
   const sortedDistricts = useMemo(() => {
@@ -714,128 +794,472 @@ export default function Analytics() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════
-            SECTION D — التحليل الكامل
+            SECTION D — الفرص والتوصيات الذكية
         ══════════════════════════════════════════════════════════════ */}
         {section === "D" && (
           <div className="space-y-5">
             {!hasData && !loadingInsights ? (
-              <EmptyState text="لا توجد بيانات كافية للتحليل الكامل. أضف إعلانات لتفعيل هذا القسم." />
+              <EmptyState text="لا توجد بيانات كافية. أضف إعلانات لتفعيل الفرص والتوصيات." />
             ) : (
               <>
-                {/* D1: Market summary */}
-                <div className="bg-card rounded-2xl border border-border/60 p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <BarChart3 className="w-4 h-4 text-primary" />
+                {/* Role selector card */}
+                <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm">
+                  <div className="flex items-center gap-2 p-5 pb-4">
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Target className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <div className="text-base font-bold text-foreground">ملخص السوق</div>
-                      <div className="text-[12px] text-muted-foreground">مبني على بيانات المنصة الحالية</div>
+                      <div className="text-base font-bold text-foreground">الفرص والتوصيات الذكية</div>
+                      <div className="text-[11px] text-muted-foreground">مبنية حصرياً على بيانات إعلانات المنصة — اختر شخصيتك</div>
                     </div>
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed">{loadingInsights ? <Skeleton className="h-16 w-full" /> : marketSummary}</p>
+                  <div className="grid grid-cols-3 border-t border-border/60">
+                    {([
+                      { id: "buyer",    label: "عميل",        sub: "شراء / إيجار",        Icon: Home,      color: "#0F7BA0" },
+                      { id: "marketer", label: "مسوّق",        sub: "تسويق عقاري",         Icon: UserCheck, color: "#7C3AED" },
+                      { id: "provider", label: "مزود خدمة",   sub: "بناء وتشطيب وصيانة", Icon: Wrench,    color: "#D97706" },
+                    ] as const).map((r) => (
+                      <button
+                        key={r.id}
+                        onClick={() => setUserRole(r.id)}
+                        className={`flex flex-col items-center gap-1 py-4 px-2 text-center transition-all border-r last:border-r-0 border-border/60 relative ${
+                          userRole === r.id ? "bg-muted/40" : "hover:bg-muted/20"
+                        }`}
+                      >
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center mb-0.5 transition-all"
+                          style={userRole === r.id ? { background: `${r.color}18`, border: `1.5px solid ${r.color}40` } : { background: "transparent" }}
+                        >
+                          <r.Icon className="w-4.5 h-4.5" style={{ color: userRole === r.id ? r.color : "#94A3B8" }} />
+                        </div>
+                        <div className="text-[13px] font-bold text-foreground">{r.label}</div>
+                        <div className="text-[10px] text-muted-foreground leading-tight">{r.sub}</div>
+                        {userRole === r.id && (
+                          <div className="absolute bottom-0 inset-x-0 h-0.5 rounded-full" style={{ background: r.color }} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* D2: Most active districts */}
-                <div>
-                  <div className="text-sm font-bold text-foreground mb-3">أكثر الأحياء نشاطاً (عدد الإعلانات)</div>
-                  {byDistrict.length === 0 ? (
-                    <div className="text-sm text-muted-foreground bg-card rounded-2xl border border-border/60 p-5 text-center">لا توجد بيانات أحياء بعد</div>
-                  ) : (
-                    <div className="space-y-2">
-                      {[...byDistrict].sort((a, b) => b.count - a.count).slice(0, 5).map((d, i) => {
-                        const maxCount = byDistrict[0]?.count ?? 1;
-                        const pctBar = Math.round((d.count / maxCount) * 100);
-                        return (
-                          <div key={i} className="bg-card rounded-xl border border-border/60 px-4 py-3 flex items-center gap-4">
-                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[11px] font-extrabold flex items-center justify-center shrink-0">{i + 1}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-semibold text-foreground">{d.district}</span>
-                                <span className="text-[12px] text-muted-foreground">{d.city}</span>
-                              </div>
-                              <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: `${pctBar}%` }} />
-                              </div>
+                {/* ── BUYER INSIGHTS ──────────────────────────────────── */}
+                {userRole === "buyer" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* B1: Timing */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                              <Zap className="w-4 h-4 text-primary" />
                             </div>
-                            <span className="text-sm font-bold text-primary shrink-0">{d.count} إعلان</span>
+                            <span className="text-sm font-bold text-foreground">توقيت الشراء الآن</span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                            style={{ background: `${buyTimingColor}18`, color: buyTimingColor }}>
+                            {buyTimingStatus}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{buyTimingDesc}</p>
+                        {trendLen >= 2 && (
+                          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-border/50 text-[12px]">
+                            <span className="text-muted-foreground">تغير أسعار السوق:</span>
+                            <span className="font-extrabold" style={{ color: priceChange < 0 ? "#22C55E" : priceChange > 5 ? "#EF4444" : "#0F7BA0" }}>
+                              {priceChange > 0 ? "+" : ""}{priceChange}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-                {/* D3: Price distribution */}
-                <div className="bg-card rounded-2xl border border-border/60 p-6 shadow-sm">
-                  <div className="text-sm font-bold text-foreground mb-4">توزيع الأسعار</div>
-                  {loadingInsights ? (
-                    <Skeleton className="h-24 w-full" />
-                  ) : p25 === 0 ? (
-                    <div className="text-sm text-muted-foreground text-center py-4">البيانات غير كافية لعرض توزيع الأسعار</div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div className="bg-green-500/8 rounded-xl p-4 border border-green-500/20">
-                        <div className="text-[11px] font-bold text-green-600 mb-2">منخفض (الربع الأول)</div>
-                        <div className="text-lg font-extrabold text-foreground">{formatCurrency(p25)}</div>
-                        <div className="text-[11px] text-muted-foreground mt-1">25% من الإعلانات أقل من هذا السعر</div>
-                      </div>
-                      <div className="bg-primary/8 rounded-xl p-4 border border-primary/20">
-                        <div className="text-[11px] font-bold text-primary mb-2">متوسط (الوسيط)</div>
-                        <div className="text-lg font-extrabold text-foreground">{formatCurrency(medP)}</div>
-                        <div className="text-[11px] text-muted-foreground mt-1">50% من الإعلانات أقل من هذا السعر</div>
-                      </div>
-                      <div className="bg-amber-500/8 rounded-xl p-4 border border-amber-500/20">
-                        <div className="text-[11px] font-bold text-amber-600 mb-2">مرتفع (الربع الثالث)</div>
-                        <div className="text-lg font-extrabold text-foreground">{formatCurrency(p75)}</div>
-                        <div className="text-[11px] text-muted-foreground mt-1">75% من الإعلانات أقل من هذا السعر</div>
+                      {/* B2: Best value areas */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                            <MapPin className="w-4 h-4 text-green-600" />
+                          </div>
+                          <span className="text-sm font-bold text-foreground">أذكى الأحياء سعراً</span>
+                        </div>
+                        {topCheapDistricts4.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">لا توجد بيانات أحياء كافية بعد</p>
+                        ) : (
+                          <div className="space-y-2.5">
+                            {topCheapDistricts4.map((d, i) => {
+                              const savings = avgSqm > 0 ? Math.round((1 - d.avgPricePerSqm / avgSqm) * 100) : 0;
+                              return (
+                                <div key={i} className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                                    <span className="text-sm font-medium text-foreground">{d.district}</span>
+                                    <span className="text-[11px] text-muted-foreground">{d.city}</span>
+                                  </div>
+                                  {savings > 0 && (
+                                    <span className="text-[11px] font-bold bg-green-500/8 text-green-600 px-2 py-0.5 rounded-full shrink-0">
+                                      وفر {savings}%
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            <div className="text-[11px] text-muted-foreground pt-2 border-t border-border/50">
+                              متوسط السوق: {formatCurrency(avgSqm)} / م²
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* D4: Low/high price areas */}
-                {byDistrict.length >= 2 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <ArrowDownRight className="w-4 h-4 text-green-500" />
-                        <div className="text-sm font-bold text-foreground">المناطق ذات الأسعار المنخفضة</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* B3: Available listings */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Building2 className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-bold text-foreground">حجم الخيارات المتاحة</span>
+                        </div>
+                        <div className="text-2xl font-extrabold text-foreground mt-1">{formatNumber(tot)}</div>
+                        <div className="text-[12px] text-muted-foreground">إعلان متاح حالياً</div>
+                        <div className="mt-2 text-[12px]">
+                          <span className="font-bold" style={{ color: new7 >= weeklyRate ? "#22C55E" : "#F59E0B" }}>
+                            {new7} إعلان
+                          </span>
+                          <span className="text-muted-foreground"> أضيفت هذا الأسبوع</span>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        {[...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 4).map((d, i) => (
-                          <div key={i} className="flex items-center justify-between text-sm">
-                            <span className="text-foreground font-medium">{d.district}</span>
-                            <span className="text-green-600 font-bold">{formatCurrency(d.avgPricePerSqm)} / م²</span>
+
+                      {/* B4: Price range */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Scale className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-bold text-foreground">نطاق الأسعار</span>
+                        </div>
+                        {p25 > 0 ? (
+                          <div className="space-y-1.5 mt-1">
+                            <div className="flex justify-between text-[12px]">
+                              <span className="text-green-600 font-semibold">الأفضل سعراً</span>
+                              <span className="font-bold text-foreground">{formatCurrency(p25)}</span>
+                            </div>
+                            <div className="flex justify-between text-[12px]">
+                              <span className="text-primary font-semibold">وسيط السوق</span>
+                              <span className="font-bold text-foreground">{formatCurrency(medP)}</span>
+                            </div>
+                            <div className="flex justify-between text-[12px]">
+                              <span className="text-amber-600 font-semibold">الفئة المرتفعة</span>
+                              <span className="font-bold text-foreground">{formatCurrency(p75)}</span>
+                            </div>
                           </div>
-                        ))}
+                        ) : <p className="text-sm text-muted-foreground mt-1">بيانات غير كافية</p>}
+                      </div>
+
+                      {/* B5: Most available types */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Star className="w-4 h-4 text-amber-500" />
+                          <span className="text-xs font-bold text-foreground">أكثر الأنواع توفراً</span>
+                        </div>
+                        <div className="space-y-1.5 mt-1">
+                          {hotPropertyTypes.slice(0, 3).map((t, i) => (
+                            <div key={i} className="flex items-center justify-between text-[12px]">
+                              <span className="text-foreground">{t.propertyType}</span>
+                              <span className="font-bold text-muted-foreground">{t.percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <ArrowUpRight className="w-4 h-4 text-red-400" />
-                        <div className="text-sm font-bold text-foreground">المناطق ذات الأسعار المرتفعة</div>
+
+                    {/* Buyer recommendation */}
+                    <div className="rounded-2xl border p-5" style={{ background: "rgba(15,123,160,0.04)", borderColor: "rgba(15,123,160,0.2)" }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-bold text-foreground">توصية للعميل (مشتري / مستأجر)</span>
                       </div>
-                      <div className="space-y-2">
-                        {[...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 4).map((d, i) => (
-                          <div key={i} className="flex items-center justify-between text-sm">
-                            <span className="text-foreground font-medium">{d.district}</span>
-                            <span className="text-red-400 font-bold">{formatCurrency(d.avgPricePerSqm)} / م²</span>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : buyerRecommendation}</p>
                     </div>
                   </div>
                 )}
 
-                {/* D5: Recommendation */}
-                <div className="rounded-2xl border p-6 shadow-sm" style={{ background: "rgba(15,123,160,0.05)", borderColor: "rgba(15,123,160,0.2)" }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb className="w-4.5 h-4.5 text-primary" />
-                    <div className="text-sm font-bold text-foreground">توصية مبنية على البيانات</div>
+                {/* ── MARKETER INSIGHTS ───────────────────────────────── */}
+                {userRole === "marketer" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* M1: Pricing advice */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.1)" }}>
+                              <BarChart3 className="w-4 h-4" style={{ color: "#7C3AED" }} />
+                            </div>
+                            <span className="text-sm font-bold text-foreground">توصية التسعير</span>
+                          </div>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                            style={{ background: `${pricingTipColor}18`, color: pricingTipColor }}>
+                            {pricingTipBadge}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{pricingTip}</p>
+                        {avgP > 0 && medP > 0 && (
+                          <div className="mt-3 grid grid-cols-2 gap-2 pt-3 border-t border-border/50">
+                            <div className="bg-muted/30 rounded-xl p-2.5 text-center">
+                              <div className="text-[10px] text-muted-foreground mb-1">متوسط السوق</div>
+                              <div className="text-[13px] font-bold text-foreground">{formatCurrency(avgP)}</div>
+                            </div>
+                            <div className="rounded-xl p-2.5 text-center" style={{ background: "rgba(124,58,237,0.08)" }}>
+                              <div className="text-[10px] mb-1" style={{ color: "#7C3AED" }}>وسيط السوق</div>
+                              <div className="text-[13px] font-bold text-foreground">{formatCurrency(medP)}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* M2: Listing momentum */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                              <Activity className="w-4 h-4 text-primary" />
+                            </div>
+                            <span className="text-sm font-bold text-foreground">حركة السوق الأسبوعية</span>
+                          </div>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                            style={{ background: `${listingMomentumColor}18`, color: listingMomentumColor }}>
+                            {listingMomentumLabel}
+                          </span>
+                        </div>
+                        <div className="flex items-end gap-4 mb-3">
+                          <div>
+                            <div className="text-2xl font-extrabold text-foreground">{new7}</div>
+                            <div className="text-[12px] text-muted-foreground">إعلان هذا الأسبوع</div>
+                          </div>
+                          <div className="text-[12px] text-muted-foreground pb-0.5">
+                            مقابل معدل {Math.round(weeklyRate)} / أسبوع
+                          </div>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground leading-relaxed">{listingMomentumDesc}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* M3: Hot property types */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <TrendingUp className="w-4 h-4" style={{ color: "#7C3AED" }} />
+                          <span className="text-sm font-bold text-foreground">أنواع العقارات الأعلى طلباً</span>
+                        </div>
+                        <div className="space-y-2.5">
+                          {hotPropertyTypes.map((t, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0"
+                                style={{ background: "rgba(124,58,237,0.1)", color: "#7C3AED" }}>{i + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className="text-[13px] font-medium text-foreground truncate">{t.propertyType}</span>
+                                  <span className="text-[12px] font-bold shrink-0 mr-2" style={{ color: "#7C3AED" }}>{t.percentage}%</span>
+                                </div>
+                                <div className="h-1 bg-muted rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${t.percentage}%`, background: "#7C3AED88" }} />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* M4: Low supply = opportunity */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm font-bold text-foreground">مناطق شُح العرض — فرصة للمسوّق</span>
+                        </div>
+                        {lowSupplyCities.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">العرض موزع بشكل متوازن بين المناطق</p>
+                        ) : (
+                          <>
+                            <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">
+                              المناطق التالية لديها إعلانات أقل من المتوسط — منافسة أضعف وفرصة تسويقية أفضل:
+                            </p>
+                            <div className="space-y-2">
+                              {lowSupplyCities.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-foreground">{c.city}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[12px] text-muted-foreground">{c.count} إعلان</span>
+                                    <span className="text-[11px] font-bold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full">فرصة</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* M5: Competition in districts */}
+                    {topActiveDistricts4.length > 0 && (
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Building2 className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-bold text-foreground">مستوى المنافسة في الأحياء</span>
+                          <span className="text-[11px] text-muted-foreground mr-auto">عدد أعلى = منافسة أشد</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {topActiveDistricts4.map((d, i) => (
+                            <div key={i} className="rounded-xl p-3 text-center border border-border/60"
+                              style={{ background: i === 0 ? "rgba(124,58,237,0.06)" : "rgba(100,116,139,0.05)" }}>
+                              <div className="text-xl font-extrabold text-foreground">{d.count}</div>
+                              <div className="text-[12px] font-semibold text-foreground mt-0.5">{d.district}</div>
+                              <div className="text-[10px] text-muted-foreground">{d.city}</div>
+                              {i === 0 && <div className="text-[10px] font-bold mt-1" style={{ color: "#7C3AED" }}>الأعلى منافسة</div>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Marketer recommendation */}
+                    <div className="rounded-2xl border p-5" style={{ background: "rgba(124,58,237,0.04)", borderColor: "rgba(124,58,237,0.2)" }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb className="w-4 h-4" style={{ color: "#7C3AED" }} />
+                        <span className="text-sm font-bold text-foreground">توصية للمسوّق العقاري</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : marketerRecommendation}</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : recommendation}</p>
-                  <div className="mt-3 text-[11px] text-muted-foreground">التوصية مستنتجة حصرياً من بيانات المنصة الداخلية وتعبّر عن اتجاهات الإعلانات فقط، وليست استشارة استثمارية.</div>
+                )}
+
+                {/* ── SERVICE PROVIDER INSIGHTS ───────────────────────── */}
+                {userRole === "provider" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* P1: Most active districts */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(217,119,6,0.1)" }}>
+                            <MapPin className="w-4 h-4" style={{ color: "#D97706" }} />
+                          </div>
+                          <span className="text-sm font-bold text-foreground">أكثر الأحياء نشاطاً</span>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">النشاط العالي = طلب أعلى على خدمات التشطيب والصيانة والتجديد:</p>
+                        <div className="space-y-2.5">
+                          {topActiveDistricts4.map((d, i) => {
+                            const pct = byDistrict[0]?.count > 0 ? Math.round((d.count / byDistrict[0].count) * 100) : 0;
+                            return (
+                              <div key={i} className="flex items-center gap-3">
+                                <span className="w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0"
+                                  style={{ background: "rgba(217,119,6,0.1)", color: "#D97706" }}>{i + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-0.5">
+                                    <div>
+                                      <span className="text-[13px] font-medium text-foreground">{d.district}</span>
+                                      <span className="text-[11px] text-muted-foreground mr-1">{d.city}</span>
+                                    </div>
+                                    <span className="text-[12px] font-bold shrink-0" style={{ color: "#D97706" }}>{d.count}</span>
+                                  </div>
+                                  <div className="h-1 bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#D97706AA" }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* P2: Growth signal */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(217,119,6,0.1)" }}>
+                              <TrendingUp className="w-4 h-4" style={{ color: "#D97706" }} />
+                            </div>
+                            <span className="text-sm font-bold text-foreground">مؤشر نمو السوق</span>
+                          </div>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                            style={{ background: `${growthColor}18`, color: growthColor }}>
+                            {growthSignal}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="bg-muted/30 rounded-xl p-3 text-center">
+                            <div className="text-xl font-extrabold text-foreground">{new7}</div>
+                            <div className="text-[11px] text-muted-foreground">إعلان هذا الأسبوع</div>
+                          </div>
+                          <div className="bg-muted/30 rounded-xl p-3 text-center">
+                            <div className="text-xl font-extrabold text-foreground">{new30}</div>
+                            <div className="text-[11px] text-muted-foreground">إعلان هذا الشهر</div>
+                          </div>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground leading-relaxed">{providerGrowthDesc}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* P3: High value property types */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Star className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm font-bold text-foreground">الأنواع الأعلى قيمة</span>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground mb-3">العقارات الأعلى سعراً تتطلب خدمات أرقى بميزانيات أكبر:</p>
+                        {highValueTypes.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">بيانات غير كافية</p>
+                        ) : (
+                          <div className="space-y-2.5">
+                            {highValueTypes.map((t, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                                  <span className="text-sm font-medium text-foreground">{t.propertyType}</span>
+                                </div>
+                                <span className="text-[12px] font-bold text-amber-600">{formatCurrency(t.avgPricePerSqm)} / م²</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* P4: Deal type distribution */}
+                      <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Activity className="w-4 h-4" style={{ color: "#D97706" }} />
+                          <span className="text-sm font-bold text-foreground">توزيع نوع الصفقة</span>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground mb-3">صفقات البيع والتجديد تستهدف خدماتك أكثر من الإيجار:</p>
+                        {(insights?.byListingType?.length ?? 0) > 0 ? (
+                          <div className="space-y-2">
+                            {insights!.byListingType.slice(0, 5).map((t, i) => (
+                              <div key={i} className="flex items-center gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-0.5">
+                                    <span className="text-[13px] text-foreground truncate">{t.label || t.listingType}</span>
+                                    <span className="text-[12px] font-bold text-foreground shrink-0 mr-2">{t.count}</span>
+                                  </div>
+                                  <div className="h-1 bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full" style={{ width: `${t.percentage}%`, background: "#D97706AA" }} />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">بيانات غير متوفرة</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Provider recommendation */}
+                    <div className="rounded-2xl border p-5" style={{ background: "rgba(217,119,6,0.04)", borderColor: "rgba(217,119,6,0.25)" }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm font-bold text-foreground">توصية لعارض الخدمات</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{loadingInsights || loadingTrends ? <Skeleton className="h-10 w-full" /> : providerRecommendation}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Disclaimer */}
+                <div className="flex items-start gap-2 bg-muted/30 rounded-xl px-4 py-3 text-[11px] text-muted-foreground">
+                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-primary" />
+                  <span>جميع الفرص والتوصيات مستنتجة حصرياً من بيانات إعلانات المنصة الداخلية — لا تعكس مصادر خارجية وليست استشارة مالية أو استثمارية.</span>
                 </div>
               </>
             )}
