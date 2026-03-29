@@ -21,6 +21,7 @@ import {
   Tooltip, PieChart, Pie, Cell, BarChart, Bar,
 } from "recharts";
 import type { MapPin as MapPinItem } from "@/components/property-map";
+import { SAUDI_REGIONS } from "@/lib/saudi-cities";
 
 const PropertyMap = lazy(() => import("@/components/property-map"));
 
@@ -211,8 +212,10 @@ export default function Home() {
   const [, navigate] = useLocation();
 
   // Quick search state (hero bar)
-  const [quickCity, setQuickCity] = useState("");
-  const [quickType, setQuickType] = useState("");
+  const [quickRegion, setQuickRegion]           = useState("");
+  const [quickCity, setQuickCity]               = useState("");
+  const [quickDistrict, setQuickDistrict]       = useState("");
+  const [quickType, setQuickType]               = useState("");
   const [quickListingType, setQuickListingType] = useState("");
 
   // Category quick filter (pills)
@@ -325,10 +328,17 @@ export default function Home() {
     ? (filterOpts?.districts ?? []).filter(d => d.city === applied.city)
     : (filterOpts?.districts ?? []);
 
+  // Derived lists for quick-search dropdowns
+  const citiesForRegion: string[] = quickRegion ? (SAUDI_REGIONS[quickRegion] ?? []) : [];
+  const districtsForCity: string[] = quickCity
+    ? (filterOpts?.districts ?? []).filter(d => d.city === quickCity).map(d => d.district)
+    : [];
+
   // Quick search → navigate to /listings with params
   const handleQuickSearch = () => {
     const p = new URLSearchParams();
     if (quickCity) p.set("city", quickCity);
+    if (quickDistrict) p.set("district", quickDistrict);
     if (quickType) p.set("propertyType", quickType);
     if (quickListingType) p.set("listingType", quickListingType);
     navigate(`/listings${p.toString() ? `?${p.toString()}` : ""}`);
@@ -422,51 +432,125 @@ export default function Home() {
                 قارن الأسعار في مئات الأحياء، تابع المشاريع المستقبلية، وتواصل مع أفضل المسوّقين
               </p>
 
-              {/* Search bar — visually dominant */}
+              {/* Search bar — two-row layout */}
               <div
-                className="bg-white/12 backdrop-blur-md border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row gap-3 max-w-3xl mb-6"
+                className="bg-white/12 backdrop-blur-md border border-white/20 rounded-2xl p-3 md:p-4 flex flex-col gap-2.5 max-w-3xl mb-6"
                 style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)" }}
               >
-                <select
-                  value={quickListingType}
-                  onChange={e => setQuickListingType(e.target.value)}
-                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 md:w-40 shrink-0 cursor-pointer"
-                  style={{ color: "white" }}
-                >
-                  <option value="" style={{ color: "#0F1C3F" }}>بيع وإيجار</option>
-                  <option value="sale" style={{ color: "#0F1C3F" }}>للبيع</option>
-                  <option value="rent" style={{ color: "#0F1C3F" }}>للإيجار</option>
-                </select>
-                <select
-                  value={quickType}
-                  onChange={e => setQuickType(e.target.value)}
-                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 flex-1 cursor-pointer"
-                  style={{ color: "white" }}
-                >
-                  <option value="" style={{ color: "#0F1C3F" }}>كل أنواع العقارات</option>
-                  {PROPERTY_CATEGORIES.map(c => (
-                    <option key={c.value} value={c.value} style={{ color: "#0F1C3F" }}>{c.label}</option>
-                  ))}
-                </select>
-                <select
-                  value={quickCity}
-                  onChange={e => setQuickCity(e.target.value)}
-                  className="bg-white/15 border border-white/25 rounded-xl px-4 py-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 flex-1 cursor-pointer"
-                  style={{ color: "white" }}
-                >
-                  <option value="" style={{ color: "#0F1C3F" }}>كل المدن</option>
-                  {(filterOpts?.cities ?? []).map(c => (
-                    <option key={c} value={c} style={{ color: "#0F1C3F" }}>{c}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleQuickSearch}
-                  className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shrink-0"
-                  style={{ boxShadow: "0 4px 18px rgba(15,123,160,0.55)" }}
-                >
-                  <Search className="w-4.5 h-4.5" />
-                  بحث
-                </button>
+                {/* Row 1 — Location: المنطقة → المدينة → الحي */}
+                <div className="flex flex-col md:flex-row gap-2.5">
+                  {/* المنطقة */}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المنطقة</span>
+                    <select
+                      value={quickRegion}
+                      onChange={e => {
+                        setQuickRegion(e.target.value);
+                        setQuickCity("");
+                        setQuickDistrict("");
+                      }}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>كل المناطق</option>
+                      {Object.keys(SAUDI_REGIONS).map(r => (
+                        <option key={r} value={r} style={{ color: "#0F1C3F" }}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* المدينة */}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المدينة</span>
+                    <select
+                      value={quickCity}
+                      onChange={e => {
+                        setQuickCity(e.target.value);
+                        setQuickDistrict("");
+                      }}
+                      disabled={!quickRegion}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>
+                        {quickRegion ? "كل المدن" : "اختر المنطقة أولاً"}
+                      </option>
+                      {citiesForRegion.map(c => (
+                        <option key={c} value={c} style={{ color: "#0F1C3F" }}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* الحي */}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">الحي</span>
+                    <select
+                      value={quickDistrict}
+                      onChange={e => setQuickDistrict(e.target.value)}
+                      disabled={!quickCity || districtsForCity.length === 0}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>
+                        {!quickCity
+                          ? "اختر المدينة أولاً"
+                          : districtsForCity.length === 0
+                          ? "لا توجد أحياء مسجّلة"
+                          : "كل الأحياء"}
+                      </option>
+                      {districtsForCity.map(d => (
+                        <option key={d} value={d} style={{ color: "#0F1C3F" }}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Row 2 — Type + Search button */}
+                <div className="flex flex-col md:flex-row gap-2.5">
+                  {/* نوع العقار */}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">نوع العقار</span>
+                    <select
+                      value={quickType}
+                      onChange={e => setQuickType(e.target.value)}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>كل أنواع العقارات</option>
+                      {PROPERTY_CATEGORIES.map(c => (
+                        <option key={c.value} value={c.value} style={{ color: "#0F1C3F" }}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* بيع / إيجار */}
+                  <div className="flex flex-col gap-1 md:w-36 shrink-0">
+                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">نوع الصفقة</span>
+                    <select
+                      value={quickListingType}
+                      onChange={e => setQuickListingType(e.target.value)}
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full cursor-pointer"
+                      style={{ color: "white" }}
+                    >
+                      <option value="" style={{ color: "#0F1C3F" }}>بيع وإيجار</option>
+                      <option value="sale" style={{ color: "#0F1C3F" }}>للبيع</option>
+                      <option value="rent" style={{ color: "#0F1C3F" }}>للإيجار</option>
+                    </select>
+                  </div>
+
+                  {/* زر البحث */}
+                  <div className="flex flex-col gap-1 justify-end md:w-28 shrink-0">
+                    <span className="text-[10px] font-bold text-white/0 px-1 tracking-wider select-none">.</span>
+                    <button
+                      onClick={handleQuickSearch}
+                      className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white w-full py-3 rounded-xl font-bold text-sm transition-all"
+                      style={{ boxShadow: "0 4px 18px rgba(15,123,160,0.55)" }}
+                    >
+                      <Search className="w-4 h-4" />
+                      بحث
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* CTA row */}
