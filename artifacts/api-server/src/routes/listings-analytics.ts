@@ -136,7 +136,7 @@ router.get("/listings-insights", async (req, res) => {
   const last7 = new Date(now); last7.setDate(now.getDate() - 7);
   const last30 = new Date(now); last30.setDate(now.getDate() - 30);
 
-  const [kpiRows, byCityRows, byDistrictRows, byTypeRows, byListingTypeRows, trend7, trend30] = await Promise.all([
+  const [kpiRows, byRegionRows, byCityRows, byDistrictRows, byTypeRows, byListingTypeRows, trend7, trend30] = await Promise.all([
     db.select({
       totalListings: count(),
       avgPricePerSqm: avg(listingsTable.pricePerSqm),
@@ -152,6 +152,15 @@ router.get("/listings-insights", async (req, res) => {
       p75:             sql<number>`percentile_cont(0.75) within group (order by price)`,
       priceStddev:     sql<number>`stddev(price)`,
     }).from(listingsTable).where(where),
+
+    db.select({
+      region: listingsTable.region,
+      count: count(),
+      avgPrice: avg(listingsTable.price),
+      avgPricePerSqm: avg(listingsTable.pricePerSqm),
+    }).from(listingsTable).where(and(where, sql`region is not null and region != ''`))
+      .groupBy(listingsTable.region)
+      .orderBy(desc(avg(listingsTable.price))),
 
     db.select({
       city: listingsTable.city,
@@ -220,6 +229,13 @@ router.get("/listings-insights", async (req, res) => {
     areaDataRate:     totalListings > 0 ? Math.round((Number(k?.listingsWithArea ?? 0) / totalListings) * 100) : 0,
   };
 
+  const byRegion = byRegionRows.map(r => ({
+    region: r.region ?? "",
+    count: r.count,
+    avgPrice: Math.round(parseFloat(String(r.avgPrice ?? "0"))),
+    avgPricePerSqm: Math.round(parseFloat(String(r.avgPricePerSqm ?? "0"))),
+  }));
+
   const byCity = byCityRows.map(r => ({
     city: r.city,
     count: r.count,
@@ -255,7 +271,7 @@ router.get("/listings-insights", async (req, res) => {
 
   const smartInsights = generateSmartInsights({ kpis, byCity, byDistrict, byPropertyType, byListingType });
 
-  res.json({ kpis, byCity, byDistrict, byPropertyType, byListingType, smartInsights });
+  res.json({ kpis, byRegion, byCity, byDistrict, byPropertyType, byListingType, smartInsights });
 });
 
 router.get("/listings-trends", async (req, res) => {

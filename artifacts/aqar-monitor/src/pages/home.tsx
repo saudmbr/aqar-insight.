@@ -43,6 +43,7 @@ type InsightsData = {
     turnoverRate: number; areaDataRate: number;
     newLast7Days: number; newLast30Days: number;
   };
+  byRegion: Array<{ region: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
   byCity: Array<{ city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
   byDistrict: Array<{ district: string; city: string; count: number; avgPrice: number; avgPricePerSqm: number }>;
   byPropertyType: Array<{ propertyType: string; count: number; avgPrice: number; avgPricePerSqm: number; percentage: number }>;
@@ -1463,36 +1464,36 @@ export default function Home() {
               <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
                 <CardHeader className="pb-0 pt-5 px-5">
                   <CardTitle className="text-[15px] flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" /> المدن
+                    <MapPin className="w-4 h-4 text-primary" /> المناطق
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0 mt-3">
                   {loadingInsights ? (
                     <div className="p-5 space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-                  ) : (insights?.byCity?.length ?? 0) === 0 ? (
+                  ) : (insights?.byRegion?.length ?? 0) === 0 ? (
                     <div className="p-8 text-center text-muted-foreground text-sm">لا توجد بيانات</div>
                   ) : (
                     <table className="w-full text-sm text-right">
                       <thead className="border-b border-border bg-muted/30">
                         <tr>
-                          <th className="px-5 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">المدينة</th>
+                          <th className="px-5 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">المنطقة</th>
                           <th className="px-5 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">إعلانات</th>
                           <th className="px-5 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">متوسط السعر</th>
                           <th className="px-5 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">سعر المتر</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/50">
-                        {(insights?.byCity ?? []).map((c, i) => (
-                          <tr key={c.city} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate(`/listings?city=${encodeURIComponent(c.city)}`)}>
+                        {(insights?.byRegion ?? []).map((r, i) => (
+                          <tr key={r.region} className="hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate(`/listings?region=${encodeURIComponent(r.region)}`)}>
                             <td className="px-5 py-3.5 font-semibold text-foreground flex items-center gap-1.5">
                               {i === 0 && <Star className="w-3 h-3 text-accent shrink-0" />}
-                              {c.city}
+                              {r.region}
                             </td>
                             <td className="px-5 py-3.5">
-                              <span className="inline-flex items-center justify-center bg-primary/10 text-primary text-[12px] font-bold rounded-lg px-2.5 py-0.5">{c.count}</span>
+                              <span className="inline-flex items-center justify-center bg-primary/10 text-primary text-[12px] font-bold rounded-lg px-2.5 py-0.5">{r.count}</span>
                             </td>
-                            <td className="px-5 py-3.5 font-semibold text-foreground">{formatCurrency(c.avgPrice)}</td>
-                            <td className="px-5 py-3.5 text-muted-foreground">{c.avgPricePerSqm > 0 ? formatCurrency(c.avgPricePerSqm) : "—"}</td>
+                            <td className="px-5 py-3.5 font-semibold text-foreground">{formatCurrency(r.avgPrice)}</td>
+                            <td className="px-5 py-3.5 text-muted-foreground">{r.avgPricePerSqm > 0 ? formatCurrency(r.avgPricePerSqm) : "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1540,20 +1541,20 @@ export default function Home() {
               </Card>
             </div>
 
-            {(insights?.byCity?.length ?? 0) > 1 && (
+            {(insights?.byRegion?.length ?? 0) > 1 && (
               <Card className="rounded-2xl border-border/60 shadow-sm mt-5">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[15px]">توزيع الإعلانات والأسعار حسب المدينة</CardTitle>
+                  <CardTitle className="text-[15px]">توزيع الإعلانات والأسعار حسب المنطقة</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[220px]" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={insights?.byCity ?? []} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+                      <BarChart data={insights?.byRegion ?? []} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                        <XAxis dataKey="city" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} dy={6} />
+                        <XAxis dataKey="region" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} dy={6} interval={0} />
                         <YAxis yAxisId="l" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                         <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false}
-                          tickFormatter={v => `${(v / 1000).toFixed(0)}k`} dx={6} />
+                          tickFormatter={v => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}م` : `${(v / 1000).toFixed(0)}k`} dx={6} />
                         <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid var(--border)" }}
                           formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "عدد الإعلانات" : "متوسط السعر (ر.س)"]} />
                         <Bar yAxisId="l" dataKey="count" fill="#0F7BA0" radius={[5, 5, 0, 0]} name="count" />
