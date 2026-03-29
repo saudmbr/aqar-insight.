@@ -25,6 +25,7 @@ const LISTING_TYPES = [
 ];
 const LISTING_PURPOSES = ["سكني", "تجاري", "صناعي", "زراعي", "استثماري"];
 const FURNISHING = ["مفروش", "غير مفروش", "نصف مفروش"];
+const DEED_PRESETS = ["صك إلكتروني مستقل", "صك ورقي", "صك مشترك", "تحت الإفراز", "قيد التسجيل", "وقف"];
 const FACADES = [
   "شمالي", "جنوبي", "شرقي", "غربي",
   "شمالي شرقي", "شمالي غربي", "جنوبي شرقي", "جنوبي غربي",
@@ -83,6 +84,7 @@ export default function ListingForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deedOtherMode, setDeedOtherMode] = useState(false);
   const [locationValue, setLocationValue] = useState<LocationValue | null>(null);
 
   const [form, setForm] = useState<PartialListing>({
@@ -108,6 +110,7 @@ export default function ListingForm() {
       if (res.ok) {
         const data = await res.json() as PartialListing;
         setForm(data);
+        if (data.deedStatus && !DEED_PRESETS.includes(data.deedStatus)) setDeedOtherMode(true);
         if (data.latitude != null && data.longitude != null) {
           setLocationValue({
             lat: data.latitude as number,
@@ -482,7 +485,42 @@ export default function ListingForm() {
             </CardHeader>
             <CardContent className="p-6 space-y-5">
               <FieldGroup label="حالة الصك">
-                <Input placeholder="مثال: صك إلكتروني مستقل" value={form.deedStatus ?? ""} onChange={e => set("deedStatus", e.target.value)} className="h-12 rounded-xl" />
+                <div className="flex flex-wrap gap-2">
+                  {DEED_PRESETS.map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => { set("deedStatus", opt); setDeedOtherMode(false); }}
+                      className={`px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        form.deedStatus === opt && !deedOtherMode
+                          ? "bg-primary text-white border-primary"
+                          : "bg-background border-input text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => { setDeedOtherMode(true); set("deedStatus", ""); }}
+                    className={`px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      deedOtherMode
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background border-input text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    }`}
+                  >
+                    أخرى...
+                  </button>
+                </div>
+                {deedOtherMode && (
+                  <Input
+                    placeholder="اكتب حالة الصك..."
+                    value={form.deedStatus ?? ""}
+                    onChange={e => set("deedStatus", e.target.value)}
+                    className="h-12 rounded-xl mt-3"
+                    autoFocus
+                  />
+                )}
               </FieldGroup>
               <FieldGroup label="رقم رخصة فال">
                 <Input placeholder="مثال: 12000XXXXX" value={form.licenseStatus ?? ""} onChange={e => set("licenseStatus", e.target.value)} className="h-12 rounded-xl font-mono" dir="ltr" />
