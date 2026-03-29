@@ -1443,11 +1443,22 @@ export default function Home() {
                         <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false}
                           tickFormatter={v => `${(v / 1000).toFixed(0)}k`} dx={6} />
                         <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid var(--border)" }}
-                          formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "الإعلانات" : "متوسط السعر"]} />
+                          formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "عدد الإعلانات" : "متوسط السعر (ر.س)"]} />
                         <Bar yAxisId="l" dataKey="count" fill="#0F7BA0" radius={[5, 5, 0, 0]} name="count" />
                         <Bar yAxisId="r" dataKey="avgPrice" fill="#94A3B8" radius={[5, 5, 0, 0]} name="avgPrice" />
                       </BarChart>
                     </ResponsiveContainer>
+                  </div>
+                  {/* مفتاح الألوان */}
+                  <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-border/40">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm shrink-0 inline-block" style={{ background: "#0F7BA0" }} />
+                      <span className="text-[12px] text-muted-foreground">عدد الإعلانات <span className="text-foreground/50">(محور يسار)</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm shrink-0 inline-block" style={{ background: "#94A3B8" }} />
+                      <span className="text-[12px] text-muted-foreground">متوسط السعر <span className="text-foreground/50">(محور يمين)</span></span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
