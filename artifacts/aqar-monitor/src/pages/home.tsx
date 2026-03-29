@@ -296,11 +296,24 @@ export default function Home() {
     staleTime: 60_000,
   });
 
+  // Map filters
+  const [mapRegion, setMapRegion]           = useState("");
+  const [mapCity, setMapCity]               = useState("");
+  const [mapListingType, setMapListingType] = useState("");
+  const [mapPropertyType, setMapPropertyType] = useState("");
+
+  const mapHasFilters = !!(mapRegion || mapCity || mapListingType || mapPropertyType);
+
   // Map pins — individual property markers
   const { data: mapPinsData } = useQuery<{ pins: MapPinItem[] }>({
-    queryKey: ["home-map-pins"],
+    queryKey: ["home-map-pins", mapRegion, mapCity, mapListingType, mapPropertyType],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/listings/map-pins?limit=200`);
+      const p = new URLSearchParams({ limit: "300" });
+      if (mapRegion) p.set("region", mapRegion);
+      if (mapCity) p.set("city", mapCity);
+      if (mapListingType) p.set("listingType", mapListingType);
+      if (mapPropertyType) p.set("propertyType", mapPropertyType);
+      const res = await fetch(`${BASE()}/api/listings/map-pins?${p}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -852,12 +865,101 @@ export default function Home() {
             }
           />
           <Card className="rounded-2xl overflow-hidden border-border/60 shadow-sm">
+            {/* Map filter bar */}
+            <div className="px-4 py-3 border-b border-border/60 bg-muted/30 flex flex-wrap items-end gap-3">
+              <div className="flex items-center gap-2 me-1">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-semibold text-foreground">فلترة الخريطة</span>
+                {mapHasFilters && (
+                  <span className="text-[10px] px-1.5 py-0 h-4 inline-flex items-center rounded-full bg-primary/10 text-primary font-bold">
+                    {[mapRegion, mapCity, mapListingType, mapPropertyType].filter(Boolean).length} نشط
+                  </span>
+                )}
+              </div>
+
+              {/* المنطقة */}
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] text-muted-foreground">المنطقة</label>
+                <select
+                  value={mapRegion}
+                  onChange={e => { setMapRegion(e.target.value); setMapCity(""); }}
+                  className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">كل المناطق</option>
+                  {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* المحافظة */}
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] text-muted-foreground">المحافظة</label>
+                <select
+                  value={mapCity}
+                  onChange={e => setMapCity(e.target.value)}
+                  disabled={!mapRegion}
+                  className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
+                >
+                  <option value="">{mapRegion ? "كل المحافظات" : "— اختر منطقة"}</option>
+                  {getMuhafazat(mapRegion).map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+
+              {/* نوع الإعلان */}
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] text-muted-foreground">نوع الإعلان</label>
+                <select
+                  value={mapListingType}
+                  onChange={e => setMapListingType(e.target.value)}
+                  className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">الكل</option>
+                  {LISTING_TYPE_GROUPS.map(g => (
+                    <optgroup key={g.label} label={`── ${g.label}`}>
+                      {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* نوع العقار */}
+              <div className="flex flex-col gap-0.5">
+                <label className="text-[10px] text-muted-foreground">نوع العقار</label>
+                <select
+                  value={mapPropertyType}
+                  onChange={e => setMapPropertyType(e.target.value)}
+                  className="border border-input bg-background rounded-lg px-2.5 text-xs h-7 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">كل الأنواع</option>
+                  {PROPERTY_TYPE_GROUPS.map(g => (
+                    <optgroup key={g.label} label={`── ${g.label}`}>
+                      {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {mapHasFilters && (
+                <button
+                  onClick={() => { setMapRegion(""); setMapCity(""); setMapListingType(""); setMapPropertyType(""); }}
+                  className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-destructive border border-border rounded-lg flex items-center gap-1 self-end transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  مسح
+                </button>
+              )}
+
+              <div className="flex-1" />
+              <span className="text-[11px] text-muted-foreground self-end">
+                {mapPins.length} عقار
+              </span>
+            </div>
+
             <CardContent className="p-0">
-              <Suspense fallback={<Skeleton className="w-full h-[460px] rounded-2xl" />}>
+              <Suspense fallback={<Skeleton className="w-full h-[440px] rounded-none" />}>
                 <PropertyMap
                   pins={mapPins}
                   onPinClick={id => navigate(`/listings/${id}`)}
-                  height={460}
+                  height={440}
                 />
               </Suspense>
             </CardContent>

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
 import {
   MapPin, Building2, SlidersHorizontal, X, Search,
-  Maximize2, BedDouble, Bath, ChevronLeft, RefreshCcw,
+  BedDouble, Bath, ChevronLeft, RefreshCcw,
   Navigation, Layers, Map,
 } from "lucide-react";
 import type { MapPin as MapPinType } from "@/components/property-map";
@@ -100,7 +100,6 @@ export default function MapPage() {
   const [listingType, setListingType] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
 
   // Data
   const [pins, setPins] = useState<MapPinType[]>([]);
@@ -197,20 +196,16 @@ export default function MapPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-white/80 hover:bg-white/10 border border-white/20 gap-2"
-            onClick={() => setShowFilters(v => !v)}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>فلترة</span>
-            {hasFilters && (
-              <span className="w-4 h-4 rounded-full bg-accent text-white text-[9px] flex items-center justify-center font-bold">
-                !
-              </span>
-            )}
-          </Button>
+          {hasFilters && (
+            <Button
+              size="sm" variant="ghost"
+              className="text-white/70 hover:bg-white/10 gap-1.5 text-xs border border-white/15"
+              onClick={clearFilters}
+            >
+              <X className="w-3.5 h-3.5" />
+              مسح الفلاتر
+            </Button>
+          )}
           <Link href={`${BASE()}/listings`}>
             <Button size="sm" variant="ghost" className="text-white/80 hover:bg-white/10 border border-white/20 gap-2">
               <Layers className="w-4 h-4" />
@@ -220,97 +215,127 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Filter panel */}
-      {showFilters && (
-        <div className="bg-white border-b border-border px-6 py-4 shadow-sm">
-          <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">المنطقة</label>
-              <select value={region} onChange={e => { setRegion(e.target.value); setCity(""); setMarkaz(""); }}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30">
-                <option value="">كل المناطق</option>
-                {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">المحافظة</label>
-              <select value={city} onChange={e => { setCity(e.target.value); setMarkaz(""); }} disabled={!region}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50">
-                <option value="">{region ? "كل المحافظات" : "اختر المنطقة"}</option>
-                {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">المركز</label>
-              <select value={markaz} onChange={e => setMarkaz(e.target.value)} disabled={!city}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50">
-                <option value="">{city ? "كل المراكز" : "اختر المحافظة"}</option>
-                {getMarakiz(region, city).map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">نوع العقار</label>
-              <select
-                value={propertyType}
-                onChange={e => setPropertyType(e.target.value)}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="">كل الأنواع</option>
-                {PROPERTY_TYPE_GROUPS.map(g => (
-                  <optgroup key={g.label} label={`── ${g.label}`}>
-                    {g.types.map(t => <option key={t} value={t}>{t}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">نوع الإعلان</label>
-              <select
-                value={listingType}
-                onChange={e => setListingType(e.target.value)}
-                className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="">الكل</option>
-                {LISTING_TYPE_GROUPS.map(g => (
-                  <optgroup key={g.label} label={`── ${g.label}`}>
-                    {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">السعر من</label>
-              <Input
-                type="number" placeholder="0" value={minPrice}
-                onChange={e => setMinPrice(e.target.value)}
-                className="h-9 w-28 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">السعر إلى</label>
-              <Input
-                type="number" placeholder="بلا حد" value={maxPrice}
-                onChange={e => setMaxPrice(e.target.value)}
-                className="h-9 w-28 text-sm"
-              />
-            </div>
-            <Button type="submit" size="sm" className="h-9 gap-2">
-              <Search className="w-3.5 h-3.5" />
-              <span>بحث</span>
-            </Button>
-            {hasFilters && (
-              <Button
-                type="button" size="sm" variant="ghost"
-                className="h-9 text-muted-foreground gap-2"
-                onClick={clearFilters}
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>مسح</span>
-              </Button>
-            )}
-          </form>
+      {/* Filter panel — always visible */}
+      <div className="bg-white border-b border-border shadow-sm">
+        <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50 bg-muted/30">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">أدوات الفلترة</span>
+          {hasFilters && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20">
+              {[region, city, markaz, propertyType, listingType, minPrice, maxPrice].filter(Boolean).length} فلتر نشط
+            </Badge>
+          )}
+          <div className="flex-1" />
+          {hasFilters && (
+            <button
+              onClick={clearFilters}
+              className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+            >
+              <X className="w-3 h-3" />
+              مسح الكل
+            </button>
+          )}
         </div>
-      )}
+        <form onSubmit={handleSearch} className="px-4 py-3 flex flex-wrap gap-2 items-end">
+          {/* المنطقة */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">المنطقة</label>
+            <select
+              value={region}
+              onChange={e => { setRegion(e.target.value); setCity(""); setMarkaz(""); }}
+              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">كل المناطق</option>
+              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+
+          {/* المحافظة */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">المحافظة</label>
+            <select
+              value={city}
+              onChange={e => { setCity(e.target.value); setMarkaz(""); }}
+              disabled={!region}
+              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
+            >
+              <option value="">{region ? "كل المحافظات" : "— اختر منطقة"}</option>
+              {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+
+          {/* المركز */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">المركز</label>
+            <select
+              value={markaz}
+              onChange={e => setMarkaz(e.target.value)}
+              disabled={!city}
+              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[110px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
+            >
+              <option value="">{city ? "كل المراكز" : "— اختر محافظة"}</option>
+              {getMarakiz(region, city).map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+
+          {/* نوع العقار */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">نوع العقار</label>
+            <select
+              value={propertyType}
+              onChange={e => setPropertyType(e.target.value)}
+              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">كل الأنواع</option>
+              {PROPERTY_TYPE_GROUPS.map(g => (
+                <optgroup key={g.label} label={`── ${g.label}`}>
+                  {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* نوع الإعلان */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">نوع الإعلان</label>
+            <select
+              value={listingType}
+              onChange={e => setListingType(e.target.value)}
+              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">الكل</option>
+              {LISTING_TYPE_GROUPS.map(g => (
+                <optgroup key={g.label} label={`── ${g.label}`}>
+                  {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* نطاق السعر */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">السعر (من)</label>
+            <Input
+              type="number" placeholder="0" value={minPrice}
+              onChange={e => setMinPrice(e.target.value)}
+              className="h-8 w-24 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] text-muted-foreground font-medium">السعر (إلى)</label>
+            <Input
+              type="number" placeholder="بلا حد" value={maxPrice}
+              onChange={e => setMaxPrice(e.target.value)}
+              className="h-8 w-24 text-sm"
+            />
+          </div>
+
+          <Button type="submit" size="sm" className="h-8 gap-1.5 self-end text-xs px-4">
+            <Search className="w-3 h-3" />
+            تطبيق
+          </Button>
+        </form>
+      </div>
 
       {/* Mobile tab bar */}
       <div className="md:hidden flex border-b border-border bg-white">
