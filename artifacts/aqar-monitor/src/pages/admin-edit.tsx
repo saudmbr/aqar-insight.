@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -16,9 +16,8 @@ import { useGetProperty, useUpdateProperty } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save, ArrowRight, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 
-
-const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
 const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 
 const formSchema = z.object({
@@ -230,8 +229,13 @@ export default function AdminEdit() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {PROPERTY_TYPES.map((t) => (
-                                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                                {PROPERTY_TYPE_GROUPS.map(g => (
+                                  <SelectGroup key={g.label}>
+                                    <SelectLabel className="font-bold text-muted-foreground text-xs">{g.label}</SelectLabel>
+                                    {g.types.map(t => (
+                                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                                    ))}
+                                  </SelectGroup>
                                 ))}
                               </SelectContent>
                             </Select>

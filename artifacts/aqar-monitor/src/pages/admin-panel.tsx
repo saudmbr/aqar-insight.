@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -46,9 +48,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ImportDialog } from "@/components/import-dialog";
-
-
-const PROPERTY_TYPES = ["شقة", "فيلا", "أرض", "عمارة", "مكتب", "محل تجاري"];
+import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 
 function formatPrice(price: number) {
   if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(2)} م.ر`;
@@ -226,8 +226,13 @@ export default function AdminPanel() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_all_">كل الأنواع</SelectItem>
-                  {PROPERTY_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  {PROPERTY_TYPE_GROUPS.map(g => (
+                    <SelectGroup key={g.label}>
+                      <SelectLabel className="font-bold text-muted-foreground text-xs">{g.label}</SelectLabel>
+                      {g.types.map(t => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>

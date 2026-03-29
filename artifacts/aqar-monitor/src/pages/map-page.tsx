@@ -1,4 +1,5 @@
 import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz } from "@/lib/saudi-geo";
+import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useLocation, Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -18,10 +19,6 @@ const PropertyMap = lazy(() => import("@/components/property-map"));
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
-const PROPERTY_TYPES = [
-  "شقة", "فيلا", "دور", "أرض", "عمارة", "مكتب",
-  "محل", "مستودع", "مزرعة", "شاليه", "عقار تجاري",
-];
 const LISTING_TYPES = [
   { value: "sale", label: "للبيع" },
   { value: "rent", label: "للإيجار" },
@@ -271,7 +268,11 @@ export default function MapPage() {
                 className="border border-input bg-background rounded-lg px-3 py-2 text-sm h-9 min-w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
                 <option value="">كل الأنواع</option>
-                {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                {PROPERTY_TYPE_GROUPS.map(g => (
+                  <optgroup key={g.label} label={`── ${g.label}`}>
+                    {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
             <div>

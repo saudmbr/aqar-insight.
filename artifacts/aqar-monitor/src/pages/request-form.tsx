@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
 import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
-const PROPERTY_TYPES = ["شقة", "فيلا", "دوبلكس", "أرض", "مكتب", "محل تجاري", "مستودع", "فندق", "أخرى"];
+import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 const SERVICE_TYPES  = ["مقاول بناء", "تشطيبات", "سباكة وكهرباء", "تكييف", "دهانات", "تنظيف", "تصميم داخلي", "مساحة وتقييم", "صيانة عامة", "أخرى"];
 const CONTACT_METHODS = ["واتساب", "هاتف", "بريد إلكتروني", "داخل المنصة"];
 
@@ -226,7 +226,11 @@ export default function RequestForm() {
               <FieldGroup label="نوع العقار">
                 <select value={category} onChange={e => setCategory(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
                   <option value="">اختر نوع العقار (اختياري)</option>
-                  {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  {PROPERTY_TYPE_GROUPS.map(g => (
+                    <optgroup key={g.label} label={`── ${g.label}`}>
+                      {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                    </optgroup>
+                  ))}
                 </select>
               </FieldGroup>
             )}

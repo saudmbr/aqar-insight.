@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import type { MapPin as MapPinItem } from "@/components/property-map";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getMarakiz, getAhyaa } from "@/lib/saudi-geo";
+import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 
 const PropertyMap = lazy(() => import("@/components/property-map"));
 
@@ -66,13 +67,18 @@ const EMPTY_FILTERS: Filters = {
 
 // Property type quick-access categories
 const PROPERTY_CATEGORIES = [
-  { label: "شقق", value: "شقة", icon: "🏢" },
-  { label: "فلل", value: "فيلا", icon: "🏡" },
-  { label: "أراضي", value: "أرض", icon: "🗺️" },
-  { label: "مكاتب", value: "مكتب", icon: "🏛️" },
-  { label: "تجاري", value: "تجاري", icon: "🏬" },
-  { label: "استوديو", value: "استوديو", icon: "🛋️" },
-  { label: "مستودع", value: "مستودع", icon: "🏭" },
+  { label: "شقق",        value: "شقة",          icon: "🏢" },
+  { label: "فلل",        value: "فيلا",          icon: "🏡" },
+  { label: "أراضي",      value: "أرض",           icon: "🗺️" },
+  { label: "عمارات",     value: "عمارة سكنية",   icon: "🏗️" },
+  { label: "مكاتب",      value: "مكتب",          icon: "🏛️" },
+  { label: "محلات",      value: "محل تجاري",     icon: "🏬" },
+  { label: "استوديو",    value: "استوديو",        icon: "🛋️" },
+  { label: "دوبلكس",    value: "دوبلكس",         icon: "🏘️" },
+  { label: "شاليهات",   value: "شاليه",          icon: "🌴" },
+  { label: "استراحات",  value: "استراحة",        icon: "🏕️" },
+  { label: "مستودعات",  value: "مستودع",         icon: "🏭" },
+  { label: "مزارع",     value: "مزرعة",          icon: "🌾" },
 ];
 
 function filtersToQuery(f: Filters) {
@@ -618,8 +624,12 @@ export default function Home() {
                       style={{ color: "white" }}
                     >
                       <option value="" style={{ color: "#0F1C3F" }}>كل أنواع العقارات</option>
-                      {PROPERTY_CATEGORIES.map(c => (
-                        <option key={c.value} value={c.value} style={{ color: "#0F1C3F" }}>{c.label}</option>
+                      {PROPERTY_TYPE_GROUPS.map(g => (
+                        <optgroup key={g.label} label={`── ${g.label}`}>
+                          {g.types.map(t => (
+                            <option key={t} value={t} style={{ color: "#0F1C3F" }}>{t}</option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </div>
