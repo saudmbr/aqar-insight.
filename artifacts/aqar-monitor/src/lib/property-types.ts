@@ -30,10 +30,6 @@ export const PROPERTY_TYPE_GROUPS: PropertyTypeGroup[] = [
       "مجمع تجاري",
       "مركز تجاري",
       "معرض",
-      "مطعم",
-      "صيدلية",
-      "مستوصف",
-      "عيادة",
     ],
   },
   {
