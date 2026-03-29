@@ -73,7 +73,7 @@ app.use(
       conString: process.env.DATABASE_URL,
       tableName: "session",
       createTableIfMissing: false,
-      ttl: 24 * 60 * 60, // 1 day in seconds
+      ttl: 7 * 24 * 60 * 60, // 7 days in seconds
       pruneSessionInterval: 60 * 15, // prune expired sessions every 15 minutes
     }),
     cookie: {
@@ -81,10 +81,11 @@ app.use(
       // In production behind Replit's HTTPS proxy, mark cookie as secure.
       // "trust proxy" above ensures Express knows the original request was HTTPS.
       secure: isProduction,
-      // "lax" works for same-site requests (same domain, frontend + API).
-      // Replit hosts frontend and API on the same origin in both dev and prod.
-      sameSite: isProduction ? "lax" : "lax",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day in ms
+      // "lax" works for same-site navigation; both frontend and API share
+      // the same .replit.app domain so they are always same-site.
+      // Use "none" only if cross-site embedding is needed (requires secure:true).
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms (longer for mobile persistence)
     },
   }),
 );

@@ -57,10 +57,10 @@ export function Layout({ children }: LayoutProps) {
               {/* Logo — always shown in header as brand anchor */}
               <LogoBrand variant="header" linkTo="/" />
 
-              {/* Search bar — takes all available space */}
+              {/* Search bar — hidden on mobile, visible on sm+ */}
               <form
                 onSubmit={handleSearch}
-                className="flex-1 flex items-center gap-2 max-w-xl"
+                className="hidden sm:flex flex-1 items-center gap-2 max-w-xl"
                 dir="rtl"
               >
                 <div className="relative flex-1">
@@ -82,8 +82,20 @@ export function Layout({ children }: LayoutProps) {
                 </button>
               </form>
 
+              {/* Mobile search icon */}
+              <button
+                onClick={() => navigate("/listings")}
+                className="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                aria-label="بحث"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+
+              {/* Spacer on mobile to push auth to the left */}
+              <div className="flex-1 sm:hidden" />
+
               {/* Auth actions */}
-              <div className="flex items-center gap-3 shrink-0 mr-auto" dir="rtl">
+              <div className="flex items-center gap-1.5 sm:gap-3 shrink-0" dir="rtl">
                 {!isLoading && (
                   <>
                     {isAuthenticated && user ? (
@@ -98,7 +110,7 @@ export function Layout({ children }: LayoutProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => void handleLogout()}
-                          className="gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-xl h-10 px-4"
+                          className="gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-xl h-10 px-3 sm:px-4"
                         >
                           <LogOut className="w-4 h-4" />
                           <span className="hidden sm:inline text-sm">{t("logout")}</span>
@@ -110,7 +122,7 @@ export function Layout({ children }: LayoutProps) {
                           asChild
                           variant="ghost"
                           size="sm"
-                          className="gap-2 rounded-xl h-10 px-5 text-muted-foreground hover:text-foreground font-medium"
+                          className="gap-2 rounded-xl h-10 px-3 sm:px-5 text-muted-foreground hover:text-foreground font-medium"
                         >
                           <Link href="/login">
                             <LogIn className="w-4 h-4" />
@@ -120,11 +132,11 @@ export function Layout({ children }: LayoutProps) {
                         <Button
                           asChild
                           size="sm"
-                          className="gap-2 rounded-xl h-10 px-6 font-medium shadow-md shadow-primary/20 hover:brightness-110 transition-all"
+                          className="gap-1.5 rounded-xl h-10 px-3 sm:px-5 font-medium shadow-md shadow-primary/20 hover:brightness-110 transition-all"
                         >
                           <Link href="/signup">
                             <UserPlus className="w-4 h-4" />
-                            <span>{t("createAccount")}</span>
+                            <span className="hidden sm:inline">{t("createAccount")}</span>
                           </Link>
                         </Button>
                       </>

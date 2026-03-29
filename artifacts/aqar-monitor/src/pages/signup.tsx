@@ -379,7 +379,7 @@ export default function Signup() {
                   <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <Input id="fullName" type="text" autoComplete="name" value={fullName}
                     onChange={e => setFullName(e.target.value)} placeholder="محمد العمري"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right" required />
+                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base" required />
                 </div>
               </div>
 
@@ -390,7 +390,7 @@ export default function Signup() {
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none select-none">@</span>
                   <Input id="username" type="text" autoComplete="username" value={username}
                     onChange={e => setUsername(e.target.value)} placeholder="m_alomari"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right font-mono" dir="ltr" required />
+                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base font-mono" dir="ltr" required />
                 </div>
                 <p className="text-xs text-muted-foreground">أحرف إنجليزية وأرقام وشرطة سفلية فقط</p>
               </div>
@@ -402,7 +402,7 @@ export default function Signup() {
                   <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <Input id="email" type="email" autoComplete="email" value={email}
                     onChange={e => setEmail(e.target.value)} placeholder="example@email.com"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50" dir="ltr" required />
+                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-base" dir="ltr" required />
                 </div>
               </div>
 
@@ -414,7 +414,7 @@ export default function Signup() {
                   <Input id="password" type={showPassword ? "text" : "password"}
                     autoComplete="new-password" value={password}
                     onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-                    className="pr-9 pl-10 h-11 rounded-xl border-border/60 bg-background/50" required />
+                    className="pr-9 pl-10 h-11 rounded-xl border-border/60 bg-background/50 text-base" required />
                   <button type="button" onClick={() => setShowPassword(p => !p)}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -432,7 +432,7 @@ export default function Signup() {
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <Input id="phone" type="tel" autoComplete="tel" value={phone}
                     onChange={e => setPhone(e.target.value)} placeholder="0501234567"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 font-mono" dir="ltr" required />
+                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-base font-mono" dir="ltr" required />
                 </div>
                 <p className="text-xs text-muted-foreground">سيتم إرسال رمز تحقق لتأكيد رقم جوالك</p>
               </div>

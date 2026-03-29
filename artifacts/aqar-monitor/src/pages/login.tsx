@@ -69,7 +69,7 @@ export default function Login() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="admin أو example@email.com"
-                  className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right"
+                  className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base"
                   required
                   disabled={loading}
                 />
@@ -98,7 +98,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pr-9 pl-10 h-11 rounded-xl border-border/60 bg-background/50 text-right"
+                  className="pr-9 pl-10 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base"
                   required
                   disabled={loading}
                 />
