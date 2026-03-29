@@ -1132,56 +1132,10 @@ export default function Home() {
             BLOCK D: الفرص والتوصيات + توزيع أنواع العقارات
         ══════════════════════════════════════════════════════════════ */}
         {hasData && (
-          <motion.div variants={fadeUp} className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-            {/* D: الفرص والتوصيات */}
-            <div className="lg:col-span-3">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-1 h-5 rounded-full" style={{ background: "#8B5CF6" }} />
-                <span className="text-sm font-extrabold text-foreground">د — الفرص والتوصيات</span>
-                <span className="text-[11px] text-muted-foreground font-medium">مبني على بيانات الإعلانات الفعلية</span>
-              </div>
-
-              {(insights?.smartInsights?.length ?? 0) === 0 ? (
-                <div className="flex items-center justify-center py-10 rounded-2xl border border-dashed border-border/60 bg-card text-muted-foreground text-sm gap-2">
-                  <Lightbulb className="w-5 h-5 opacity-30" />
-                  ستظهر التوصيات مع تراكم بيانات السوق
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {(insights?.smartInsights ?? []).map((ins, i) => {
-                    const isPositive = /فرصة|نمو|منخفض|مناسب|طلب عالٍ|مستقر/.test(ins);
-                    const isWarning  = /مرتفع|انخفاض|تحذير|مخاطر|احتراز/.test(ins);
-                    const color  = isPositive ? "#22C55E" : isWarning ? "#EF4444" : "#0F7BA0";
-                    const bg     = isPositive ? "rgba(34,197,94,0.06)" : isWarning ? "rgba(239,68,68,0.06)" : "rgba(15,123,160,0.06)";
-                    const icon   = isPositive ? "💡" : isWarning ? "⚠️" : "📊";
-                    const badge  = isPositive ? "فرصة" : isWarning ? "تنبيه" : "بيانات";
-                    const badgeBg = isPositive ? "rgba(34,197,94,0.12)" : isWarning ? "rgba(239,68,68,0.12)" : "rgba(15,123,160,0.12)";
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 rounded-2xl px-4 py-3.5 border transition-all hover:-translate-y-0.5 duration-200 cursor-default"
-                        style={{ background: bg, borderColor: color + "20" }}
-                      >
-                        <span className="text-base shrink-0 mt-0.5">{icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] text-foreground leading-relaxed">{ins}</p>
-                        </div>
-                        <span
-                          className="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 mt-0.5"
-                          style={{ background: badgeBg, color }}
-                        >
-                          {badge}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          <motion.div variants={fadeUp} className="grid grid-cols-1 gap-6">
 
             {/* أنواع العقارات */}
-            <Card className="lg:col-span-2 rounded-2xl border-border/60 shadow-sm">
+            <Card className="rounded-2xl border-border/60 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">أنواع العقارات</CardTitle>
                 <CardDescription className="text-[12px]">التوزيع النسبي حسب نوع العقار</CardDescription>
