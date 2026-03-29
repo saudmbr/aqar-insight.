@@ -563,7 +563,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row gap-2.5">
                   {/* المنطقة */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المنطقة</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">المنطقة</span>
                     <select
                       value={quickRegion}
                       onChange={e => {
@@ -584,7 +584,7 @@ export default function Home() {
 
                   {/* المحافظة */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المحافظة</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">المحافظة</span>
                     <select
                       value={quickCity}
                       onChange={e => {
@@ -607,7 +607,7 @@ export default function Home() {
 
                   {/* المركز */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">المركز</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">المركز</span>
                     <select
                       value={quickMarkaz}
                       onChange={e => {
@@ -629,7 +629,7 @@ export default function Home() {
 
                   {/* الحي */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">الحي</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">الحي</span>
                     <select
                       value={quickDistrict}
                       onChange={e => setQuickDistrict(e.target.value)}
@@ -651,7 +651,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row gap-2.5">
                   {/* نوع العقار */}
                   <div className="flex flex-col gap-1 flex-1">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">نوع العقار</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">نوع العقار</span>
                     <select
                       value={quickType}
                       onChange={e => setQuickType(e.target.value)}
@@ -671,7 +671,7 @@ export default function Home() {
 
                   {/* بيع / إيجار */}
                   <div className="flex flex-col gap-1 md:w-36 shrink-0">
-                    <span className="text-[10px] font-bold text-white/45 px-1 tracking-wider">نوع الصفقة</span>
+                    <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">نوع الصفقة</span>
                     <select
                       value={quickListingType}
                       onChange={e => setQuickListingType(e.target.value)}
