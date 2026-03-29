@@ -364,12 +364,25 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
     balcony: bool(b.balcony),
     basement: bool(b.basement),
     airConditioning: bool(b.airConditioning),
+    majlis: bool(b.majlis),
+    prayerRoom: bool(b.prayerRoom),
+    wardrobeRoom: bool(b.wardrobeRoom),
+    gym: bool(b.gym),
+    jacuzzi: bool(b.jacuzzi),
+    annex: bool(b.annex),
+    heating: bool(b.heating),
+    solarHeater: bool(b.solarHeater),
     smartHome: bool(b.smartHome),
     securitySystem: bool(b.securitySystem),
     internet: bool(b.internet),
     electricityMeter: bool(b.electricityMeter),
     waterMeter: bool(b.waterMeter),
     sewage: bool(b.sewage),
+    waterTank: bool(b.waterTank),
+    generator: bool(b.generator),
+    solarEnergy: bool(b.solarEnergy),
+    naturalGas: bool(b.naturalGas),
+    waterFilter: bool(b.waterFilter),
     mortgageEligibility: bool(b.mortgageEligibility),
     nearbySchools: bool(b.nearbySchools),
     nearbyHospitals: bool(b.nearbyHospitals),
@@ -378,6 +391,13 @@ listingsRouter.post("/", async (req: Request, res: Response) => {
     nearbyTransport: bool(b.nearbyTransport),
     nearbyParks: bool(b.nearbyParks),
     nearbyMainRoads: bool(b.nearbyMainRoads),
+    nearbyPharmacies: bool(b.nearbyPharmacies),
+    nearbyBanks: bool(b.nearbyBanks),
+    nearbyRestaurants: bool(b.nearbyRestaurants),
+    nearbyNurseries: bool(b.nearbyNurseries),
+    nearbySports: bool(b.nearbySports),
+    nearbyGasStation: bool(b.nearbyGasStation),
+    nearbyUniversities: bool(b.nearbyUniversities),
     deedStatus: b.deedStatus ? String(b.deedStatus) : null,
     licenseStatus: b.licenseStatus ? String(b.licenseStatus) : null,
     contactPhone: b.contactPhone ? String(b.contactPhone) : null,
@@ -446,11 +466,17 @@ listingsRouter.put("/:id", async (req: Request, res: Response) => {
   if (b.finishingType !== undefined) setObj.finishingType = b.finishingType ? String(b.finishingType) : null;
   if (b.availabilityDate !== undefined) setObj.availabilityDate = b.availabilityDate ? String(b.availabilityDate) : null;
 
-  const boolFields = ["parking","elevator","garden","roof","pool","maidRoom","driverRoom","storageRoom",
-    "kitchen","balcony","basement","airConditioning","smartHome","securitySystem","internet",
-    "electricityMeter","waterMeter","sewage","mortgageEligibility","nearbySchools","nearbyHospitals",
-    "nearbyMosques","nearbyMalls","nearbyTransport","nearbyParks","nearbyMainRoads",
-    "urgent","exclusive","ownerDirect"];
+  const boolFields = [
+    "parking","elevator","garden","roof","pool","maidRoom","driverRoom","storageRoom",
+    "kitchen","balcony","basement","airConditioning","majlis","prayerRoom","wardrobeRoom",
+    "gym","jacuzzi","annex","heating","solarHeater",
+    "smartHome","securitySystem","internet","electricityMeter","waterMeter","sewage",
+    "waterTank","generator","solarEnergy","naturalGas","waterFilter","mortgageEligibility",
+    "nearbySchools","nearbyHospitals","nearbyMosques","nearbyMalls","nearbyTransport",
+    "nearbyParks","nearbyMainRoads","nearbyPharmacies","nearbyBanks","nearbyRestaurants",
+    "nearbyNurseries","nearbySports","nearbyGasStation","nearbyUniversities",
+    "urgent","exclusive","ownerDirect",
+  ];
   for (const f of boolFields) {
     if (b[f] !== undefined) setObj[f] = bool(b[f]);
   }

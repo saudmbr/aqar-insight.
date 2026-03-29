@@ -256,10 +256,16 @@ export default function ListingDetail() {
     listing.pool || listing.maidRoom || listing.driverRoom || listing.airConditioning ||
     listing.electricityMeter || listing.waterMeter || listing.kitchen || listing.balcony ||
     listing.storageRoom || listing.basement || listing.smartHome || listing.securitySystem ||
-    listing.internet || listing.sewage || listing.mortgageEligibility;
+    listing.internet || listing.sewage || listing.mortgageEligibility ||
+    listing.majlis || listing.prayerRoom || listing.wardrobeRoom || listing.gym ||
+    listing.jacuzzi || listing.annex || listing.heating || listing.solarHeater ||
+    listing.waterTank || listing.generator || listing.solarEnergy || listing.naturalGas ||
+    listing.waterFilter;
 
   const hasNearby = listing.nearbySchools || listing.nearbyHospitals || listing.nearbyMosques ||
-    listing.nearbyMalls || listing.nearbyTransport || listing.nearbyParks || listing.nearbyMainRoads;
+    listing.nearbyMalls || listing.nearbyTransport || listing.nearbyParks || listing.nearbyMainRoads ||
+    listing.nearbyPharmacies || listing.nearbyBanks || listing.nearbyRestaurants ||
+    listing.nearbyNurseries || listing.nearbySports || listing.nearbyGasStation || listing.nearbyUniversities;
 
   const listingTypeBg = LISTING_TYPE_STYLE[listing.listingType] ?? "bg-muted text-muted-foreground";
   const statusMeta = STATUS_STYLE[listing.status] ?? { label: listing.status, style: "bg-gray-100 text-gray-700 border-gray-200" };
@@ -572,19 +578,33 @@ export default function ListingDetail() {
                   {listing.garden && <AmenityBadge label="حديقة" icon={<TreePine className="w-3.5 h-3.5" />} />}
                   {listing.roof && <AmenityBadge label="روف" />}
                   {listing.pool && <AmenityBadge label="مسبح" />}
+                  {listing.majlis && <AmenityBadge label="مجلس / استقبال" />}
                   {listing.maidRoom && <AmenityBadge label="غرفة مربية" />}
                   {listing.driverRoom && <AmenityBadge label="غرفة سائق" />}
                   {listing.kitchen && <AmenityBadge label="مطبخ" />}
                   {listing.airConditioning && <AmenityBadge label="تكييف مركزي" />}
-                  {listing.balcony && <AmenityBadge label="بلكونة" />}
+                  {listing.heating && <AmenityBadge label="تدفئة مركزية" />}
+                  {listing.balcony && <AmenityBadge label="بلكونة / شرفة" />}
                   {listing.storageRoom && <AmenityBadge label="غرفة تخزين" />}
-                  {listing.basement && <AmenityBadge label="قبو" />}
+                  {listing.basement && <AmenityBadge label="قبو / بدروم" />}
+                  {listing.annex && <AmenityBadge label="ملحق خارجي" />}
+                  {listing.wardrobeRoom && <AmenityBadge label="غرفة ملابس" />}
+                  {listing.prayerRoom && <AmenityBadge label="غرفة صلاة / مصلى" />}
+                  {listing.gym && <AmenityBadge label="صالة رياضية / جيم" />}
+                  {listing.jacuzzi && <AmenityBadge label="جاكوزي / بانيو" />}
+                  {listing.solarHeater && <AmenityBadge label="سخان شمسي" />}
                   {listing.electricityMeter && <AmenityBadge label="عداد كهرباء" icon={<Zap className="w-3.5 h-3.5" />} />}
                   {listing.waterMeter && <AmenityBadge label="عداد ماء" />}
                   {listing.sewage && <AmenityBadge label="صرف صحي" />}
-                  {listing.internet && <AmenityBadge label="إنترنت ألياف" icon={<Wifi className="w-3.5 h-3.5" />} />}
+                  {listing.internet && <AmenityBadge label="إنترنت / ألياف بصري" icon={<Wifi className="w-3.5 h-3.5" />} />}
+                  {listing.naturalGas && <AmenityBadge label="غاز طبيعي" />}
+                  {listing.waterTank && <AmenityBadge label="خزان مياه" />}
+                  {listing.waterFilter && <AmenityBadge label="فلتر / تحلية مياه" />}
+                  {listing.generator && <AmenityBadge label="مولد كهرباء" icon={<Zap className="w-3.5 h-3.5" />} />}
+                  {listing.solarEnergy && <AmenityBadge label="طاقة شمسية" />}
                   {listing.smartHome && <AmenityBadge label="منزل ذكي" icon={<Zap className="w-3.5 h-3.5" />} />}
-                  {listing.securitySystem && <AmenityBadge label="نظام أمني" icon={<Shield className="w-3.5 h-3.5" />} />}
+                  {listing.securitySystem && <AmenityBadge label="كاميرات مراقبة / أمن" icon={<Shield className="w-3.5 h-3.5" />} />}
+                  {listing.mortgageEligibility && <AmenityBadge label="مؤهل للتمويل العقاري" icon={<Shield className="w-3.5 h-3.5" />} />}
                 </div>
               </div>
             )}
@@ -594,13 +614,20 @@ export default function ListingDetail() {
               <div className="bg-card rounded-3xl border border-border p-7 shadow-sm">
                 <SectionTitle icon={<MapPin className="w-4.5 h-4.5" />}>المرافق القريبة</SectionTitle>
                 <div className="flex flex-wrap gap-2.5">
-                  {listing.nearbySchools   && <NearbyBadge label="مدارس" icon={<School className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyHospitals && <NearbyBadge label="مستشفيات" icon={<Hospital className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyMosques   && <NearbyBadge label="مساجد" icon={<CheckCircle2 className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyMalls     && <NearbyBadge label="مراكز تجارية" icon={<ShoppingBag className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyTransport && <NearbyBadge label="مواصلات" icon={<Bus className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyParks     && <NearbyBadge label="حدائق" icon={<TreePine className="w-3.5 h-3.5" />} />}
-                  {listing.nearbyMainRoads && <NearbyBadge label="طرق رئيسية" icon={<MapPin className="w-3.5 h-3.5" />} />}
+                  {listing.nearbySchools      && <NearbyBadge label="مدارس" icon={<School className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyUniversities && <NearbyBadge label="جامعات / كليات" icon={<School className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyNurseries   && <NearbyBadge label="حضانات / رياض أطفال" icon={<School className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyHospitals   && <NearbyBadge label="مستشفيات / مراكز صحية" icon={<Hospital className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyPharmacies  && <NearbyBadge label="صيدليات" icon={<Hospital className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyMosques     && <NearbyBadge label="مساجد" icon={<CheckCircle2 className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyMalls       && <NearbyBadge label="مراكز تجارية / أسواق" icon={<ShoppingBag className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyRestaurants && <NearbyBadge label="مطاعم" icon={<ShoppingBag className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyBanks       && <NearbyBadge label="بنوك / صرافات" icon={<MapPin className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyTransport   && <NearbyBadge label="مواصلات عامة" icon={<Bus className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyParks       && <NearbyBadge label="حدائق عامة" icon={<TreePine className="w-3.5 h-3.5" />} />}
+                  {listing.nearbySports      && <NearbyBadge label="ملاعب رياضية" icon={<MapPin className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyGasStation  && <NearbyBadge label="محطة وقود" icon={<MapPin className="w-3.5 h-3.5" />} />}
+                  {listing.nearbyMainRoads   && <NearbyBadge label="طرق رئيسية" icon={<MapPin className="w-3.5 h-3.5" />} />}
                 </div>
               </div>
             )}

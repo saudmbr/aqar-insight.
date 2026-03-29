@@ -55,7 +55,7 @@ export const listingsTable = pgTable("listings", {
   finishingType: text("finishing_type"),
   availabilityDate: text("availability_date"),
 
-  // Boolean amenities
+  // Boolean amenities — أساسية
   parking: boolean("parking").default(false),
   elevator: boolean("elevator").default(false),
   garden: boolean("garden").default(false),
@@ -68,12 +68,27 @@ export const listingsTable = pgTable("listings", {
   balcony: boolean("balcony").default(false),
   basement: boolean("basement").default(false),
   airConditioning: boolean("air_conditioning").default(false),
+  majlis: boolean("majlis").default(false),
+  prayerRoom: boolean("prayer_room").default(false),
+  wardrobeRoom: boolean("wardrobe_room").default(false),
+  gym: boolean("gym").default(false),
+  jacuzzi: boolean("jacuzzi").default(false),
+  annex: boolean("annex").default(false),
+  heating: boolean("heating").default(false),
+  solarHeater: boolean("solar_heater").default(false),
+
+  // Boolean amenities — بنية تحتية
   smartHome: boolean("smart_home").default(false),
   securitySystem: boolean("security_system").default(false),
   internet: boolean("internet").default(false),
   electricityMeter: boolean("electricity_meter").default(false),
   waterMeter: boolean("water_meter").default(false),
   sewage: boolean("sewage").default(false),
+  waterTank: boolean("water_tank").default(false),
+  generator: boolean("generator").default(false),
+  solarEnergy: boolean("solar_energy").default(false),
+  naturalGas: boolean("natural_gas").default(false),
+  waterFilter: boolean("water_filter").default(false),
   mortgageEligibility: boolean("mortgage_eligibility").default(false),
 
   // Nearby places
@@ -84,6 +99,13 @@ export const listingsTable = pgTable("listings", {
   nearbyTransport: boolean("nearby_transport").default(false),
   nearbyParks: boolean("nearby_parks").default(false),
   nearbyMainRoads: boolean("nearby_main_roads").default(false),
+  nearbyPharmacies: boolean("nearby_pharmacies").default(false),
+  nearbyBanks: boolean("nearby_banks").default(false),
+  nearbyRestaurants: boolean("nearby_restaurants").default(false),
+  nearbyNurseries: boolean("nearby_nurseries").default(false),
+  nearbySports: boolean("nearby_sports").default(false),
+  nearbyGasStation: boolean("nearby_gas_station").default(false),
+  nearbyUniversities: boolean("nearby_universities").default(false),
 
   // Documents & legal
   deedStatus: text("deed_status"),

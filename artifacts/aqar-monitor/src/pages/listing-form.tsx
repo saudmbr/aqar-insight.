@@ -404,32 +404,52 @@ export default function ListingForm() {
               <Checkbox label="حديقة" checked={!!form.garden} onChange={v => set("garden", v)} />
               <Checkbox label="روف" checked={!!form.roof} onChange={v => set("roof", v)} />
               <Checkbox label="مسبح" checked={!!form.pool} onChange={v => set("pool", v)} />
+              <Checkbox label="مجلس / استقبال" checked={!!form.majlis} onChange={v => set("majlis", v)} />
               <Checkbox label="غرفة مربية" checked={!!form.maidRoom} onChange={v => set("maidRoom", v)} />
               <Checkbox label="غرفة سائق" checked={!!form.driverRoom} onChange={v => set("driverRoom", v)} />
               <Checkbox label="مطبخ" checked={!!form.kitchen} onChange={v => set("kitchen", v)} />
               <Checkbox label="تكييف مركزي" checked={!!form.airConditioning} onChange={v => set("airConditioning", v)} />
+              <Checkbox label="تدفئة مركزية" checked={!!form.heating} onChange={v => set("heating", v)} />
               <Checkbox label="بلكونة / شرفة" checked={!!form.balcony} onChange={v => set("balcony", v)} />
               <Checkbox label="غرفة تخزين" checked={!!form.storageRoom} onChange={v => set("storageRoom", v)} />
               <Checkbox label="قبو / بدروم" checked={!!form.basement} onChange={v => set("basement", v)} />
+              <Checkbox label="ملحق خارجي" checked={!!form.annex} onChange={v => set("annex", v)} />
+              <Checkbox label="غرفة ملابس" checked={!!form.wardrobeRoom} onChange={v => set("wardrobeRoom", v)} />
+              <Checkbox label="غرفة صلاة / مصلى" checked={!!form.prayerRoom} onChange={v => set("prayerRoom", v)} />
+              <Checkbox label="صالة رياضية / جيم" checked={!!form.gym} onChange={v => set("gym", v)} />
+              <Checkbox label="جاكوزي / بانيو" checked={!!form.jacuzzi} onChange={v => set("jacuzzi", v)} />
+              <Checkbox label="سخان شمسي" checked={!!form.solarHeater} onChange={v => set("solarHeater", v)} />
             </div>
             <p className="text-sm text-muted-foreground font-medium pt-2 border-t border-border">البنية التحتية</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               <Checkbox label="عداد كهرباء" checked={!!form.electricityMeter} onChange={v => set("electricityMeter", v)} />
               <Checkbox label="عداد ماء" checked={!!form.waterMeter} onChange={v => set("waterMeter", v)} />
               <Checkbox label="شبكة صرف صحي" checked={!!form.sewage} onChange={v => set("sewage", v)} />
-              <Checkbox label="إنترنت / ألياف" checked={!!form.internet} onChange={v => set("internet", v)} />
+              <Checkbox label="إنترنت / ألياف بصري" checked={!!form.internet} onChange={v => set("internet", v)} />
+              <Checkbox label="غاز طبيعي" checked={!!form.naturalGas} onChange={v => set("naturalGas", v)} />
+              <Checkbox label="خزان مياه" checked={!!form.waterTank} onChange={v => set("waterTank", v)} />
+              <Checkbox label="فلتر / تحلية مياه" checked={!!form.waterFilter} onChange={v => set("waterFilter", v)} />
+              <Checkbox label="مولد كهرباء" checked={!!form.generator} onChange={v => set("generator", v)} />
+              <Checkbox label="طاقة شمسية" checked={!!form.solarEnergy} onChange={v => set("solarEnergy", v)} />
               <Checkbox label="منزل ذكي" checked={!!form.smartHome} onChange={v => set("smartHome", v)} />
-              <Checkbox label="نظام أمني" checked={!!form.securitySystem} onChange={v => set("securitySystem", v)} />
-              <Checkbox label="مؤهل للتمويل" checked={!!form.mortgageEligibility} onChange={v => set("mortgageEligibility", v)} />
+              <Checkbox label="كاميرات مراقبة / نظام أمني" checked={!!form.securitySystem} onChange={v => set("securitySystem", v)} />
+              <Checkbox label="مؤهل للتمويل العقاري" checked={!!form.mortgageEligibility} onChange={v => set("mortgageEligibility", v)} />
             </div>
             <p className="text-sm text-muted-foreground font-medium pt-2 border-t border-border">المرافق القريبة</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              <Checkbox label="مدارس قريبة" checked={!!form.nearbySchools} onChange={v => set("nearbySchools", v)} />
-              <Checkbox label="مستشفيات" checked={!!form.nearbyHospitals} onChange={v => set("nearbyHospitals", v)} />
+              <Checkbox label="مدارس" checked={!!form.nearbySchools} onChange={v => set("nearbySchools", v)} />
+              <Checkbox label="جامعات / كليات" checked={!!form.nearbyUniversities} onChange={v => set("nearbyUniversities", v)} />
+              <Checkbox label="حضانات / رياض أطفال" checked={!!form.nearbyNurseries} onChange={v => set("nearbyNurseries", v)} />
+              <Checkbox label="مستشفيات / مراكز صحية" checked={!!form.nearbyHospitals} onChange={v => set("nearbyHospitals", v)} />
+              <Checkbox label="صيدليات" checked={!!form.nearbyPharmacies} onChange={v => set("nearbyPharmacies", v)} />
               <Checkbox label="مساجد" checked={!!form.nearbyMosques} onChange={v => set("nearbyMosques", v)} />
-              <Checkbox label="مراكز تجارية" checked={!!form.nearbyMalls} onChange={v => set("nearbyMalls", v)} />
+              <Checkbox label="مراكز تجارية / أسواق" checked={!!form.nearbyMalls} onChange={v => set("nearbyMalls", v)} />
+              <Checkbox label="مطاعم" checked={!!form.nearbyRestaurants} onChange={v => set("nearbyRestaurants", v)} />
+              <Checkbox label="بنوك / صرافات" checked={!!form.nearbyBanks} onChange={v => set("nearbyBanks", v)} />
               <Checkbox label="مواصلات عامة" checked={!!form.nearbyTransport} onChange={v => set("nearbyTransport", v)} />
-              <Checkbox label="حدائق" checked={!!form.nearbyParks} onChange={v => set("nearbyParks", v)} />
+              <Checkbox label="حدائق عامة" checked={!!form.nearbyParks} onChange={v => set("nearbyParks", v)} />
+              <Checkbox label="ملاعب رياضية" checked={!!form.nearbySports} onChange={v => set("nearbySports", v)} />
+              <Checkbox label="محطة وقود" checked={!!form.nearbyGasStation} onChange={v => set("nearbyGasStation", v)} />
               <Checkbox label="طرق رئيسية" checked={!!form.nearbyMainRoads} onChange={v => set("nearbyMainRoads", v)} />
             </div>
           </CardContent>
