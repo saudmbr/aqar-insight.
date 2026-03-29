@@ -224,15 +224,6 @@ export default function ListingForm() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
-              <FieldGroup label="رقم المرجع (اختياري)">
-                <Input
-                  placeholder="مثال: REF-2024-001"
-                  value={form.referenceNumber ?? ""}
-                  onChange={e => set("referenceNumber", e.target.value)}
-                  className="h-12 rounded-xl font-mono"
-                  dir="ltr"
-                />
-              </FieldGroup>
               <FieldGroup label="تاريخ الإتاحة">
                 <Input
                   type="date"

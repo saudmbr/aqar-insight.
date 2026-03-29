@@ -606,7 +606,7 @@ export default function ListingDetail() {
             )}
 
             {/* Documents */}
-            {(listing.deedStatus || listing.licenseStatus || listing.referenceNumber) && (
+            {(listing.deedStatus || listing.licenseStatus) && (
               <div className="bg-card rounded-3xl border border-border p-7 shadow-sm">
                 <SectionTitle icon={<BadgeCheck className="w-4.5 h-4.5" />}>الوثائق والتراخيص</SectionTitle>
                 <div className="divide-y divide-border rounded-2xl overflow-hidden border border-border">
@@ -620,12 +620,6 @@ export default function ListingDetail() {
                     <div className="flex items-center justify-between px-5 py-3.5 bg-muted/30">
                       <span className="text-sm text-muted-foreground font-medium">رخصة فال</span>
                       <span className="text-sm font-bold text-foreground font-mono">{listing.licenseStatus}</span>
-                    </div>
-                  )}
-                  {listing.referenceNumber && (
-                    <div className="flex items-center justify-between px-5 py-3.5 bg-muted/30">
-                      <span className="text-sm text-muted-foreground font-medium">رقم المرجع</span>
-                      <span className="text-sm font-bold text-foreground font-mono">{listing.referenceNumber}</span>
                     </div>
                   )}
                 </div>
