@@ -38,14 +38,13 @@ interface ListingDetail extends Listing {
 }
 
 const LISTING_TYPE_LABELS: Record<string, string> = {
-  sale: "للبيع", rent: "للإيجار", daily_rent: "إيجار يومي",
+  sale: "للبيع", rent: "للإيجار",
   monthly_rent: "إيجار شهري", investment: "استثماري", auction: "مزاد",
 };
 
 const LISTING_TYPE_STYLE: Record<string, string> = {
   sale:         "bg-primary text-white",
   rent:         "bg-[#0F7BA0] text-white",
-  daily_rent:   "bg-orange-500 text-white",
   monthly_rent: "bg-purple-600 text-white",
   investment:   "bg-emerald-600 text-white",
   auction:      "bg-red-600 text-white",

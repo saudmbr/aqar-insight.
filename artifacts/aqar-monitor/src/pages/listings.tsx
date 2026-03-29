@@ -19,7 +19,6 @@ const PROPERTY_TYPES = [
 const LISTING_TYPES = [
   { value: "sale", label: "للبيع" },
   { value: "rent", label: "للإيجار" },
-  { value: "daily_rent", label: "إيجار يومي" },
   { value: "monthly_rent", label: "إيجار شهري" },
   { value: "investment", label: "استثماري" },
   { value: "auction", label: "مزاد" },

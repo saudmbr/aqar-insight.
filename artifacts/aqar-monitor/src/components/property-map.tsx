@@ -32,14 +32,13 @@ type Props = {
 
 const LISTING_TYPE_LABELS: Record<string, string> = {
   sale: "للبيع", rent: "للإيجار",
-  daily_rent: "إيجار يومي", monthly_rent: "إيجار شهري",
+  monthly_rent: "إيجار شهري",
   investment: "استثماري", auction: "مزاد",
 };
 
 const LISTING_TYPE_COLORS: Record<string, string> = {
   sale:         "#16A34A",
   rent:         "#7C3AED",
-  daily_rent:   "#EA580C",
   monthly_rent: "#0891B2",
   investment:   "#CA8A04",
   auction:      "#DC2626",

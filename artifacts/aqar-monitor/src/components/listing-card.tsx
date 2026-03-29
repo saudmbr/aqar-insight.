@@ -28,7 +28,6 @@ export interface ListingCardData {
 const LISTING_TYPE_LABELS: Record<string, string> = {
   sale: "للبيع",
   rent: "للإيجار",
-  daily_rent: "إيجار يومي",
   monthly_rent: "إيجار شهري",
   investment: "استثماري",
   auction: "مزاد",
@@ -37,7 +36,6 @@ const LISTING_TYPE_LABELS: Record<string, string> = {
 const LISTING_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   sale:         { bg: "bg-primary",     text: "text-white" },
   rent:         { bg: "bg-accent",      text: "text-white" },
-  daily_rent:   { bg: "bg-orange-500",  text: "text-white" },
   monthly_rent: { bg: "bg-teal-600",    text: "text-white" },
   investment:   { bg: "bg-purple-600",  text: "text-white" },
   auction:      { bg: "bg-rose-500",    text: "text-white" },

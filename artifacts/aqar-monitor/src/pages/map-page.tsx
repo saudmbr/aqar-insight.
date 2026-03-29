@@ -25,17 +25,16 @@ const PROPERTY_TYPES = [
 const LISTING_TYPES = [
   { value: "sale", label: "للبيع" },
   { value: "rent", label: "للإيجار" },
-  { value: "daily_rent", label: "إيجار يومي" },
   { value: "monthly_rent", label: "إيجار شهري" },
 ];
 const LISTING_TYPE_LABELS: Record<string, string> = {
   sale: "للبيع", rent: "للإيجار",
-  daily_rent: "إيجار يومي", monthly_rent: "إيجار شهري",
+  monthly_rent: "إيجار شهري",
   investment: "استثماري", auction: "مزاد",
 };
 const LISTING_TYPE_COLORS: Record<string, string> = {
   sale: "#0F7BA0", rent: "#94A3B8",
-  daily_rent: "#f97316", monthly_rent: "#0d9488",
+  monthly_rent: "#0d9488",
   investment: "#7c3aed", auction: "#e11d48",
 };
 
