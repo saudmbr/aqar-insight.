@@ -97,9 +97,9 @@ function Router() {
         {() => <UserRoute component={MarketerDashboard} />}
       </Route>
 
-      {/* Interactive map — requires login */}
+      {/* Interactive map — auth handled inside MapPage */}
       <Route path="/map">
-        {() => <UserRoute component={MapPage} />}
+        {() => <MapPage />}
       </Route>
 
       {/* Marketplace — public browse */}

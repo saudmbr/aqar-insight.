@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/layout/layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Cell, PieChart, Pie,
@@ -250,53 +251,138 @@ function FiltersPanel({ filters, onChange, filterOpts }: {
   filterOpts?: ReturnType<typeof useAnalyticsFilterOptions>["data"];
 }) {
   const [open, setOpen] = useState(false);
-  const activeCount = [filters.city, filters.district, filters.propertyType, filters.listingType].filter(Boolean).length;
+
+  const activeCount = [filters.region, filters.city, filters.district, filters.propertyType, filters.listingType].filter(Boolean).length;
+
+  const cityOptions = useMemo(() =>
+    filters.region ? getMuhafazat(filters.region) : [],
+    [filters.region]
+  );
+
+  const districtOptions = useMemo(() =>
+    filters.region && filters.city
+      ? getAllAhyaaForCity(filters.region, filters.city)
+      : [],
+    [filters.region, filters.city]
+  );
 
   return (
     <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm">
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold hover:bg-muted/30 transition-colors">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Target className="w-4 h-4 text-primary" />
           <span>تصفية البيانات</span>
-          {activeCount > 0 && <span className="text-[11px] font-extrabold bg-primary/10 text-primary rounded-full px-2 py-0.5">{activeCount} فلتر</span>}
+          {activeCount > 0
+            ? <span className="text-[11px] font-extrabold bg-primary/10 text-primary rounded-full px-2 py-0.5">{activeCount} فلتر</span>
+            : <span className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 font-semibold">حدّد منطقة للحصول على أفضل النتائج</span>
+          }
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-border/40">
-            <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground block mb-1">المدينة</label>
-                <select className={INPUT_CLS} value={filters.city ?? ""} onChange={e => onChange({ ...filters, city: e.target.value || undefined, district: undefined })}>
-                  <option value="">الكل</option>
-                  {filterOpts?.cities.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+            <div className="p-5 space-y-3">
+
+              {/* Row 1 — Geo hierarchy */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* المنطقة */}
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">المنطقة</label>
+                  <select
+                    className={INPUT_CLS}
+                    style={{ color: "#111827", background: "#fff" }}
+                    value={filters.region ?? ""}
+                    onChange={e => onChange({ ...filters, region: e.target.value || undefined, city: undefined, district: undefined })}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>كل المناطق (13 منطقة)</option>
+                    {SAUDI_REGIONS_LIST.map(r => (
+                      <option key={r} value={r} style={{ color: "#111827", background: "#fff" }}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* المدينة / المحافظة */}
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                    المدينة / المحافظة
+                    {!filters.region && <span className="text-[10px] text-muted-foreground/60 mr-1">(اختر منطقة أولاً)</span>}
+                  </label>
+                  <select
+                    className={INPUT_CLS}
+                    style={{ color: "#111827", background: "#fff" }}
+                    value={filters.city ?? ""}
+                    disabled={!filters.region}
+                    onChange={e => onChange({ ...filters, city: e.target.value || undefined, district: undefined })}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>
+                      {filters.region ? `كل مدن ${filters.region}` : "— اختر منطقة أولاً —"}
+                    </option>
+                    {cityOptions.map(c => (
+                      <option key={c} value={c} style={{ color: "#111827", background: "#fff" }}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* الحي */}
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">
+                    الحي
+                    {!filters.city && <span className="text-[10px] text-muted-foreground/60 mr-1">(اختر مدينة أولاً)</span>}
+                  </label>
+                  <select
+                    className={INPUT_CLS}
+                    style={{ color: "#111827", background: "#fff" }}
+                    value={filters.district ?? ""}
+                    disabled={!filters.city}
+                    onChange={e => onChange({ ...filters, district: e.target.value || undefined })}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>
+                      {filters.city ? `كل أحياء ${filters.city}` : "— اختر مدينة أولاً —"}
+                    </option>
+                    {districtOptions.map(d => (
+                      <option key={d} value={d} style={{ color: "#111827", background: "#fff" }}>{d}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground block mb-1">الحي</label>
-                <select className={INPUT_CLS} value={filters.district ?? ""} onChange={e => onChange({ ...filters, district: e.target.value || undefined })}>
-                  <option value="">الكل</option>
-                  {(filters.city ? filterOpts?.districts.filter(d => d.city === filters.city) : filterOpts?.districts)?.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
-                </select>
+
+              {/* Row 2 — Property filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع العقار</label>
+                  <select
+                    className={INPUT_CLS}
+                    style={{ color: "#111827", background: "#fff" }}
+                    value={filters.propertyType ?? ""}
+                    onChange={e => onChange({ ...filters, propertyType: e.target.value || undefined })}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>كل الأنواع</option>
+                    {filterOpts?.propertyTypes.map(t => (
+                      <option key={t} value={t} style={{ color: "#111827", background: "#fff" }}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع الإعلان</label>
+                  <select
+                    className={INPUT_CLS}
+                    style={{ color: "#111827", background: "#fff" }}
+                    value={filters.listingType ?? ""}
+                    onChange={e => onChange({ ...filters, listingType: e.target.value || undefined })}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>كل الإعلانات</option>
+                    {filterOpts?.listingTypes.map(t => (
+                      <option key={t.value} value={t.value} style={{ color: "#111827", background: "#fff" }}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع العقار</label>
-                <select className={INPUT_CLS} value={filters.propertyType ?? ""} onChange={e => onChange({ ...filters, propertyType: e.target.value || undefined })}>
-                  <option value="">الكل</option>
-                  {filterOpts?.propertyTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground block mb-1">نوع الإعلان</label>
-                <select className={INPUT_CLS} value={filters.listingType ?? ""} onChange={e => onChange({ ...filters, listingType: e.target.value || undefined })}>
-                  <option value="">الكل</option>
-                  {filterOpts?.listingTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-              </div>
+
+              {/* Clear */}
               {activeCount > 0 && (
-                <div className="col-span-2 md:col-span-4 flex justify-end">
+                <div className="flex justify-end pt-1">
                   <button onClick={() => onChange({})} className="text-[12px] text-red-500 hover:text-red-700 font-bold transition-colors">مسح الفلاتر ✕</button>
                 </div>
               )}
@@ -1095,53 +1181,64 @@ export default function Analytics() {
             {kpis && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44 }}
-                className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-6"
+                className="pt-6 space-y-4"
                 style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}
               >
-                {[
-                  {
-                    icon: Building2,
-                    label: "إعلان نشط",
-                    value: formatNumber(kpis.totalListings),
-                    color: "#0F7BA0",
-                  },
-                  {
-                    icon: Banknote,
-                    label: "متوسط سعر المتر",
-                    value: <SAR value={kpis.avgPricePerSqm} perSqm dark />,
-                    color: "#10B981",
-                  },
-                  {
-                    icon: Activity,
-                    label: "إعلانات هذا الشهر",
-                    value: formatNumber(kpis.newLast30Days ?? 0),
-                    color: "#8B5CF6",
-                  },
-                  {
-                    icon: Globe2,
-                    label: "مناطق مُحلَّلة",
-                    value: String(insights?.byRegion?.length ?? 0),
-                    color: "#F59E0B",
-                  },
-                ].map((s, i) => (
-                  <div key={s.label} className="flex items-center gap-2.5 group/kpi">
-                    {i > 0 && <div className="hidden sm:block w-px h-7 opacity-15" style={{ background: "rgba(255,255,255,0.5)" }} />}
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/kpi:scale-110"
-                      style={{ background: `${s.color}20`, border: `1px solid ${s.color}35` }}>
-                      <s.icon className="w-3.5 h-3.5" style={{ color: s.color }} />
+                {/* Row A — global stats */}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                  {[
+                    { icon: Building2, label: "إعلان نشط",          value: formatNumber(kpis.totalListings),         color: "#0F7BA0" },
+                    { icon: Activity,  label: "إعلانات هذا الشهر",  value: formatNumber(kpis.newLast30Days ?? 0),    color: "#8B5CF6" },
+                    { icon: Globe2,    label: "مناطق مُحلَّلة",     value: String(insights?.byRegion?.length ?? 0),  color: "#F59E0B" },
+                  ].map((s, i) => (
+                    <div key={s.label} className="flex items-center gap-2.5 group/kpi">
+                      {i > 0 && <div className="hidden sm:block w-px h-7 opacity-15" style={{ background: "rgba(255,255,255,0.5)" }} />}
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/kpi:scale-110"
+                        style={{ background: `${s.color}20`, border: `1px solid ${s.color}35` }}>
+                        <s.icon className="w-3.5 h-3.5" style={{ color: s.color }} />
+                      </div>
+                      <div>
+                        <div className="text-[1.05rem] font-extrabold text-white leading-none tabular-nums tracking-tight">{s.value}</div>
+                        <div className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{s.label}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-[1.05rem] font-extrabold text-white leading-none tabular-nums tracking-tight">{s.value}</div>
-                      <div className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{s.label}</div>
-                    </div>
+                  ))}
+                </div>
+
+                {/* Row B — regional price benchmarks */}
+                <div>
+                  <div className="text-[10px] font-bold mb-2 tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>متوسط سعر المتر المربع · أبرز المناطق</div>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { key: "منطقة الرياض",        short: "الرياض",          color: "#0F7BA0" },
+                      { key: "منطقة مكة المكرمة",   short: "مكة / جدة",       color: "#10B981" },
+                      { key: "المنطقة الشرقية",      short: "الشرقية",         color: "#8B5CF6" },
+                    ].map(r => {
+                      const found = insights?.byRegion?.find(b => b.region === r.key);
+                      const sqmPrice = found?.avgPricePerSqm ?? 0;
+                      return (
+                        <div key={r.key}
+                          className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl"
+                          style={{ background: `${r.color}15`, border: `1px solid ${r.color}30` }}
+                        >
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: r.color }} />
+                          <div>
+                            <div className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>{r.short}</div>
+                            <div className="text-[13px] font-extrabold tabular-nums" style={{ color: sqmPrice > 0 ? r.color : "rgba(255,255,255,0.3)" }}>
+                              {sqmPrice > 0 ? <><SAR value={sqmPrice} perSqm dark /></> : "لا بيانات"}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
               </motion.div>
             )}
             {!kpis && loadingInsights && (
               <div className="pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}>
                 <div className="flex gap-6">
-                  {[...Array(4)].map((_, i) => (
+                  {[...Array(3)].map((_, i) => (
                     <div key={i} className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl opacity-20 bg-white" />
                       <div className="space-y-1.5">

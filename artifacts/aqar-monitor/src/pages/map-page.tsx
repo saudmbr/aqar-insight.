@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { motion } from "framer-motion";
 import {
   MapPin, Building2, SlidersHorizontal, X, Search,
   BedDouble, Bath, ChevronLeft, RefreshCcw,
-  Navigation, Layers, Map,
+  Navigation, Layers, Map, Lock, UserPlus,
 } from "lucide-react";
 import type { MapPin as MapPinType } from "@/components/property-map";
 
@@ -91,8 +93,9 @@ function ListingMiniCard({
 
 export default function MapPage() {
   const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
-  // Filters — التسلسل الإداري: منطقة → محافظة
+  // Filters — التسلسل الإداري: منطقة → محافظة (all hooks MUST come before early return)
   const [region, setRegion]     = useState("");
   const [city, setCity]         = useState("");
   const [propertyType, setPropertyType] = useState("");
@@ -111,6 +114,64 @@ export default function MapPage() {
 
   // Mobile view toggle
   const [mobileView, setMobileView] = useState<"map" | "list">("map");
+
+  // ── Guest gate (after all hooks) ────────────────────────────────────────────
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="relative rounded-3xl overflow-hidden max-w-md w-full text-center"
+            style={{
+              background: "linear-gradient(135deg, #060D1C 0%, #0B1E3A 55%, #0F2744 100%)",
+              boxShadow: "0 12px 56px rgba(6,13,28,0.4)",
+            }}
+          >
+            {/* bg grid */}
+            <div className="absolute inset-0 opacity-[0.07]"
+              style={{ backgroundImage: "linear-gradient(rgba(15,123,160,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(15,123,160,0.8) 1px, transparent 1px)", backgroundSize: "38px 38px" }} />
+            {/* glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-40 rounded-full opacity-20"
+              style={{ background: "radial-gradient(circle, #0F7BA0, transparent 70%)" }} />
+
+            <div className="relative px-8 py-12">
+              <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center"
+                style={{ background: "rgba(15,123,160,0.18)", border: "1.5px solid rgba(15,123,160,0.4)" }}>
+                <Lock className="w-9 h-9" style={{ color: "#7DD3EA" }} />
+              </div>
+
+              <h2 className="text-2xl font-extrabold text-white mb-3">الخريطة التفاعلية</h2>
+              <p className="text-[14px] leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.60)" }}>
+                سجّل دخولك أو أنشئ حسابًا مجانيًا للوصول إلى خريطة العقارات التفاعلية
+                وتصفّح آلاف الإعلانات بصريًا على الخريطة.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="w-full py-3 rounded-2xl font-bold text-[15px] transition-all hover:opacity-90"
+                  style={{ background: "#0F7BA0", color: "#fff" }}
+                >
+                  تسجيل الدخول
+                </button>
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="w-full py-3 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.85)" }}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  إنشاء حساب مجاني
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </Layout>
+    );
+  }
 
   const buildQuery = () => {
     const p = new URLSearchParams();
