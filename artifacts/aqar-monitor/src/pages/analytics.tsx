@@ -787,14 +787,16 @@ function SectionD({ insights, loading, distSort, setDistSort }: {
       <SCard
         title="تحليل الأحياء المفصّل"
         action={
-          <div className="flex gap-1">
-            {[{ v: "activity", l: "الأكثر نشاطاً" }, { v: "price", l: "الأعلى سعراً" }, { v: "sqm", l: "سعر المتر" }].map(s => (
-              <button key={s.v} onClick={() => setDistSort(s.v)}
-                className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${distSort === s.v ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted/60"}`}>
-                {s.l}
-              </button>
-            ))}
-          </div>
+          <select
+            className="bg-background border border-border rounded-xl px-3 py-2 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+            value={distSort}
+            onChange={e => setDistSort(e.target.value)}
+            style={{ color: "#111827", background: "#fff" }}
+          >
+            <option value="activity" style={{ color: "#111827", background: "#fff" }}>الأكثر نشاطاً</option>
+            <option value="price"    style={{ color: "#111827", background: "#fff" }}>الأعلى سعراً</option>
+            <option value="sqm"      style={{ color: "#111827", background: "#fff" }}>سعر المتر</option>
+          </select>
         }
       >
         {loading ? <Skeleton className="h-48 w-full rounded-xl" /> :
