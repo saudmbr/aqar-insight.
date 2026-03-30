@@ -1,4 +1,4 @@
-import { useState, useRef, DragEvent, ChangeEvent } from "react";
+import { useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
 import { Upload, X, Link, Video, Loader2, AlertCircle, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,9 +31,10 @@ function getYoutubeEmbed(url: string): string | null {
 interface VideoUploaderProps {
   value: string;
   onChange: (value: string) => void;
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
-export function VideoUploader({ value, onChange }: VideoUploaderProps) {
+export function VideoUploader({ value, onChange, onUploadingChange }: VideoUploaderProps) {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -42,6 +43,10 @@ export function VideoUploader({ value, onChange }: VideoUploaderProps) {
   const [urlInput, setUrlInput] = useState("");
   const [urlError, setUrlError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    onUploadingChange?.(uploading);
+  }, [uploading, onUploadingChange]);
 
   const uploadFile = async (file: File) => {
     if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {

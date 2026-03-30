@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, DragEvent, ChangeEvent } from "react";
+import { useState, useCallback, useRef, useEffect, DragEvent, ChangeEvent } from "react";
 import { Upload, X, ArrowUp, ArrowDown, Link, ImageIcon, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ interface UploadingFile {
 interface ImageUploaderProps {
   value: string;
   onChange: (value: string) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   maxImages?: number;
   label?: string;
 }
@@ -38,6 +39,7 @@ interface ImageUploaderProps {
 export function ImageUploader({
   value,
   onChange,
+  onUploadingChange,
   maxImages = 10,
   label = "الصور",
 }: ImageUploaderProps) {
@@ -51,6 +53,10 @@ export function ImageUploader({
   const [urlError, setUrlError] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    onUploadingChange?.(uploading.length > 0);
+  }, [uploading.length, onUploadingChange]);
 
   const updatePaths = useCallback((newPaths: string[]) => {
     onChange(newPaths.filter(Boolean).join("\n"));

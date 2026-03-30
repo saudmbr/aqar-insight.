@@ -81,6 +81,9 @@ export default function ListingForm() {
   const [error, setError] = useState<string | null>(null);
   const [deedOtherMode, setDeedOtherMode] = useState(false);
   const [locationValue, setLocationValue] = useState<LocationValue | null>(null);
+  const [imagesUploading, setImagesUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const mediaUploading = imagesUploading || videoUploading;
 
   const [form, setForm] = useState<PartialListing>({
     status: "active",
@@ -123,6 +126,11 @@ export default function ListingForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (mediaUploading) {
+      setError("يرجى الانتظار حتى اكتمال رفع الصور والفيديو قبل حفظ الإعلان");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     if (!form.title || !form.propertyType || !form.listingType || !form.city || !form.price) {
       setError("يرجى ملء الحقول الإلزامية: العنوان، نوع العقار، الغرض، المحافظة، السعر");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -605,6 +613,7 @@ export default function ListingForm() {
             <ImageUploader
               value={form.images ?? ""}
               onChange={v => set("images", v)}
+              onUploadingChange={setImagesUploading}
               maxImages={10}
             />
             <div className="pt-2 border-t border-border space-y-3">
@@ -615,6 +624,7 @@ export default function ListingForm() {
               <VideoUploader
                 value={form.videoUrl ?? ""}
                 onChange={v => set("videoUrl", v)}
+                onUploadingChange={setVideoUploading}
               />
             </div>
             <div className="pt-2 border-t border-border">
@@ -627,8 +637,14 @@ export default function ListingForm() {
 
         {/* ── Sticky submit ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-4 sticky bottom-6 z-10 bg-card/80 backdrop-blur-md p-4 rounded-3xl border border-border shadow-2xl">
-          <Button type="submit" disabled={saving} size="lg" className="flex-1 h-14 rounded-2xl text-lg font-bold gap-2 shadow-lg shadow-primary/30">
-            {saving ? <><Loader2 className="w-5 h-5 animate-spin" />جارٍ الحفظ…</> : <><Save className="w-5 h-5" />{isEdit ? "حفظ وتحديث الإعلان" : "نشر الإعلان الآن"}</>}
+          {mediaUploading && (
+            <div className="w-full flex items-center justify-center gap-2 text-sm text-amber-600 font-medium bg-amber-50 border border-amber-200 rounded-2xl py-2 px-4">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              جاري رفع الملفات… يرجى الانتظار قبل الحفظ
+            </div>
+          )}
+          <Button type="submit" disabled={saving || mediaUploading} size="lg" className="flex-1 h-14 rounded-2xl text-lg font-bold gap-2 shadow-lg shadow-primary/30">
+            {saving ? <><Loader2 className="w-5 h-5 animate-spin" />جارٍ الحفظ…</> : mediaUploading ? <><Loader2 className="w-5 h-5 animate-spin" />جاري رفع الملفات…</> : <><Save className="w-5 h-5" />{isEdit ? "حفظ وتحديث الإعلان" : "نشر الإعلان الآن"}</>}
           </Button>
           <Button type="button" variant="outline" size="lg" className="rounded-2xl h-14 sm:w-48 font-bold" onClick={() => navigate(isEdit ? `/listings/${id}` : "/listings")}>
             إلغاء والعودة
