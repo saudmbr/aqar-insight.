@@ -4,35 +4,47 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Cell, PieChart, Pie, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, Cell, PieChart, Pie,
 } from "recharts";
 import {
-  TrendingUp, TrendingDown, Minus, BarChart3, Building2,
-  MapPin, Activity, Lightbulb, ArrowUpRight, ArrowDownRight,
-  Scale, Target, Zap, Star, Home, AlertCircle, CheckCircle2,
-  Flame, Clock, Grid3X3, Globe, PieChart as PieChartIcon,
-  Award, ChevronDown, ChevronUp,
+  TrendingUp, TrendingDown, Minus, BarChart3, Activity,
+  Lightbulb, Scale, Target, Zap, Home, AlertCircle,
+  Award, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight,
+  MapPin, ShoppingCart, Clock, Flame,
 } from "lucide-react";
 import {
   useAnalytics, useAnalyticsTrends, useAnalyticsFilterOptions,
-  computeMarketDirection, computeActivityLevel, TIME_WINDOWS,
+  computeMarketDirection, computeActivityLevel,
   type AnalyticsFilters, type InsightsData, type TrendPoint,
 } from "@/hooks/use-analytics";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const NAVY     = "#0B1628";
+const TEAL     = "#0F7BA0";
+const TEAL_LT  = "#E8F4F8";
+const GREEN    = "#10B981";
+const GREEN_LT = "#ECFDF5";
+const AMBER    = "#F59E0B";
+const AMBER_LT = "#FFFBEB";
+const RED      = "#EF4444";
+const RED_LT   = "#FEF2F2";
+const PURPLE   = "#8B5CF6";
+const SLATE    = "#64748B";
 
-const SECTION_TABS = [
+const CHART_PALETTE = [TEAL, PURPLE, GREEN, AMBER, RED, "#F97316", NAVY, SLATE];
+const INPUT_CLS = "w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+const TABS = [
   { id: "A", label: "مؤشر السوق",       icon: Award },
   { id: "B", label: "الأسعار",           icon: BarChart3 },
-  { id: "C", label: "الحركة والنشاط",    icon: Activity },
-  { id: "D", label: "العرض والطلب",      icon: Scale },
-  { id: "E", label: "الأنواع",           icon: Grid3X3 },
-  { id: "F", label: "الأحياء والمدن",   icon: MapPin },
-  { id: "G", label: "الذكاء التحليلي",  icon: Lightbulb },
+  { id: "C", label: "العرض والطلب",      icon: Scale },
+  { id: "D", label: "الأحياء",           icon: MapPin },
+  { id: "E", label: "الذكاء التحليلي",  icon: Lightbulb },
 ] as const;
 
-type SectionId = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+type TabId = "A" | "B" | "C" | "D" | "E";
 
 const PERIOD_TABS = [
   { value: "day",     label: "يومي" },
@@ -42,194 +54,193 @@ const PERIOD_TABS = [
   { value: "year",    label: "سنوي" },
 ];
 
-const BAR_COLORS = ["#0F7BA0","#0F1C3F","#34D399","#8B5CF6","#F97316","#EF4444","#64748B","#F59E0B"];
-const PIE_COLORS = ["#0F7BA0","#0F1C3F","#34D399","#8B5CF6","#F97316","#EF4444","#F59E0B","#94A3B8"];
-const INPUT_CLS = "w-full bg-background border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+// ── Helper Components ──────────────────────────────────────────────────────────
 
-// ── Helper Components ─────────────────────────────────────────────────────────
-
-function KpiCard({ label, value, sub, color = "#0F7BA0", loading }: {
-  label: string; value: React.ReactNode; sub?: string; color?: string; loading?: boolean;
-}) {
+function Fade({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-card rounded-[22px] border border-border/60 overflow-hidden shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-      <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}44)` }} />
-      <div className="p-5">
-        <div className="text-[12px] text-muted-foreground mb-2">{label}</div>
-        <div className="text-[1.65rem] font-extrabold leading-none mb-1.5 tabular-nums tracking-tight" style={{ color }}>
-          {loading ? <Skeleton className="h-8 w-24 inline-block" /> : value}
-        </div>
-        {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return (
-    <span className="inline-block text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
-      style={{ color, background: bg }}>{label}</span>
-  );
-}
-
-function IndicatorCard({ title, value, status, statusColor, statusBg, detail, icon: Icon, loading }: {
-  title: string; value?: string; status: string; statusColor: string; statusBg: string;
-  detail?: string; icon: React.ComponentType<{ className?: string }>; loading?: boolean;
-}) {
-  return (
-    <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-transform duration-200">
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${statusColor}14` }}>
-          <Icon className="w-4 h-4" style={{ color: statusColor }} />
-        </div>
-        {loading ? <Skeleton className="h-5 w-16" /> : <StatusBadge label={status} color={statusColor} bg={statusBg} />}
-      </div>
-      <div className="text-[13px] font-bold text-foreground mb-1">{title}</div>
-      {value && <div className="text-xl font-extrabold" style={{ color: statusColor }}>{loading ? <Skeleton className="h-6 w-20 inline-block" /> : value}</div>}
-      {detail && <div className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">{detail}</div>}
-    </div>
-  );
-}
-
-function EmptyState({ text }: { text: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground bg-card rounded-2xl border border-dashed border-border/60">
-      <BarChart3 className="w-10 h-10 opacity-20" />
-      <p className="text-sm font-medium text-center max-w-xs">{text}</p>
-    </div>
-  );
-}
-
-function SectionContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }} className="space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.22 }}
+      className="space-y-5"
+    >
       {children}
     </motion.div>
   );
 }
 
-function ChartCard({ title, children, height = 240 }: { title: string; children: React.ReactNode; height?: number }) {
+function Empty({ text }: { text: string }) {
   return (
-    <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-      <div className="text-[13px] font-bold text-foreground mb-4">{title}</div>
-      <div style={{ height }}>{children}</div>
+    <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border/50">
+      <BarChart3 className="w-9 h-9 opacity-20" />
+      <p className="text-sm font-medium text-center max-w-xs leading-relaxed">{text}</p>
     </div>
   );
 }
 
-// ── Market Score Widget ───────────────────────────────────────────────────────
-
-function MarketScoreWidget({ score, label, components, explanation, loading }: {
-  score: number; label: string; components: { activity: number; diversity: number; stability: number };
-  explanation?: string; loading?: boolean;
+/* Big metric card — number + context label (decision-oriented) */
+function MetricCard({
+  label, value, context, contextColor = SLATE, accent = TEAL, loading, icon: Icon,
+}: {
+  label: string; value: React.ReactNode; context?: string;
+  contextColor?: string; accent?: string; loading?: boolean;
+  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 }) {
-  const color = score >= 65 ? "#22C55E" : score >= 35 ? "#0F7BA0" : "#F59E0B";
-  const bg = score >= 65 ? "#F0FDF4" : score >= 35 ? "#EFF6FF" : "#FFFBEB";
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = loading ? circumference : circumference * (1 - score / 100);
-
   return (
-    <div className="bg-card rounded-[22px] border border-border/60 p-6 shadow-sm">
-      <div className="flex items-start gap-6">
-        {/* Gauge */}
-        <div className="shrink-0">
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="10" />
-            <circle cx="60" cy="60" r={radius} fill="none" stroke={color}
-              strokeWidth="10" strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-              transform="rotate(-90 60 60)"
-              style={{ transition: "stroke-dashoffset 1s ease" }} />
-            <text x="60" y="56" textAnchor="middle" fontSize="24" fontWeight="800" fill={color}>{loading ? "—" : score}</text>
-            <text x="60" y="72" textAnchor="middle" fontSize="11" fill="#64748B">/ 100</text>
-          </svg>
-        </div>
-        {/* Info */}
-        <div className="flex-1 min-w-0 pt-2">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[13px] font-bold text-foreground">مؤشر صحة السوق</span>
-            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full" style={{ color, background: bg }}>
-              {loading ? "—" : label}
-            </span>
+    <div
+      className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-2"
+      style={{ borderTop: `3px solid ${accent}` }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[12px] font-semibold text-muted-foreground leading-tight">{label}</span>
+        {Icon && (
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${accent}18` }}>
+            <Icon className="w-3.5 h-3.5" style={{ color: accent }} />
           </div>
-          {/* Component bars */}
-          <div className="space-y-2">
-            {[
-              { name: "النشاط", val: components.activity, max: 40, color: "#0F7BA0" },
-              { name: "التنوع", val: components.diversity, max: 30, color: "#8B5CF6" },
-              { name: "الاستقرار", val: components.stability, max: 30, color: "#22C55E" },
-            ].map(c => (
-              <div key={c.name}>
-                <div className="flex items-center justify-between text-[11px] mb-0.5">
-                  <span className="text-muted-foreground">{c.name}</span>
-                  <span className="font-bold tabular-nums" style={{ color: c.color }}>{loading ? "—" : `${c.val}/${c.max}`}</span>
-                </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-700"
-                    style={{ width: loading ? "0%" : `${(c.val / c.max) * 100}%`, background: c.color }} />
-                </div>
-              </div>
-            ))}
-          </div>
-          {explanation && <div className="text-[10px] text-muted-foreground mt-2">{explanation}</div>}
-        </div>
+        )}
       </div>
+      <div className="text-[1.75rem] font-black leading-none tabular-nums tracking-tight" style={{ color: accent }}>
+        {loading ? <Skeleton className="h-9 w-28 inline-block" /> : value}
+      </div>
+      {context && (
+        <div className="text-[11px] font-bold" style={{ color: contextColor }}>
+          {loading ? <Skeleton className="h-3.5 w-24 inline-block" /> : context}
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Trend Chart ───────────────────────────────────────────────────────────────
+/* Status pill badge */
+function Pill({ label, color, bg }: { label: string; color: string; bg: string }) {
+  return (
+    <span className="inline-block text-[11px] font-extrabold px-2.5 py-0.5 rounded-full" style={{ color, background: bg }}>
+      {label}
+    </span>
+  );
+}
 
-function TrendChart({ trends, loading, metric }: { trends?: TrendPoint[]; loading: boolean; metric: "avgPrice" | "count" | "avgPricePerSqm" }) {
-  const colorMap = { avgPrice: "#0F7BA0", count: "#8B5CF6", avgPricePerSqm: "#22C55E" };
+/* Indicator card — icon + title + status + detail */
+function IndicatorCard({
+  title, value, status, statusColor, detail, icon: Icon, loading,
+}: {
+  title: string; value?: string; status: string;
+  statusColor: string; detail?: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  loading?: boolean;
+}) {
+  return (
+    <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm hover:-translate-y-0.5 transition-all duration-200">
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${statusColor}14` }}>
+          <Icon className="w-4 h-4" style={{ color: statusColor }} />
+        </div>
+        {loading ? <Skeleton className="h-5 w-20" /> : <Pill label={status} color={statusColor} bg={`${statusColor}14`} />}
+      </div>
+      <div className="text-[13px] font-bold text-foreground mb-1">{title}</div>
+      {value && (
+        <div className="text-xl font-extrabold" style={{ color: statusColor }}>
+          {loading ? <Skeleton className="h-6 w-24 inline-block" /> : value}
+        </div>
+      )}
+      {detail && <div className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">{detail}</div>}
+    </div>
+  );
+}
+
+/* Section card wrapper */
+function SCard({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <span className="text-[13px] font-bold text-foreground">{title}</span>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Trend Chart ────────────────────────────────────────────────────────────────
+
+function TrendLine({ trends, loading, metric }: { trends?: TrendPoint[]; loading: boolean; metric: "avgPrice" | "count" | "avgPricePerSqm" }) {
+  const colorMap = { avgPrice: TEAL, count: PURPLE, avgPricePerSqm: GREEN };
   const color = colorMap[metric];
   const labelMap = { avgPrice: "متوسط السعر", count: "عدد الإعلانات", avgPricePerSqm: "سعر المتر" };
 
   if (loading) return <Skeleton className="w-full h-full rounded-xl" />;
-  if (!trends?.length) return <EmptyState text="لا توجد بيانات كافية للرسم البياني" />;
-
+  if (!trends?.length) return <Empty text="لا توجد بيانات كافية للرسم البياني" />;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={trends} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+      <LineChart data={trends} margin={{ top: 4, right: 12, left: -16, bottom: 0 }}>
+        <defs>
+          <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.15} />
+            <stop offset="95%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-        <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-        <YAxis tick={{ fontSize: 11 }} tickFormatter={v => metric === "count" ? formatNumber(v) : (v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v))} />
+        <XAxis dataKey="label" tick={{ fontSize: 11, fill: SLATE }} />
+        <YAxis tick={{ fontSize: 11, fill: SLATE }} tickFormatter={v => metric === "count" ? formatNumber(v) : (v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v))} />
         <Tooltip
           formatter={(v: number) => [metric === "count" ? formatNumber(v) : formatCurrency(v), labelMap[metric]]}
-          contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
-        <Line type="monotone" dataKey={metric} stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }} />
+          contentStyle={{ borderRadius: 14, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+        <Line type="monotone" dataKey={metric} stroke={color} strokeWidth={2.5} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 5 }} />
       </LineChart>
     </ResponsiveContainer>
   );
 }
 
-// ── Bar Chart Component ───────────────────────────────────────────────────────
+// ── Horizontal Bar Chart ───────────────────────────────────────────────────────
 
-function HBarChart({ data, dataKey, nameKey, label, color = "#0F7BA0", formatter }: {
-  data: Record<string, number | string>[]; dataKey: string; nameKey: string;
-  label: string; color?: string; formatter?: (v: number) => string;
+function HBar({ data, dataKey, nameKey, label, formatter }: {
+  data: Record<string, number | string>[];
+  dataKey: string; nameKey: string; label: string;
+  formatter?: (v: number) => string;
 }) {
-  if (!data.length) return <EmptyState text="لا توجد بيانات" />;
-  const fmt = formatter ?? ((v: number) => formatCurrency(v));
+  if (!data.length) return <Empty text="لا توجد بيانات" />;
+  const fmt = formatter ?? formatCurrency;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 8, left: 40, bottom: 0 }}>
+      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 10, left: 44, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={false} />
-        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v)} />
-        <YAxis type="category" dataKey={nameKey} tick={{ fontSize: 11 }} width={60} />
+        <XAxis type="number" tick={{ fontSize: 10, fill: SLATE }} tickFormatter={v => v >= 1000 ? `${Math.round(v / 1000)}ك` : String(v)} />
+        <YAxis type="category" dataKey={nameKey} tick={{ fontSize: 11, fill: "#374151" }} width={64} />
         <Tooltip formatter={(v: number) => [fmt(v), label]} contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
-        <Bar dataKey={dataKey} radius={[0, 6, 6, 0]}>
-          {data.map((_: unknown, i: number) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
+        <Bar dataKey={dataKey} radius={[0, 7, 7, 0]}>
+          {data.map((_: unknown, i: number) => <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />)}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-// ── Filters Panel ─────────────────────────────────────────────────────────────
+// ── Donut Chart ────────────────────────────────────────────────────────────────
+
+function Donut({ data }: { data: { name: string; value: number; color: string }[] }) {
+  if (!data.filter(d => d.value > 0).length) return <Empty text="لا توجد بيانات" />;
+  const filtered = data.filter(d => d.value > 0);
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={filtered} cx="50%" cy="50%"
+          innerRadius={48} outerRadius={78}
+          dataKey="value" paddingAngle={3}
+          label={({ name, percent }) => `${name} ${Math.round(percent * 100)}%`}
+          labelLine={false}
+        >
+          {filtered.map((d, i) => <Cell key={i} fill={d.color} />)}
+        </Pie>
+        <Tooltip formatter={(v: number) => [formatNumber(v), "إعلان"]}
+          contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+// ── Filters Panel ──────────────────────────────────────────────────────────────
 
 function FiltersPanel({ filters, onChange, filterOpts }: {
   filters: AnalyticsFilters;
@@ -237,26 +248,22 @@ function FiltersPanel({ filters, onChange, filterOpts }: {
   filterOpts?: ReturnType<typeof useAnalyticsFilterOptions>["data"];
 }) {
   const [open, setOpen] = useState(false);
-
   const activeCount = [filters.city, filters.district, filters.propertyType, filters.listingType].filter(Boolean).length;
 
   return (
-    <div className="bg-card rounded-[22px] border border-border/60 overflow-hidden shadow-sm">
+    <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-sm">
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-primary" />
           <span>تصفية البيانات</span>
-          {activeCount > 0 && (
-            <span className="text-[11px] font-extrabold bg-primary/10 text-primary rounded-full px-2 py-0.5">{activeCount} فلتر</span>
-          )}
+          {activeCount > 0 && <span className="text-[11px] font-extrabold bg-primary/10 text-primary rounded-full px-2 py-0.5">{activeCount} فلتر</span>}
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-            className="overflow-hidden border-t border-border/40">
+          <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden border-t border-border/40">
             <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground block mb-1">المدينة</label>
@@ -269,10 +276,7 @@ function FiltersPanel({ filters, onChange, filterOpts }: {
                 <label className="text-[11px] font-bold text-muted-foreground block mb-1">الحي</label>
                 <select className={INPUT_CLS} value={filters.district ?? ""} onChange={e => onChange({ ...filters, district: e.target.value || undefined })}>
                   <option value="">الكل</option>
-                  {(filters.city
-                    ? filterOpts?.districts.filter(d => d.city === filters.city)
-                    : filterOpts?.districts
-                  )?.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
+                  {(filters.city ? filterOpts?.districts.filter(d => d.city === filters.city) : filterOpts?.districts)?.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
                 </select>
               </div>
               <div>
@@ -291,10 +295,7 @@ function FiltersPanel({ filters, onChange, filterOpts }: {
               </div>
               {activeCount > 0 && (
                 <div className="col-span-2 md:col-span-4 flex justify-end">
-                  <button onClick={() => onChange({})}
-                    className="text-[12px] text-red-500 hover:text-red-700 font-bold transition-colors">
-                    مسح الفلاتر ✕
-                  </button>
+                  <button onClick={() => onChange({})} className="text-[12px] text-red-500 hover:text-red-700 font-bold transition-colors">مسح الفلاتر ✕</button>
                 </div>
               )}
             </div>
@@ -305,178 +306,248 @@ function FiltersPanel({ filters, onChange, filterOpts }: {
   );
 }
 
-// ── Section A: Market Health Score ───────────────────────────────────────────
+// ── Market Score Widget ────────────────────────────────────────────────────────
+
+function MarketGauge({ score, label, components, explanation, loading }: {
+  score: number; label: string;
+  components: { activity: number; diversity: number; stability: number };
+  explanation?: string; loading?: boolean;
+}) {
+  const color = score >= 65 ? GREEN : score >= 35 ? TEAL : AMBER;
+  const radius = 52;
+  const circ = 2 * Math.PI * radius;
+  const offset = loading ? circ : circ * (1 - score / 100);
+
+  return (
+    <div className="bg-card rounded-2xl border border-border/60 p-6 shadow-sm" style={{ borderTop: `3px solid ${color}` }}>
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="shrink-0">
+          <svg width="128" height="128" viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="11" />
+            <circle cx="64" cy="64" r={radius} fill="none" stroke={color}
+              strokeWidth="11" strokeLinecap="round"
+              strokeDasharray={circ} strokeDashoffset={offset}
+              transform="rotate(-90 64 64)"
+              style={{ transition: "stroke-dashoffset 1.2s ease" }} />
+            <text x="64" y="59" textAnchor="middle" fontSize="28" fontWeight="900" fill={color}>{loading ? "—" : score}</text>
+            <text x="64" y="76" textAnchor="middle" fontSize="12" fill={SLATE}>/ 100</text>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[14px] font-extrabold text-foreground">مؤشر صحة السوق</span>
+            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full" style={{ color, background: `${color}14` }}>
+              {loading ? "—" : label}
+            </span>
+          </div>
+          <div className="space-y-2.5">
+            {[
+              { name: "النشاط", val: components.activity, max: 40, color: TEAL },
+              { name: "التنوع",  val: components.diversity, max: 30, color: PURPLE },
+              { name: "الاستقرار", val: components.stability, max: 30, color: GREEN },
+            ].map(c => (
+              <div key={c.name}>
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-muted-foreground font-medium">{c.name}</span>
+                  <span className="font-bold tabular-nums" style={{ color: c.color }}>
+                    {loading ? "—" : `${c.val} / ${c.max}`}
+                  </span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ width: loading ? "0%" : `${(c.val / c.max) * 100}%`, background: c.color }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {explanation && <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">{explanation}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION A — مؤشر السوق
+// ══════════════════════════════════════════════════════════════════════════════
 
 function SectionA({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
   const kpis = insights?.kpis;
-  const ms = insights?.marketScore;
-  const sd = insights?.supplyDemand;
+  const ms   = insights?.marketScore;
+  const sd   = insights?.supplyDemand;
 
-  const turnoverLabel = (kpis?.turnoverRate ?? 0) > 30 ? "سوق متحرك" : (kpis?.turnoverRate ?? 0) > 10 ? "نشاط معتدل" : "سوق هادئ";
-  const turnoverColor = (kpis?.turnoverRate ?? 0) > 30 ? "#22C55E" : (kpis?.turnoverRate ?? 0) > 10 ? "#0F7BA0" : "#F59E0B";
-  const turnoverBg    = (kpis?.turnoverRate ?? 0) > 30 ? "rgba(34,197,94,0.1)" : (kpis?.turnoverRate ?? 0) > 10 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
+  const turnoverRate  = kpis?.turnoverRate ?? 0;
+  const turnoverColor = turnoverRate > 30 ? GREEN : turnoverRate > 10 ? TEAL : AMBER;
+  const turnoverLabel = turnoverRate > 30 ? "سوق متحرك — دوران سريع" : turnoverRate > 10 ? "نشاط معتدل" : "سوق هادئ — حركة بطيئة";
 
-  const adrLabel = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "سريع الحركة" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "حركة طبيعية" : "بطيء الحركة";
-  const adrColor = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "#22C55E" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "#0F7BA0" : "#F59E0B";
-  const adrBg    = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "rgba(34,197,94,0.1)" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
+  const dom   = kpis?.avgDaysOnMarket ?? 0;
+  const domColor = dom < 14 ? GREEN : dom < 45 ? TEAL : AMBER;
+  const domLabel = dom < 14 ? "إعلانات تُباع بسرعة" : dom < 45 ? "مدة طبيعية" : "إعلانات تبقى طويلاً";
 
-  const balColor = sd?.marketBalance === "higher_demand" ? "#22C55E" : sd?.marketBalance === "higher_supply" ? "#F59E0B" : "#0F7BA0";
-  const balBg    = sd?.marketBalance === "higher_demand" ? "rgba(34,197,94,0.1)" : sd?.marketBalance === "higher_supply" ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+  const balColor = sd?.marketBalance === "higher_demand" ? GREEN : sd?.marketBalance === "higher_supply" ? AMBER : TEAL;
+  const balLabel = sd?.marketBalance === "higher_demand" ? "الطلب أعلى — سوق بائعين" : sd?.marketBalance === "higher_supply" ? "العرض أعلى — سوق مشترين" : "سوق متوازن";
 
   return (
-    <SectionContainer>
-      {/* Market Score */}
-      <MarketScoreWidget
+    <Fade>
+      <MarketGauge
         score={ms?.score ?? 0}
         label={ms?.label ?? "—"}
         components={ms?.components ?? { activity: 0, diversity: 0, stability: 0 }}
         explanation={ms?.explanation}
-        loading={loading} />
-
-      {/* KPI Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="إجمالي الإعلانات" value={loading ? "—" : formatNumber(kpis?.totalListings ?? 0)} color="#0F1C3F" loading={loading} />
-        <KpiCard label="إعلانات الأسبوع الماضي" value={loading ? "—" : formatNumber(kpis?.newLast7Days ?? 0)} color="#0F7BA0" loading={loading} />
-        <KpiCard label="إعلانات الشهر الماضي" value={loading ? "—" : formatNumber(kpis?.newLast30Days ?? 0)} color="#8B5CF6" loading={loading} />
-        <KpiCard label="إعلانات 90 يوم" value={loading ? "—" : formatNumber(kpis?.newLast90Days ?? 0)} color="#22C55E" loading={loading} />
-      </div>
-
-      {/* Market Indicators */}
+        loading={loading}
+      />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <IndicatorCard title="معدل دوران السوق" value={`${kpis?.turnoverRate ?? 0}%`}
-          status={turnoverLabel} statusColor={turnoverColor} statusBg={turnoverBg}
-          detail="نسبة الإعلانات الجديدة خلال 30 يوم من الإجمالي" icon={Activity} loading={loading} />
-        <IndicatorCard title="توازن العرض والطلب"
+        <IndicatorCard
+          title="معدل دوران السوق"
+          value={`${turnoverRate}%`}
+          status={turnoverLabel}
+          statusColor={turnoverColor}
+          detail="نسبة الإعلانات الجديدة في آخر 30 يوم من الإجمالي"
+          icon={Flame}
+          loading={loading}
+        />
+        <IndicatorCard
+          title="توازن العرض والطلب"
           value={sd?.marketBalanceLabel ?? "—"}
-          status={`نسبة النشاط: ${sd?.activityRatio ?? "—"}`}
-          statusColor={balColor} statusBg={balBg}
-          detail="مقارنة الأسبوع الأخير بمعدل الشهر الماضي" icon={Scale} loading={loading} />
-        <IndicatorCard title="متوسط عمر الإعلان"
-          value={kpis?.avgDaysOnMarket ? `${kpis.avgDaysOnMarket} يوم` : "—"}
-          status={adrLabel} statusColor={adrColor} statusBg={adrBg}
-          detail="متوسط عدد الأيام منذ نشر الإعلان" icon={Clock} loading={loading} />
+          status={balLabel}
+          statusColor={balColor}
+          detail="مقارنة النشاط الأسبوعي بمعدل الشهر الماضي"
+          icon={Scale}
+          loading={loading}
+        />
+        <IndicatorCard
+          title="متوسط عمر الإعلان"
+          value={dom ? `${dom} يوم` : "—"}
+          status={domLabel}
+          statusColor={domColor}
+          detail="كلما قصر العمر، كلما ارتفع الطلب على النوع المحدد"
+          icon={Clock}
+          loading={loading}
+        />
       </div>
-    </SectionContainer>
+    </Fade>
   );
 }
 
-// ── Section B: Price Intelligence ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION B — الأسعار
+// ══════════════════════════════════════════════════════════════════════════════
 
 function SectionB({ insights, trends, loading, loadingTrends, period, setPeriod }: {
-  insights?: InsightsData; trends?: TrendPoint[]; loading: boolean; loadingTrends: boolean;
+  insights?: InsightsData; trends?: TrendPoint[];
+  loading: boolean; loadingTrends: boolean;
   period: string; setPeriod: (p: string) => void;
 }) {
   const kpis = insights?.kpis;
-  const avg = kpis?.avgPrice ?? 0;
-  const med = kpis?.medianPrice ?? 0;
-  const skew = med > 0 ? avg / med : 1;
-  const skewLabel = skew > 1.2 ? "يميل للغالي" : skew > 1.05 ? "ميل طفيف" : "موزع بانتظام";
-  const skewColor = skew > 1.2 ? "#F59E0B" : skew > 1.05 ? "#0F7BA0" : "#22C55E";
-  const skewBg    = skew > 1.2 ? "rgba(245,158,11,0.1)" : skew > 1.05 ? "rgba(15,123,160,0.1)" : "rgba(34,197,94,0.1)";
+  const avg  = kpis?.avgPrice ?? 0;
+  const med  = kpis?.medianPrice ?? 0;
+  const psm  = kpis?.avgPricePerSqm ?? 0;
 
-  const vol = med > 0 ? Math.round(((( kpis?.p75Price ?? 0) - (kpis?.p25Price ?? 0)) / med) * 100) : 0;
-  const volLabel = vol < 20 ? "مستقر" : vol < 45 ? "متوسط" : "متذبذب";
-  const volColor = vol < 20 ? "#22C55E" : vol < 45 ? "#F59E0B" : "#EF4444";
-  const volBg    = vol < 20 ? "rgba(34,197,94,0.1)" : vol < 45 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
-
-  const devPct = kpis?.priceDeviationPct ?? 0;
-  const devLabel = Math.abs(devPct) < 5 ? "توافق عالٍ" : Math.abs(devPct) < 15 ? "فارق معتدل" : "فارق كبير";
-  const devColor = Math.abs(devPct) < 5 ? "#22C55E" : Math.abs(devPct) < 15 ? "#F59E0B" : "#EF4444";
-  const devBg    = Math.abs(devPct) < 5 ? "rgba(34,197,94,0.1)" : Math.abs(devPct) < 15 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
-
-  return (
-    <SectionContainer>
-      {/* Price KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="متوسط السعر" value={loading ? "—" : formatCurrency(avg)} color="#0F7BA0" loading={loading} />
-        <KpiCard label="الوسيط" value={loading ? "—" : formatCurrency(med)} color="#0F1C3F" loading={loading} />
-        <KpiCard label="متوسط سعر المتر" value={loading ? "—" : formatCurrency(kpis?.avgPricePerSqm ?? 0)} color="#8B5CF6" sub="ريال/م²" loading={loading} />
-        <KpiCard label="الانحراف المعياري" value={loading ? "—" : formatCurrency(kpis?.priceStddev ?? 0)} color="#F59E0B" loading={loading} />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="أدنى سعر" value={loading ? "—" : formatCurrency(kpis?.minPrice ?? 0)} color="#22C55E" loading={loading} />
-        <KpiCard label="أعلى سعر" value={loading ? "—" : formatCurrency(kpis?.maxPrice ?? 0)} color="#EF4444" loading={loading} />
-        <KpiCard label="الربيع الأول (Q1)" value={loading ? "—" : formatCurrency(kpis?.p25Price ?? 0)} color="#64748B" loading={loading} />
-        <KpiCard label="الربيع الثالث (Q3)" value={loading ? "—" : formatCurrency(kpis?.p75Price ?? 0)} color="#64748B" loading={loading} />
-      </div>
-
-      {/* Price Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <IndicatorCard title="توزيع الأسعار" value={`${devPct > 0 ? "+" : ""}${devPct}%`}
-          status={devLabel} statusColor={devColor} statusBg={devBg}
-          detail="الفارق بين المتوسط والوسيط — يكشف تأثير العقارات الغالية" icon={BarChart3} loading={loading} />
-        <IndicatorCard title="ميل الأسعار"
-          status={skewLabel} statusColor={skewColor} statusBg={skewBg}
-          detail="وجود عقارات مرتفعة تشد المتوسط فوق الوسيط" icon={TrendingUp} loading={loading} />
-        <IndicatorCard title="تذبذب الأسعار" value={`${vol}%`}
-          status={volLabel} statusColor={volColor} statusBg={volBg}
-          detail="نطاق IQR كنسبة من الوسيط — مقياس تجانس السوق" icon={Activity} loading={loading} />
-      </div>
-
-      {/* Trend Chart */}
-      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-          <span className="text-[13px] font-bold text-foreground">مسار متوسط السعر</span>
-          <div className="flex gap-1">
-            {PERIOD_TABS.map(t => (
-              <button key={t.value} onClick={() => setPeriod(t.value)}
-                className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${period === t.value ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted/60"}`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div style={{ height: 240 }}>
-          <TrendChart trends={trends} loading={loadingTrends} metric="avgPrice" />
-        </div>
-      </div>
-    </SectionContainer>
-  );
-}
-
-// ── Section C: Activity & Movement ───────────────────────────────────────────
-
-function SectionC({ insights, trends, loading, loadingTrends, period, setPeriod }: {
-  insights?: InsightsData; trends?: TrendPoint[]; loading: boolean; loadingTrends: boolean;
-  period: string; setPeriod: (p: string) => void;
-}) {
-  const kpis = insights?.kpis;
-  const act = computeActivityLevel(kpis?.newLast7Days ?? 0, kpis?.newLast30Days ?? 0);
   const dir = computeMarketDirection(trends ?? []);
-  const DirIcon = dir.pct > 3 ? ArrowUpRight : dir.pct < -3 ? ArrowDownRight : Minus;
+  const DirIcon = dir.pct > 3 ? ArrowUpRight : dir.pct < -3 ? TrendingDown : Minus;
 
-  const adrColor = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "#22C55E" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "#0F7BA0" : "#F59E0B";
-  const adrBg    = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "rgba(34,197,94,0.1)" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "rgba(15,123,160,0.1)" : "rgba(245,158,11,0.1)";
-  const adrLabel = (kpis?.avgDaysOnMarket ?? 0) < 14 ? "سريع الحركة" : (kpis?.avgDaysOnMarket ?? 0) < 45 ? "حركة طبيعية" : "بطيء الحركة";
+  const volPct = med > 0 ? Math.round((((kpis?.p75Price ?? 0) - (kpis?.p25Price ?? 0)) / med) * 100) : 0;
+  const volLabel = volPct < 20 ? "أسعار مستقرة — قرار آمن" : volPct < 45 ? "تذبذب معتدل" : "تذبذب عالٍ — قارن جيداً";
+  const volColor = volPct < 20 ? GREEN : volPct < 45 ? AMBER : RED;
+
+  const avgContext = avg > 0 && med > 0
+    ? avg > med * 1.1
+      ? "المتوسط مشدود بعقارات غالية — الوسيط أدق"
+      : avg < med * 0.9
+        ? "المتوسط أقل من الوسيط — سوق في تراجع"
+        : "المتوسط والوسيط متقاربان — سوق متوازن"
+    : undefined;
+
+  const psmContext = psm > 0 ? "سعر المرجعي للمقارنة بين العقارات" : undefined;
 
   return (
-    <SectionContainer>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="إعلانات آخر 7 أيام" value={loading ? "—" : formatNumber(kpis?.newLast7Days ?? 0)} color="#0F7BA0" loading={loading} />
-        <KpiCard label="إعلانات آخر 30 يوم" value={loading ? "—" : formatNumber(kpis?.newLast30Days ?? 0)} color="#8B5CF6" loading={loading} />
-        <KpiCard label="إعلانات 90 يوم" value={loading ? "—" : formatNumber(kpis?.newLast90Days ?? 0)} color="#22C55E" loading={loading} />
-        <KpiCard label="متوسط الإضافة اليومية" value={loading ? "—" : ((kpis?.newLast30Days ?? 0) / 30).toFixed(1)} color="#F59E0B" sub="إعلان/يوم" loading={loading} />
+    <Fade>
+      {/* Price KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <MetricCard
+          label="متوسط السعر"
+          value={loading ? "—" : formatCurrency(avg)}
+          context={avgContext}
+          contextColor={avg > (med ?? 0) * 1.1 ? AMBER : GREEN}
+          accent={TEAL}
+          loading={loading}
+          icon={BarChart3}
+        />
+        <MetricCard
+          label="الوسيط السعري"
+          value={loading ? "—" : formatCurrency(med)}
+          context={med > 0 ? "50% من الإعلانات أقل من هذا السعر" : undefined}
+          contextColor={SLATE}
+          accent={NAVY}
+          loading={loading}
+          icon={Activity}
+        />
+        <MetricCard
+          label="متوسط سعر المتر"
+          value={loading ? "—" : `${formatCurrency(psm)} /م²`}
+          context={psmContext}
+          contextColor={TEAL}
+          accent={PURPLE}
+          loading={loading}
+          icon={Target}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <IndicatorCard title="نشاط الإضافات" value={`نسبة ${act.ratio.toFixed(2)}`}
-          status={act.label} statusColor={act.color} statusBg={`${act.color}18`}
-          detail="مقارنة أسبوع الماضي بمعدل الأسابيع الأربعة" icon={Flame} loading={loading} />
-        <IndicatorCard title="اتجاه السوق (السعري)"
-          value={dir.pct !== 0 ? `${dir.pct > 0 ? "+" : ""}${dir.pct}%` : "ثابت"}
-          status={dir.label} statusColor={dir.color} statusBg={`${dir.color}18`}
-          detail="التغير في متوسط السعر من أول إلى آخر نقطة في مسار الاتجاه" icon={DirIcon} loading={loading} />
-        <IndicatorCard title="متوسط عمر الإعلان"
-          value={kpis?.avgDaysOnMarket ? `${kpis.avgDaysOnMarket} يوم` : "—"}
-          status={adrLabel} statusColor={adrColor} statusBg={adrBg}
-          detail="متوسط عدد الأيام منذ نشر الإعلان" icon={Clock} loading={loading} />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <MetricCard
+          label="أقل سعر في السوق"
+          value={loading ? "—" : formatCurrency(kpis?.minPrice ?? 0)}
+          context="نقطة الدخول للميزانيات المحدودة"
+          contextColor={GREEN}
+          accent={GREEN}
+          loading={loading}
+        />
+        <MetricCard
+          label="أعلى سعر في السوق"
+          value={loading ? "—" : formatCurrency(kpis?.maxPrice ?? 0)}
+          context="سقف السوق الحالي"
+          contextColor={RED}
+          accent={RED}
+          loading={loading}
+        />
+        <IndicatorCard
+          title="تذبذب الأسعار"
+          value={`${volPct}%`}
+          status={volLabel}
+          statusColor={volColor}
+          detail="نطاق الأسعار الوسطى — مقياس تجانس العروض"
+          icon={TrendingUp}
+          loading={loading}
+        />
       </div>
 
-      {/* Count trend chart */}
-      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-          <span className="text-[13px] font-bold text-foreground">مسار حجم الإعلانات</span>
-          <div className="flex gap-1">
+      {/* Direction indicator */}
+      <div
+        className="flex items-center gap-4 p-4 rounded-2xl border"
+        style={{
+          background: `${dir.color}08`,
+          borderColor: `${dir.color}25`,
+        }}
+      >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${dir.color}16` }}>
+          <DirIcon className="w-5 h-5" style={{ color: dir.color }} />
+        </div>
+        <div>
+          <div className="text-[13px] font-extrabold" style={{ color: dir.color }}>
+            اتجاه الأسعار: {dir.label}
+            {dir.pct !== 0 && <span className="mr-1 text-[12px]">({dir.pct > 0 ? "+" : ""}{dir.pct}%)</span>}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            بناءً على مسار الأسعار في الفترة المحددة
+          </div>
+        </div>
+      </div>
+
+      {/* Trend chart */}
+      <SCard
+        title="مسار متوسط الأسعار"
+        action={
+          <div className="flex gap-1 flex-wrap">
             {PERIOD_TABS.map(t => (
               <button key={t.value} onClick={() => setPeriod(t.value)}
                 className={`text-[11px] px-3 py-1.5 rounded-lg font-bold transition-all ${period === t.value ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:bg-muted/60"}`}>
@@ -484,208 +555,217 @@ function SectionC({ insights, trends, loading, loadingTrends, period, setPeriod 
               </button>
             ))}
           </div>
-        </div>
+        }
+      >
         <div style={{ height: 240 }}>
-          <TrendChart trends={trends} loading={loadingTrends} metric="count" />
+          <TrendLine trends={trends} loading={loadingTrends} metric="avgPrice" />
         </div>
-      </div>
-    </SectionContainer>
+      </SCard>
+    </Fade>
   );
 }
 
-// ── Section D: Supply & Demand ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION C — العرض والطلب
+// ══════════════════════════════════════════════════════════════════════════════
 
-function SectionD({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
-  const sd = insights?.supplyDemand;
+function SectionC({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
   const kpis = insights?.kpis;
+  const sd   = insights?.supplyDemand;
   const byListingType = insights?.byListingType ?? [];
 
-  const balColor = sd?.marketBalance === "higher_demand" ? "#22C55E" : sd?.marketBalance === "higher_supply" ? "#F59E0B" : "#0F7BA0";
-  const balBg    = sd?.marketBalance === "higher_demand" ? "rgba(34,197,94,0.1)" : sd?.marketBalance === "higher_supply" ? "rgba(245,158,11,0.1)" : "rgba(15,123,160,0.1)";
+  const balColor = sd?.marketBalance === "higher_demand" ? GREEN : sd?.marketBalance === "higher_supply" ? AMBER : TEAL;
+  const balBg    = sd?.marketBalance === "higher_demand" ? GREEN_LT : sd?.marketBalance === "higher_supply" ? AMBER_LT : TEAL_LT;
+  const balLabel = sd?.marketBalance === "higher_demand" ? "الطلب أعلى — فرصة للبيع بسعر جيد" : sd?.marketBalance === "higher_supply" ? "العرض أعلى — فرصة للمشتري في التفاوض" : "السوق متوازن — أسعار مستقرة";
 
-  const pieData = [
-    { name: "للبيع",      value: kpis?.saleCount ?? 0 },
-    { name: "للإيجار",    value: kpis?.rentCount ?? 0 },
-    { name: "استثماري",   value: kpis?.investCount ?? 0 },
-  ].filter(d => d.value > 0);
+  const total = kpis?.totalListings ?? 0;
+  const saleP  = total > 0 ? Math.round(((kpis?.saleCount ?? 0) / total) * 100) : 0;
+  const rentP  = total > 0 ? Math.round(((kpis?.rentCount ?? 0) / total) * 100) : 0;
+  const invP   = total > 0 ? Math.round(((kpis?.investCount ?? 0) / total) * 100) : 0;
+
+  const donutData = [
+    { name: "للبيع",    value: kpis?.saleCount ?? 0,   color: TEAL },
+    { name: "للإيجار", value: kpis?.rentCount ?? 0,   color: PURPLE },
+    { name: "استثماري",value: kpis?.investCount ?? 0, color: GREEN },
+  ];
 
   return (
-    <SectionContainer>
+    <Fade>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="إجمالي العرض" value={loading ? "—" : formatNumber(sd?.totalSupply ?? 0)} color="#0F7BA0" loading={loading} />
-        <KpiCard label="عرض جديد (30 يوم)" value={loading ? "—" : formatNumber(sd?.newSupply ?? 0)} color="#22C55E" loading={loading} />
-        <KpiCard label="نسبة البيع" value={loading ? "—" : `${kpis?.saleCount && kpis.totalListings ? Math.round((kpis.saleCount/kpis.totalListings)*100) : 0}%`} color="#8B5CF6" loading={loading} />
-        <KpiCard label="نسبة الإيجار" value={loading ? "—" : `${kpis?.rentCount && kpis.totalListings ? Math.round((kpis.rentCount/kpis.totalListings)*100) : 0}%`} color="#F97316" loading={loading} />
+        <MetricCard
+          label="إجمالي الإعلانات"
+          value={loading ? "—" : formatNumber(total)}
+          context={total > 0 ? "حجم السوق الحالي على المنصة" : undefined}
+          contextColor={TEAL}
+          accent={NAVY}
+          loading={loading}
+          icon={BarChart3}
+        />
+        <MetricCard
+          label="عرض جديد (30 يوم)"
+          value={loading ? "—" : formatNumber(sd?.newSupply ?? 0)}
+          context={sd?.newSupply && total > 0 ? `${Math.round((sd.newSupply / total) * 100)}% من إجمالي العرض` : undefined}
+          contextColor={GREEN}
+          accent={GREEN}
+          loading={loading}
+          icon={TrendingUp}
+        />
+        <MetricCard
+          label="نسبة إعلانات البيع"
+          value={loading ? "—" : `${saleP}%`}
+          context={saleP > 60 ? "أغلب السوق للبيع" : saleP < 30 ? "السوق يميل للإيجار" : "توازن بين البيع والإيجار"}
+          contextColor={saleP > 60 ? TEAL : SLATE}
+          accent={TEAL}
+          loading={loading}
+        />
+        <MetricCard
+          label="نسبة إعلانات الإيجار"
+          value={loading ? "—" : `${rentP}%`}
+          context={rentP > 50 ? "سوق إيجار نشط" : "الإيجار أقل من البيع"}
+          contextColor={PURPLE}
+          accent={PURPLE}
+          loading={loading}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Supply/Demand Balance */}
-        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-          <div className="text-[13px] font-bold text-foreground mb-4">توازن العرض والطلب</div>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: balBg }}>
-              <span className="text-[13px] font-bold" style={{ color: balColor }}>{sd?.marketBalanceLabel ?? "—"}</span>
-              <span className="text-[12px] text-muted-foreground">نسبة النشاط: {sd?.activityRatio ?? "—"}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-muted/30 text-center">
-                <div className="text-[11px] text-muted-foreground mb-1">أسبوع الماضي</div>
-                <div className="text-2xl font-extrabold text-primary">{sd?.newLast7Days ?? "—"}</div>
-                <div className="text-[11px] text-muted-foreground">إعلان</div>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 text-center">
-                <div className="text-[11px] text-muted-foreground mb-1">معدل الشهر (أسبوعي)</div>
-                <div className="text-2xl font-extrabold text-primary">
-                  {sd?.newSupply ? Math.round(sd.newSupply / 4) : "—"}
-                </div>
-                <div className="text-[11px] text-muted-foreground">إعلان/أسبوع</div>
-              </div>
-            </div>
-            <div className="text-[11px] text-muted-foreground text-center">
-              الفارق: {sd?.supplyDemandGap !== undefined ? (sd.supplyDemandGap > 0 ? `+${sd.supplyDemandGap}` : sd.supplyDemandGap) : "—"} إعلان عن معدل الأسابيع
+      {/* Balance highlight */}
+      <div className="p-5 rounded-2xl border" style={{ background: balBg, borderColor: `${balColor}30` }}>
+        <div className="flex items-center gap-3">
+          <Scale className="w-5 h-5 shrink-0" style={{ color: balColor }} />
+          <div>
+            <div className="text-[14px] font-extrabold" style={{ color: balColor }}>{balLabel}</div>
+            <div className="text-[12px] mt-0.5" style={{ color: balColor + "99" }}>
+              أسبوع الماضي: <strong>{sd?.newLast7Days ?? 0}</strong> إعلان •
+              معدل الأسبوع الشهري: <strong>{sd?.newSupply ? Math.round(sd.newSupply / 4) : 0}</strong> إعلان/أسبوع
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Listing Type Pie */}
-        <ChartCard title="توزيع أنواع الإعلانات" height={200}>
-          {loading ? <Skeleton className="w-full h-full rounded-xl" /> : pieData.length === 0 ? <EmptyState text="لا توجد بيانات" /> : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${Math.round(percent * 100)}%`} labelLine={false}>
-                  {pieData.map((_: unknown, i: number) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl" }} />
-              </PieChart>
-            </ResponsiveContainer>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Donut */}
+        <SCard title="توزيع أنواع الإعلانات">
+          <div style={{ height: 200 }}>
+            {loading ? <Skeleton className="w-full h-full rounded-xl" /> : <Donut data={donutData} />}
+          </div>
+          <div className="flex justify-center gap-4 mt-3">
+            {donutData.filter(d => d.value > 0).map(d => (
+              <div key={d.name} className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
+                <span className="text-[11px] font-semibold text-muted-foreground">{d.name}</span>
+              </div>
+            ))}
+          </div>
+        </SCard>
+
+        {/* By listing type breakdown */}
+        <SCard title="تفصيل أنواع الإعلانات">
+          {loading ? (
+            <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}</div>
+          ) : byListingType.length === 0 ? (
+            <Empty text="لا توجد بيانات" />
+          ) : (
+            <div className="space-y-2">
+              {byListingType.map((t, i) => (
+                <div key={t.listingType} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+                    <span className="text-[13px] font-bold text-foreground">{t.label}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[13px] font-extrabold tabular-nums" style={{ color: CHART_PALETTE[i % CHART_PALETTE.length] }}>{t.count}</div>
+                    <div className="text-[11px] text-muted-foreground">{t.percentage}% · {formatCurrency(t.avgPrice)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </ChartCard>
+        </SCard>
       </div>
-
-      {/* Listing type breakdown */}
-      {byListingType.length > 0 && (
-        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-          <div className="text-[13px] font-bold text-foreground mb-4">تفصيل أنواع الإعلانات</div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {byListingType.map((t, i) => (
-              <div key={t.listingType} className="p-3 rounded-xl border border-border/40 bg-muted/20">
-                <div className="text-[11px] text-muted-foreground mb-1">{t.label}</div>
-                <div className="text-xl font-extrabold tabular-nums" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{t.count}</div>
-                <div className="text-[11px] text-muted-foreground">{t.percentage}% من السوق</div>
-                <div className="text-[11px] font-bold text-foreground mt-1">{formatCurrency(t.avgPrice)} متوسط</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </SectionContainer>
+    </Fade>
   );
 }
 
-// ── Section E: Property Types ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION D — الأحياء
+// ══════════════════════════════════════════════════════════════════════════════
 
-function SectionE({ insights, loading }: { insights?: InsightsData; loading: boolean }) {
-  const byType = [...(insights?.byPropertyType ?? [])].sort((a, b) => b.count - a.count).slice(0, 10);
-  const bySqm  = [...(insights?.byPropertyType ?? [])].filter(t => t.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 10);
-
-  return (
-    <SectionContainer>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ChartCard title="أكثر الأنواع إعلاناً" height={280}>
-          {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
-            <HBarChart data={byType.map(t => ({ ...t, name: t.propertyType }))}
-              dataKey="count" nameKey="name" label="عدد الإعلانات" formatter={v => formatNumber(v)} />}
-        </ChartCard>
-        <ChartCard title="متوسط سعر المتر حسب النوع" height={280}>
-          {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
-            <HBarChart data={bySqm.map(t => ({ ...t, name: t.propertyType }))}
-              dataKey="avgPricePerSqm" nameKey="name" label="سعر المتر" />}
-        </ChartCard>
-      </div>
-
-      {byType.length > 0 && (
-        <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-          <div className="text-[13px] font-bold text-foreground mb-4">تفاصيل أنواع العقارات</div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {byType.map((t, i) => (
-              <div key={t.propertyType} className="p-3 rounded-xl border border-border/40 hover:border-primary/40 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: BAR_COLORS[i % BAR_COLORS.length] }} />
-                  <span className="text-[12px] font-bold text-foreground truncate">{t.propertyType}</span>
-                </div>
-                <div className="text-xl font-extrabold tabular-nums" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{t.count}</div>
-                <div className="text-[11px] text-muted-foreground">{t.percentage}% · متوسط {formatCurrency(t.avgPrice)}</div>
-                {t.avgPricePerSqm > 0 && <div className="text-[11px] text-muted-foreground">{formatCurrency(t.avgPricePerSqm)}/م²</div>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </SectionContainer>
-  );
-}
-
-// ── Section F: Location Intelligence ─────────────────────────────────────────
-
-function SectionF({ insights, loading, distSort, setDistSort }: {
+function SectionD({ insights, loading, distSort, setDistSort }: {
   insights?: InsightsData; loading: boolean; distSort: string; setDistSort: (s: string) => void;
 }) {
-  const byCity = [...(insights?.byCity ?? [])].sort((a, b) => b.count - a.count).slice(0, 10);
-  const byDistrict = [...(insights?.byDistrict ?? [])];
+  const byCity     = useMemo(() => [...(insights?.byCity ?? [])].sort((a, b) => b.count - a.count).slice(0, 8), [insights]);
+  const byDistrict = insights?.byDistrict ?? [];
+
+  const topOpportunity = useMemo(() =>
+    [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 5),
+    [byDistrict]
+  );
+  const topPremium = useMemo(() =>
+    [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 5),
+    [byDistrict]
+  );
+
   const sortedDistricts = useMemo(() => {
     const arr = [...byDistrict];
-    if (distSort === "price") return arr.sort((a, b) => b.avgPrice - a.avgPrice).slice(0, 10);
-    if (distSort === "sqm") return arr.sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 10);
+    if (distSort === "price")    return arr.sort((a, b) => b.avgPrice - a.avgPrice).slice(0, 10);
+    if (distSort === "sqm")      return arr.sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 10);
     return arr.sort((a, b) => b.count - a.count).slice(0, 10);
   }, [byDistrict, distSort]);
 
-  const topBudget   = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => a.avgPricePerSqm - b.avgPricePerSqm).slice(0, 3);
-  const topPremium  = [...byDistrict].filter(d => d.avgPricePerSqm > 0).sort((a, b) => b.avgPricePerSqm - a.avgPricePerSqm).slice(0, 3);
-
   return (
-    <SectionContainer>
-      {/* Quick highlights */}
-      {(topBudget.length > 0 || topPremium.length > 0) && (
+    <Fade>
+      {/* Top 5 opportunity vs premium */}
+      {(topOpportunity.length > 0 || topPremium.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {topBudget.length > 0 && (
-            <div className="bg-card rounded-[22px] border border-emerald-200/60 p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
-                  <Star className="w-4 h-4 text-emerald-600" />
+          {topOpportunity.length > 0 && (
+            <div className="bg-card rounded-2xl border border-emerald-200/60 p-5 shadow-sm" style={{ borderTop: `3px solid ${GREEN}` }}>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: GREEN_LT }}>
+                  <ShoppingCart className="w-4 h-4" style={{ color: GREEN }} />
                 </div>
-                <span className="text-[13px] font-bold text-foreground">أحياء الفرص</span>
-                <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">أقل سعر للمتر</span>
+                <div>
+                  <div className="text-[13px] font-extrabold text-foreground">أحياء الفرص</div>
+                  <div className="text-[11px] text-muted-foreground">أقل سعر للمتر — مناسبة للشراء</div>
+                </div>
               </div>
-              <div className="space-y-2">
-                {topBudget.map((d, i) => (
-                  <div key={d.district} className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold text-foreground">
-                      <span className="text-emerald-400 ml-2">{i + 1}.</span>
-                      {d.district} <span className="text-muted-foreground font-normal text-[11px]">({d.city})</span>
-                    </span>
-                    <span className="text-[13px] font-extrabold text-emerald-600 tabular-nums">{formatCurrency(d.avgPricePerSqm)}/م²</span>
+              <div className="space-y-2.5">
+                {topOpportunity.map((d, i) => (
+                  <div key={d.district} className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-black w-4 text-center" style={{ color: GREEN }}>{i + 1}</span>
+                      <div>
+                        <div className="text-[13px] font-bold text-foreground">{d.district}</div>
+                        <div className="text-[10px] text-muted-foreground">{d.city}</div>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-extrabold tabular-nums" style={{ color: GREEN }}>{formatCurrency(d.avgPricePerSqm)}/م²</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
           {topPremium.length > 0 && (
-            <div className="bg-card rounded-[22px] border border-purple-200/60 p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center">
-                  <Award className="w-4 h-4 text-purple-600" />
+            <div className="bg-card rounded-2xl border border-purple-200/60 p-5 shadow-sm" style={{ borderTop: `3px solid ${PURPLE}` }}>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#F5F3FF" }}>
+                  <Award className="w-4 h-4" style={{ color: PURPLE }} />
                 </div>
-                <span className="text-[13px] font-bold text-foreground">أحياء بريميوم</span>
-                <span className="text-[11px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full">أعلى سعر للمتر</span>
+                <div>
+                  <div className="text-[13px] font-extrabold text-foreground">أحياء بريميوم</div>
+                  <div className="text-[11px] text-muted-foreground">أعلى سعر للمتر — عقارات فاخرة</div>
+                </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {topPremium.map((d, i) => (
-                  <div key={d.district} className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold text-foreground">
-                      <span className="text-purple-400 ml-2">{i + 1}.</span>
-                      {d.district} <span className="text-muted-foreground font-normal text-[11px]">({d.city})</span>
-                    </span>
-                    <span className="text-[13px] font-extrabold text-purple-600 tabular-nums">{formatCurrency(d.avgPricePerSqm)}/م²</span>
+                  <div key={d.district} className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/50 border border-purple-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-black w-4 text-center" style={{ color: PURPLE }}>{i + 1}</span>
+                      <div>
+                        <div className="text-[13px] font-bold text-foreground">{d.district}</div>
+                        <div className="text-[10px] text-muted-foreground">{d.city}</div>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-extrabold tabular-nums" style={{ color: PURPLE }}>{formatCurrency(d.avgPricePerSqm)}/م²</span>
                   </div>
                 ))}
               </div>
@@ -694,18 +774,19 @@ function SectionF({ insights, loading, distSort, setDistSort }: {
         </div>
       )}
 
-      {/* Cities chart */}
-      <ChartCard title="أبرز المدن — متوسط سعر المتر" height={280}>
-        {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
-          byCity.length === 0 ? <EmptyState text="لا توجد بيانات للمدن" /> :
-          <HBarChart data={byCity.map(c => ({ ...c, name: c.city }))}
-            dataKey="avgPricePerSqm" nameKey="name" label="سعر المتر" />}
-      </ChartCard>
+      {/* Cities bar chart */}
+      <SCard title="أبرز المدن — متوسط سعر المتر">
+        <div style={{ height: 280 }}>
+          {loading ? <Skeleton className="w-full h-full rounded-xl" /> :
+            byCity.length === 0 ? <Empty text="لا توجد بيانات للمدن" /> :
+            <HBar data={byCity.map(c => ({ ...c, name: c.city }))} dataKey="avgPricePerSqm" nameKey="name" label="سعر المتر" />}
+        </div>
+      </SCard>
 
       {/* Districts table */}
-      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <span className="text-[13px] font-bold text-foreground">تحليل الأحياء</span>
+      <SCard
+        title="تحليل الأحياء المفصّل"
+        action={
           <div className="flex gap-1">
             {[{ v: "activity", l: "الأكثر نشاطاً" }, { v: "price", l: "الأعلى سعراً" }, { v: "sqm", l: "سعر المتر" }].map(s => (
               <button key={s.v} onClick={() => setDistSort(s.v)}
@@ -714,9 +795,10 @@ function SectionF({ insights, loading, distSort, setDistSort }: {
               </button>
             ))}
           </div>
-        </div>
-        {loading ? <Skeleton className="h-40 w-full rounded-xl" /> :
-         sortedDistricts.length === 0 ? <EmptyState text="لا توجد بيانات للأحياء" /> : (
+        }
+      >
+        {loading ? <Skeleton className="h-48 w-full rounded-xl" /> :
+         sortedDistricts.length === 0 ? <Empty text="لا توجد بيانات للأحياء" /> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -732,112 +814,150 @@ function SectionF({ insights, loading, distSort, setDistSort }: {
               <tbody>
                 {sortedDistricts.map((d, i) => (
                   <tr key={`${d.district}-${d.city}`} className="border-b border-border/20 hover:bg-muted/20 transition-colors">
-                    <td className="py-2.5 pr-2 text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
-                    <td className="py-2.5 font-bold text-[13px]">{d.district}</td>
-                    <td className="py-2.5 text-muted-foreground text-[12px]">{d.city}</td>
-                    <td className="py-2.5 tabular-nums font-bold" style={{ color: BAR_COLORS[i % BAR_COLORS.length] }}>{d.count}</td>
-                    <td className="py-2.5 tabular-nums text-[12px]">{formatCurrency(d.avgPrice)}</td>
-                    <td className="py-2.5 tabular-nums text-[12px] font-bold">{d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}<span className="text-muted-foreground font-normal">/م²</span></td>
+                    <td className="py-3 pr-2 text-[11px] text-muted-foreground tabular-nums">{i + 1}</td>
+                    <td className="py-3 font-bold text-[13px]">{d.district}</td>
+                    <td className="py-3 text-muted-foreground text-[12px]">{d.city}</td>
+                    <td className="py-3 tabular-nums font-extrabold" style={{ color: CHART_PALETTE[i % CHART_PALETTE.length] }}>{d.count}</td>
+                    <td className="py-3 tabular-nums text-[12px]">{formatCurrency(d.avgPrice)}</td>
+                    <td className="py-3 tabular-nums text-[12px] font-bold">
+                      {d.avgPricePerSqm > 0 ? <>{formatCurrency(d.avgPricePerSqm)}<span className="text-muted-foreground font-normal">/م²</span></> : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </div>
-    </SectionContainer>
+      </SCard>
+    </Fade>
   );
 }
 
-// ── Section G: Smart Insights ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION E — الذكاء التحليلي
+// ══════════════════════════════════════════════════════════════════════════════
 
-function SectionG({ insights, loading, filters }: { insights?: InsightsData; loading: boolean; filters: AnalyticsFilters }) {
+function SectionE({ insights, loading, filters }: { insights?: InsightsData; loading: boolean; filters: AnalyticsFilters }) {
   const smartInsights = insights?.smartInsights ?? [];
   const kpis = insights?.kpis;
-  const hasData = (kpis?.totalListings ?? 0) > 0;
+  const sd   = insights?.supplyDemand;
+  const hasData = (kpis?.totalListings ?? 0) >= 3;
 
+  /* Market direction recommendation */
+  const marketRec = useMemo(() => {
+    if (!hasData) return null;
+    const score = insights?.marketScore?.score ?? 0;
+    const balance = sd?.marketBalance;
+    const turnover = kpis?.turnoverRate ?? 0;
+
+    if (score >= 65 && balance === "higher_demand" && turnover > 20) {
+      return { label: "شراء الآن", icon: ShoppingCart, color: GREEN, bg: GREEN_LT, reason: "السوق قوي، الطلب مرتفع، وسرعة الدوران تشير إلى فرصة حالية" };
+    }
+    if (score <= 35 || turnover < 5) {
+      return { label: "انتظر", icon: Clock, color: AMBER, bg: AMBER_LT, reason: "السوق يمر بمرحلة هدوء — انتظر إشارات الانتعاش قبل الشراء" };
+    }
+    if (balance === "higher_supply") {
+      return { label: "فرصة تفاوض", icon: Scale, color: TEAL, bg: TEAL_LT, reason: "العرض أعلى من الطلب — للمشتري قوة تفاوض جيدة الآن" };
+    }
+    return { label: "مستقر", icon: Minus, color: SLATE, bg: "#F8FAFC", reason: "السوق في حالة استقرار — قرارك مبني على احتياجك الشخصي" };
+  }, [insights, kpis, sd, hasData]);
+
+  /* Buyer recommendation */
   const buyerRec = useMemo(() => {
-    if (!hasData || (kpis?.totalListings ?? 0) < 3) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
-    const parts: string[] = [];
+    if (!hasData) return "البيانات محدودة حالياً — ستتحسن التوصيات مع تراكم الإعلانات.";
     const byD = insights?.byDistrict ?? [];
     const avgSqm = kpis?.avgPricePerSqm ?? 0;
-    const cheap = byD.filter(d => d.avgPricePerSqm > 0 && avgSqm > 0 && d.avgPricePerSqm < avgSqm * 0.9);
+    const cheap = byD.filter(d => d.avgPricePerSqm > 0 && avgSqm > 0 && d.avgPricePerSqm < avgSqm * 0.85);
+    const topType = insights?.byPropertyType?.[0];
+    const parts: string[] = [];
     if (cheap.length > 0) parts.push(`أفضل قيمة للمال في: ${cheap.slice(0, 2).map(d => d.district).join(" و")}.`);
-    const topT = insights?.byPropertyType?.[0];
-    if (topT) parts.push(`الأوفر توفراً: ${topT.propertyType} (${topT.percentage}% من الإعلانات).`);
-    if (parts.length === 0) parts.push("البيانات كافية لقرار مدروس — تحقق من الأحياء والأسعار في الفئات المختلفة.");
-    return parts.join(" ");
+    if (topType) parts.push(`الأوفر توفراً: ${topType.propertyType} (${topType.percentage}% من السوق).`);
+    return parts.join(" ") || "تحقق من الأحياء والأسعار في الفئات المختلفة.";
   }, [insights, kpis, hasData]);
 
+  /* Seller/marketer recommendation */
   const marketerRec = useMemo(() => {
-    if (!hasData || (kpis?.totalListings ?? 0) < 3) return "ستتحسن توصيات التسعير مع زيادة الإعلانات.";
+    if (!hasData) return "ستتحسن توصيات التسعير مع زيادة الإعلانات.";
     const avg = kpis?.avgPrice ?? 0;
     const med = kpis?.medianPrice ?? 0;
     if (!avg || !med) return "بيانات التسعير غير كافية بعد.";
     const skew = avg / med;
-    return skew > 1.15
-      ? `المتوسط (${formatCurrency(avg)}) أعلى من الوسيط (${formatCurrency(med)}) — سعّر قريباً من الوسيط لبيع أسرع.`
-      : skew < 0.88
-      ? `الوسيط أعلى — يمكنك التسعير فوق المتوسط دون الخروج من السوق.`
-      : `السوق متوازن — ضع سعرك ضمن ±10% من الوسيط (${formatCurrency(med)}).`;
+    if (skew > 1.15) return `سعّر قريباً من الوسيط (${formatCurrency(med)}) لبيع أسرع — المتوسط مشدود بعقارات غالية.`;
+    if (skew < 0.88) return `يمكنك التسعير فوق المتوسط دون مخاطر — الوسيط (${formatCurrency(med)}) أعلى من المتوسط.`;
+    return `السوق متوازن — ضع سعرك ضمن ±10% من الوسيط (${formatCurrency(med)}).`;
   }, [kpis, hasData]);
 
   return (
-    <SectionContainer>
-      {/* Insights list */}
-      <div className="bg-card rounded-[22px] border border-border/60 p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Zap className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <div className="text-[13px] font-bold text-foreground">ملاحظات ذكية</div>
-            <div className="text-[11px] text-muted-foreground">مستخلصة من بيانات السوق الحالية</div>
+    <Fade>
+      {/* Market decision card */}
+      {!loading && marketRec && (
+        <div className="p-5 rounded-2xl border-2" style={{ background: marketRec.bg, borderColor: `${marketRec.color}40` }}>
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${marketRec.color}18`, border: `1.5px solid ${marketRec.color}30` }}>
+              <marketRec.icon className="w-6 h-6" style={{ color: marketRec.color }} />
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold text-muted-foreground mb-0.5">توصية السوق الحالية</div>
+              <div className="text-[20px] font-black" style={{ color: marketRec.color }}>{marketRec.label}</div>
+              <div className="text-[12px] mt-1 leading-relaxed" style={{ color: marketRec.color + "CC" }}>{marketRec.reason}</div>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Smart insights */}
+      <SCard title="ملاحظات ذكية">
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}</div>
+          <div className="space-y-2">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}</div>
+        ) : !hasData ? (
+          <Empty text="البيانات الحالية غير كافية لإظهار تحليل دقيق" />
         ) : smartInsights.length === 0 ? (
-          <EmptyState text="لا توجد بيانات كافية لاستخلاص ملاحظات ذكية" />
+          <Empty text="لا توجد بيانات كافية لاستخلاص ملاحظات" />
         ) : (
-          <div className="space-y-2">
-            {smartInsights.map((insight, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
-                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-[10px] font-extrabold text-primary">{i + 1}</span>
+          <div className="space-y-2.5">
+            {smartInsights.slice(0, 5).map((insight, i) => (
+              <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-muted/30 border border-border/30">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${TEAL}18` }}>
+                  <span className="text-[10px] font-extrabold" style={{ color: TEAL }}>{i + 1}</span>
                 </div>
                 <p className="text-[13px] text-foreground leading-relaxed">{insight}</p>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </SCard>
 
       {/* Role-based recommendations */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-card rounded-[22px] border border-blue-200/60 p-5 shadow-sm">
+        <div className="bg-card rounded-2xl border border-blue-200/60 p-5 shadow-sm" style={{ borderTop: `3px solid ${TEAL}` }}>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
-              <Home className="w-4 h-4 text-blue-600" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: TEAL_LT }}>
+              <Home className="w-4 h-4" style={{ color: TEAL }} />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-foreground">توصية للمشتري / المستأجر</div>
+              <div className="text-[13px] font-extrabold text-foreground">توصية للمشتري</div>
             </div>
           </div>
-          {loading ? <Skeleton className="h-16 w-full rounded-xl" /> :
-            <p className="text-[13px] text-foreground leading-relaxed">{buyerRec}</p>}
+          {loading
+            ? <Skeleton className="h-16 w-full rounded-xl" />
+            : !hasData
+              ? <p className="text-[12px] text-muted-foreground">البيانات غير كافية حالياً.</p>
+              : <p className="text-[13px] text-foreground leading-relaxed">{buyerRec}</p>}
         </div>
-        <div className="bg-card rounded-[22px] border border-emerald-200/60 p-5 shadow-sm">
+        <div className="bg-card rounded-2xl border border-emerald-200/60 p-5 shadow-sm" style={{ borderTop: `3px solid ${GREEN}` }}>
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Target className="w-4 h-4 text-emerald-600" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: GREEN_LT }}>
+              <Target className="w-4 h-4" style={{ color: GREEN }} />
             </div>
             <div>
-              <div className="text-[13px] font-bold text-foreground">توصية للمُسوّق / البائع</div>
+              <div className="text-[13px] font-extrabold text-foreground">توصية للمُسوّق / البائع</div>
             </div>
           </div>
-          {loading ? <Skeleton className="h-16 w-full rounded-xl" /> :
-            <p className="text-[13px] text-foreground leading-relaxed">{marketerRec}</p>}
+          {loading
+            ? <Skeleton className="h-16 w-full rounded-xl" />
+            : !hasData
+              ? <p className="text-[12px] text-muted-foreground">البيانات غير كافية حالياً.</p>
+              : <p className="text-[13px] text-foreground leading-relaxed">{marketerRec}</p>}
         </div>
       </div>
 
@@ -845,19 +965,21 @@ function SectionG({ insights, loading, filters }: { insights?: InsightsData; loa
       <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200/60">
         <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <div className="text-[12px] text-amber-700 leading-relaxed">
-          <strong>ملاحظة:</strong> جميع المؤشرات مستخلصة من إعلانات المنصة فقط وتعكس نشاط المنصة — وليست بيانات السوق الشاملة. كلما زادت الإعلانات، كانت التحليلات أكثر دقة.
+          <strong>ملاحظة:</strong> جميع المؤشرات مستخلصة من إعلانات المنصة فقط — كلما زادت الإعلانات كانت التحليلات أكثر دقة.
           {filters.city && <span> النطاق المحدد: <strong>{filters.city}</strong>{filters.district && ` — ${filters.district}`}.</span>}
         </div>
       </div>
-    </SectionContainer>
+    </Fade>
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// MAIN PAGE
+// ══════════════════════════════════════════════════════════════════════════════
 
 export default function Analytics() {
-  const [section, setSection] = useState<SectionId>("A");
-  const [period, setPeriod] = useState("month");
+  const [tab, setTab]         = useState<TabId>("A");
+  const [period, setPeriod]   = useState("month");
   const [distSort, setDistSort] = useState("activity");
   const [filters, setFilters] = useState<AnalyticsFilters>({});
 
@@ -871,63 +993,65 @@ export default function Analytics() {
   const { data: filterOpts } = useAnalyticsFilterOptions();
 
   const kpis = insights?.kpis;
+  const totalStr = loadingInsights ? "جاري التحميل..." : kpis?.totalListings
+    ? `${formatNumber(kpis.totalListings)} إعلان نشط • ${formatNumber(kpis.newLast30Days ?? 0)} إعلان هذا الشهر`
+    : "لا توجد إعلانات نشطة حالياً";
 
   return (
     <Layout>
       <div className="max-w-6xl mx-auto px-4 py-8">
 
-        {/* Page Header */}
-        <div className="mb-6">
+        {/* ── Header ── */}
+        <div className="mb-7">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-primary" />
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: `${TEAL}14`, border: `1.5px solid ${TEAL}25` }}>
+              <BarChart3 className="w-5 h-5" style={{ color: TEAL }} />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-foreground">تحليلات السوق العقاري</h1>
-              <p className="text-[13px] text-muted-foreground">
-                {loadingInsights ? "جاري التحميل..." : kpis?.totalListings
-                  ? `${formatNumber(kpis.totalListings)} إعلان نشط • ${formatNumber(kpis.newLast30Days)} إعلان الشهر الماضي`
-                  : "لا توجد إعلانات نشطة حالياً"}
-              </p>
+              <h1 className="text-2xl font-black text-foreground tracking-tight">تحليلات السوق العقاري</h1>
+              <p className="text-[13px] text-muted-foreground mt-0.5">{totalStr}</p>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
+        {/* ── Filters ── */}
         <div className="mb-5">
           <FiltersPanel filters={filters} onChange={setFilters} filterOpts={filterOpts} />
         </div>
 
-        {/* Section Tabs */}
+        {/* ── Tabs ── */}
         <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-hide">
-          {SECTION_TABS.map(tab => {
-            const Icon = tab.icon;
+          {TABS.map(t => {
+            const Icon = t.icon;
+            const active = tab === t.id;
             return (
-              <button key={tab.id} onClick={() => setSection(tab.id as SectionId)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all shrink-0 ${
-                  section === tab.id
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/40"
-                }`}>
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all shrink-0"
+                style={active
+                  ? { background: NAVY, color: "#fff", boxShadow: `0 3px 12px ${NAVY}40` }
+                  : { background: "transparent", color: SLATE, border: "1px solid #E2E8F0" }
+                }
+              >
                 <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
+                <span>{t.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Section Content */}
+        {/* ── Section content ── */}
         <AnimatePresence mode="wait">
-          <div key={section}>
-            {section === "A" && <SectionA insights={insights} loading={loadingInsights} />}
-            {section === "B" && <SectionB insights={insights} trends={trends} loading={loadingInsights} loadingTrends={loadingTrends} period={period} setPeriod={setPeriod} />}
-            {section === "C" && <SectionC insights={insights} trends={trends} loading={loadingInsights} loadingTrends={loadingTrends} period={period} setPeriod={setPeriod} />}
-            {section === "D" && <SectionD insights={insights} loading={loadingInsights} />}
-            {section === "E" && <SectionE insights={insights} loading={loadingInsights} />}
-            {section === "F" && <SectionF insights={insights} loading={loadingInsights} distSort={distSort} setDistSort={setDistSort} />}
-            {section === "G" && <SectionG insights={insights} loading={loadingInsights} filters={filters} />}
+          <div key={tab}>
+            {tab === "A" && <SectionA insights={insights} loading={loadingInsights} />}
+            {tab === "B" && <SectionB insights={insights} trends={trends} loading={loadingInsights} loadingTrends={loadingTrends} period={period} setPeriod={setPeriod} />}
+            {tab === "C" && <SectionC insights={insights} loading={loadingInsights} />}
+            {tab === "D" && <SectionD insights={insights} loading={loadingInsights} distSort={distSort} setDistSort={setDistSort} />}
+            {tab === "E" && <SectionE insights={insights} loading={loadingInsights} filters={filters} />}
           </div>
         </AnimatePresence>
+
       </div>
     </Layout>
   );
