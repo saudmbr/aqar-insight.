@@ -135,6 +135,14 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - `app/requests/index.tsx` — Customer requests: type tabs, call/WhatsApp actions, FAB
 - `app/requests/new.tsx` — Submit new request form (type, title, budget, contact)
 - `app/analytics/index.tsx` — Analytics: 4 tabs (overview, types, regions, smart insights)
+- `app/my-listings.tsx` — My listings: status tabs, stats, quick status changes (active/sold/rented), delete
+- `app/listing/new.tsx` — Create listing: multi-section form (core info, location, specs, amenities, nearby)
+- `app/notifications.tsx` — Notifications list with unread count badge, mark-all-read
+- `app/about.tsx` — About: team stats, feature highlights, platform rating widget
+- `app/legal/terms.tsx` — Terms & Conditions (9 sections, Saudi law references)
+- `app/legal/privacy.tsx` — Privacy Policy (Saudi PDPL compliant)
+- `app/legal/usage.tsx` — Usage Policy (acceptable use, prohibited content, 4-level enforcement)
+- `app/auth/forgot-password.tsx` — Password recovery: email form → success state → resend
 - `context/AuthContext.tsx` — Login/logout/register + AsyncStorage persistence
 - `context/FavoritesContext.tsx` — Local favorites with haptic feedback
 - `components/ListingCard.tsx` — Grid + horizontal variants (grid cards are `(width-48)/2` wide)

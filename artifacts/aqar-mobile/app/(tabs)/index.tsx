@@ -85,8 +85,8 @@ export default function HomeScreen() {
             <Text style={styles.headerSub}>منصة العقارات السعودية</Text>
             <Text style={styles.headerTitle}>عقار إنسايت</Text>
           </View>
-          <Pressable onPress={() => router.push('/(tabs)/favorites')} style={styles.headerIconBtn}>
-            <Feather name="heart" size={20} color={Colors.white} />
+          <Pressable onPress={() => router.push('/notifications')} style={styles.headerIconBtn}>
+            <Feather name="bell" size={20} color={Colors.white} />
           </Pressable>
         </View>
 

@@ -122,6 +122,10 @@ export default function LoginScreen() {
             )}
           </Pressable>
 
+          <Pressable style={styles.forgotLink} onPress={() => router.push('/auth/forgot-password')}>
+            <Text style={styles.forgotLinkText}>نسيت كلمة المرور؟</Text>
+          </Pressable>
+
           <Pressable style={styles.registerLink} onPress={() => router.replace('/auth/register')}>
             <Text style={styles.registerLinkText}>
               ليس لديك حساب؟ <Text style={styles.registerLinkHighlight}>أنشئ حساباً مجاناً</Text>
@@ -193,6 +197,8 @@ const styles = StyleSheet.create({
   },
   loginBtnDisabled: { opacity: 0.7 },
   loginBtnText: { color: Colors.white, fontWeight: '800', fontSize: 16 },
+  forgotLink: { alignItems: 'flex-start' },
+  forgotLinkText: { fontSize: 13, color: Colors.teal, fontWeight: '600' },
   registerLink: { alignItems: 'center', marginTop: 4 },
   registerLinkText: { fontSize: 13, color: Colors.textSub, textAlign: 'center' },
   registerLinkHighlight: { color: Colors.teal, fontWeight: '700' },

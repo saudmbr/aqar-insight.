@@ -141,10 +141,11 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>حسابي</Text>
           <View style={styles.menuGroup}>
-            <MenuItem icon="home" label="عقاراتي" badge={myListings?.length ? String(myListings.length) : undefined} onPress={() => {}} color={Colors.teal} />
+            <MenuItem icon="home" label="عقاراتي" badge={myListings?.length ? String(myListings.length) : undefined} onPress={() => router.push('/my-listings')} color={Colors.teal} />
+            <MenuItem icon="plus-circle" label="نشر عقار جديد" onPress={() => router.push('/listing/new')} color="#10b981" />
             <MenuItem icon="inbox" label="طلباتي" onPress={() => router.push('/requests')} color={Colors.gold} />
             <MenuItem icon="heart" label="المفضلة" badge={favorites.length > 0 ? String(favorites.length) : undefined} onPress={() => router.push('/(tabs)/favorites')} color="#e11d48" />
-            <MenuItem icon="user" label="تعديل الملف الشخصي" onPress={() => {}} color="#8b5cf6" />
+            <MenuItem icon="bell" label="الإشعارات" onPress={() => router.push('/notifications')} color="#8b5cf6" />
           </View>
         </View>
       )}
@@ -167,10 +168,11 @@ export default function ProfileScreen() {
       <View style={styles.menuSection}>
         <Text style={styles.menuSectionTitle}>معلومات</Text>
         <View style={styles.menuGroup}>
-          <MenuItem icon="info" label="عن المنصة" onPress={() => {}} color={Colors.teal} />
-          <MenuItem icon="shield" label="سياسة الخصوصية" onPress={() => {}} color="#6366f1" />
-          <MenuItem icon="file-text" label="الشروط والأحكام" onPress={() => {}} color={Colors.textSub} />
-          <MenuItem icon="phone" label="تواصل معنا" onPress={() => {}} color="#10b981" />
+          <MenuItem icon="info" label="عن المنصة" onPress={() => router.push('/about')} color={Colors.teal} />
+          <MenuItem icon="shield" label="سياسة الخصوصية" onPress={() => router.push('/legal/privacy')} color="#6366f1" />
+          <MenuItem icon="file-text" label="الشروط والأحكام" onPress={() => router.push('/legal/terms')} color={Colors.textSub} />
+          <MenuItem icon="book-open" label="سياسة الاستخدام" onPress={() => router.push('/legal/usage')} color="#f59e0b" />
+          <MenuItem icon="bell" label="الإشعارات" onPress={() => router.push('/notifications')} color="#8b5cf6" />
         </View>
       </View>
 

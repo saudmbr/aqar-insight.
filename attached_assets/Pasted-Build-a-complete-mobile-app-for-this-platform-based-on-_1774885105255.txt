@@ -1,0 +1,111 @@
+Build a complete mobile app for this platform based on the existing website, and transfer the full website experience into the mobile application with maximum professionalism and visual consistency.
+
+Main goal:
+Create a real mobile app version of the platform that reflects the website as closely as possible in structure, branding, features, content logic, visual style, and user experience — while optimizing it properly for mobile instead of doing a low-quality direct copy.
+
+Requirements:
+
+1. Full feature migration
+- Transfer all major website sections, pages, and functions into the mobile app.
+- Include all current website logic, flows, data structures, and user actions.
+- Ensure nothing important from the website is missing in the app.
+- Preserve all user journeys already موجودة في الموقع.
+
+2. Same visual identity
+- Use the exact same brand identity as the website:
+  - same colors
+  - same typography style
+  - same spacing logic
+  - same cards style
+  - same buttons style
+  - same icons style
+  - same gradients
+  - same premium dark/teal visual theme
+- The app must feel like a true mobile extension of the website, not a separate product.
+
+3. Professional mobile adaptation
+- Do NOT just shrink the website.
+- Rebuild every page for mobile professionally while preserving the same design language.
+- Respect mobile UX best practices:
+  - proper spacing
+  - readable text sizes
+  - thumb-friendly buttons
+  - clean navigation
+  - responsive layouts
+  - proper loading states
+  - smooth transitions
+
+4. Screen structure
+Create mobile screens that cover the website experience, including:
+- Splash screen
+- Onboarding or welcome screen if needed
+- Home screen
+- Search screen
+- Filters screen
+- Map screen
+- Property details screen
+- Login / Sign up / OTP verification
+- User account
+- Favorites
+- Notifications
+- Dashboard screens according to account types
+- Support / contact screens
+- Legal pages
+- Any other page موجودة في الموقع لازم يتم نقلها للتطبيق
+
+5. Reuse website assets and content
+- Reuse the same texts, labels, categories, indicators, and sections from the website.
+- Reuse the same data display style whenever possible.
+- Reuse logo, brand assets, and UI tokens consistently.
+
+6. Navigation
+- Build a clean and professional mobile navigation system.
+- Use bottom tab navigation where appropriate.
+- Use stack navigation for details and internal pages.
+- Make the navigation intuitive and premium.
+
+7. Components and design system
+- Extract a reusable design system from the website and apply it in the app.
+- Build reusable mobile components for:
+  - buttons
+  - cards
+  - metric boxes
+  - search bars
+  - filter chips
+  - lists
+  - property cards
+  - modal sheets
+  - form fields
+- Keep design consistency across all screens.
+
+8. Data and backend integration
+- Connect the mobile app to the same backend / APIs used by the website whenever possible.
+- Ensure real data flows correctly.
+- Keep authentication, user roles, listings, indicators, and account data synchronized with the website system.
+
+9. Quality expectations
+- App must look premium, polished, and production-ready.
+- No rough layouts, no broken spacing, no generic mobile UI.
+- Avoid placeholder styling unless absolutely necessary.
+- Match the website’s premium real estate intelligence feel.
+
+10. Technical direction
+- Use Expo / React Native.
+- Organize the app with scalable folder structure.
+- Build clean reusable code.
+- Make it easy to extend later for iOS and Android production builds.
+
+11. Testing and validation
+- Test all screens and flows for mobile responsiveness.
+- Ensure Arabic layout works correctly and cleanly.
+- Ensure RTL support where needed.
+- Check that design remains elegant on different phone sizes.
+
+12. Final outcome
+The final result should be a high-end mobile app that feels like the official mobile version of the website, with the same identity, same value, same core experience, and professionally adapted mobile UX.
+
+Important:
+Do not simplify the platform too much.
+Do not redesign the brand.
+Do not replace the existing visual identity.
+Preserve the website DNA and translate it into a premium mobile app experience.
