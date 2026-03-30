@@ -16,12 +16,11 @@ export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: 
           src="/logo.png"
           alt="عقار إنسايت"
           style={{
-            width: 96,
-            height: 96,
-            borderRadius: 22,
-            boxShadow: "0 8px 32px rgba(15,123,160,0.35), 0 2px 8px rgba(0,0,0,0.25)",
+            width: 108,
+            height: 108,
             display: "block",
             flexShrink: 0,
+            filter: "drop-shadow(0 8px 28px rgba(13,157,197,0.55)) drop-shadow(0 2px 10px rgba(6,13,28,0.35))",
           }}
         />
         <div className="text-center">
@@ -50,12 +49,11 @@ export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: 
           src="/logo.png"
           alt="عقار إنسايت"
           style={{
-            width: 72,
-            height: 72,
-            borderRadius: 16,
-            boxShadow: "0 4px 18px rgba(0,0,0,0.4)",
+            width: 80,
+            height: 80,
             display: "block",
             flexShrink: 0,
+            filter: "drop-shadow(0 6px 22px rgba(13,157,197,0.65)) drop-shadow(0 0 40px rgba(13,157,197,0.2))",
           }}
         />
         <div className="text-center">
@@ -74,12 +72,11 @@ export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: 
           src="/logo.png"
           alt="عقار إنسايت"
           style={{
-            width: 80,
-            height: 80,
-            borderRadius: 18,
-            boxShadow: "0 6px 24px rgba(0,0,0,0.45)",
+            width: 90,
+            height: 90,
             display: "block",
             flexShrink: 0,
+            filter: "drop-shadow(0 8px 30px rgba(13,157,197,0.7)) drop-shadow(0 0 50px rgba(13,157,197,0.25))",
           }}
         />
         <div className="text-center">
@@ -98,12 +95,11 @@ export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: 
           src="/logo.png"
           alt="عقار إنسايت"
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
-            boxShadow: "0 2px 8px rgba(15,123,160,0.25)",
+            width: 38,
+            height: 38,
             display: "block",
             flexShrink: 0,
+            filter: "drop-shadow(0 2px 8px rgba(13,157,197,0.5)) drop-shadow(0 1px 3px rgba(6,13,28,0.25))",
           }}
         />
         <div className="hidden sm:flex items-baseline gap-0.5">
@@ -120,12 +116,11 @@ export function LogoBrand({ variant = "header", className = "", linkTo = "/" }: 
           src="/logo.png"
           alt="عقار إنسايت"
           style={{
-            width: 30,
-            height: 30,
-            borderRadius: 7,
-            boxShadow: "0 1px 6px rgba(15,123,160,0.2)",
+            width: 32,
+            height: 32,
             display: "block",
             flexShrink: 0,
+            filter: "drop-shadow(0 2px 6px rgba(13,157,197,0.4)) drop-shadow(0 1px 2px rgba(6,13,28,0.2))",
           }}
         />
         <div>
