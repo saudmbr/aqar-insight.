@@ -236,8 +236,15 @@ export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
           {/* Price row */}
           <div className="flex items-end justify-between gap-2 mt-auto">
             <div>
-              <p className="text-[1.3rem] font-extrabold leading-none tracking-tight tabular-nums"
-                style={{ background: "linear-gradient(135deg, #0F7BA0, #0a9fd8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              <p className="text-[1.3rem] font-extrabold tracking-tight tabular-nums"
+                style={{
+                  background: "linear-gradient(135deg, #0F7BA0, #0a9fd8)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  lineHeight: "1.35",
+                  paddingBottom: "3px",
+                  display: "block",
+                }}>
                 {formatCurrency(listing.price)}
               </p>
               {listing.pricePerSqm && listing.areaSqm && (

@@ -205,7 +205,7 @@ export default function Listings() {
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                   }}>
-                    نشر إعلان عقاري
+                    أنشر عقارك الآن
                   </span>
                 </button>
               </Link>

@@ -238,43 +238,46 @@ export default function MapPage() {
         <form onSubmit={handleSearch} className="px-4 py-3 flex flex-wrap gap-3 items-end">
           {/* المنطقة */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">المنطقة</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>المنطقة</label>
             <select
               value={region}
               onChange={e => { setRegion(e.target.value); setCity(""); }}
-              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-medium text-foreground"
+              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-semibold"
+              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
             >
-              <option value="">كل المناطق</option>
-              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+              <option value="" style={{ color: "#111827" }}>كل المناطق</option>
+              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r} style={{ color: "#111827" }}>{r}</option>)}
             </select>
           </div>
 
           {/* المحافظة */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">المحافظة</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>المحافظة</label>
             <select
               value={city}
               onChange={e => setCity(e.target.value)}
               disabled={!region}
-              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed font-medium text-foreground"
+              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
             >
-              <option value="">{region ? "كل المحافظات" : "اختر منطقة أولاً"}</option>
-              {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
+              <option value="" style={{ color: "#111827" }}>{region ? "كل المحافظات" : "اختر منطقة أولاً"}</option>
+              {getMuhafazat(region).map(m => <option key={m} value={m} style={{ color: "#111827" }}>{m}</option>)}
             </select>
           </div>
 
           {/* نوع العقار */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">نوع العقار</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع العقار</label>
             <select
               value={propertyType}
               onChange={e => setPropertyType(e.target.value)}
-              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-medium text-foreground"
+              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-semibold"
+              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
             >
-              <option value="">كل الأنواع</option>
+              <option value="" style={{ color: "#111827" }}>كل الأنواع</option>
               {PROPERTY_TYPE_GROUPS.map(g => (
-                <optgroup key={g.label} label={`── ${g.label}`}>
-                  {g.types.map(t => <option key={t} value={t}>{t}</option>)}
+                <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
+                  {g.types.map(t => <option key={t} value={t} style={{ color: "#111827" }}>{t}</option>)}
                 </optgroup>
               ))}
             </select>
@@ -282,16 +285,17 @@ export default function MapPage() {
 
           {/* نوع الإعلان */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">نوع الإعلان</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع الإعلان</label>
             <select
               value={listingType}
               onChange={e => setListingType(e.target.value)}
-              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[120px] focus:outline-none focus:border-primary font-medium text-foreground"
+              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[120px] focus:outline-none focus:border-primary font-semibold"
+              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
             >
-              <option value="">الكل</option>
+              <option value="" style={{ color: "#111827" }}>الكل</option>
               {LISTING_TYPE_GROUPS.map(g => (
-                <optgroup key={g.label} label={`── ${g.label}`}>
-                  {g.types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
+                  {g.types.map(t => <option key={t.value} value={t.value} style={{ color: "#111827" }}>{t.label}</option>)}
                 </optgroup>
               ))}
             </select>
@@ -299,19 +303,21 @@ export default function MapPage() {
 
           {/* نطاق السعر */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">من (ر.س)</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>من (ر.س)</label>
             <Input
               type="number" placeholder="0" value={minPrice}
               onChange={e => setMinPrice(e.target.value)}
-              className="h-9 w-28 text-sm border-2 font-medium"
+              className="h-9 w-28 text-sm border-2 font-semibold"
+              style={{ color: "#111827" }}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">إلى (ر.س)</label>
+            <label className="text-xs font-bold" style={{ color: "#111827" }}>إلى (ر.س)</label>
             <Input
               type="number" placeholder="بلا حد" value={maxPrice}
               onChange={e => setMaxPrice(e.target.value)}
-              className="h-9 w-28 text-sm border-2 font-medium"
+              className="h-9 w-28 text-sm border-2 font-semibold"
+              style={{ color: "#111827" }}
             />
           </div>
 

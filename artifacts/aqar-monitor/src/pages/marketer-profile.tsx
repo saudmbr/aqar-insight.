@@ -179,20 +179,21 @@ export default function MarketerProfilePage() {
 
         {/* Profile hero card */}
         <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
-          {/* Cover image — full-width, clear, NOT overlapping content */}
+          {/* ── Cover image strip ── */}
           {profile.coverImage && getImageSrc(profile.coverImage) ? (
-            <div className="h-48 w-full relative overflow-hidden">
+            <div className="h-44 w-full relative overflow-hidden">
               <img
                 src={getImageSrc(profile.coverImage) ?? ""}
                 alt=""
                 className="w-full h-full object-cover"
                 onError={e => {
                   const img = e.currentTarget as HTMLImageElement;
-                  if (img.parentElement) img.parentElement.style.display = "none";
+                  if (img.parentElement) img.parentElement.style.background = "linear-gradient(135deg, #0F1C3F 0%, #0F7BA0 100%)";
+                  img.style.display = "none";
                 }}
               />
-              {/* Bottom fade for smooth transition into card */}
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, rgba(255,255,255,0.5) 100%)" }} />
+              {/* Light bottom fade only — no darkening */}
+              <div className="absolute inset-x-0 bottom-0 h-8" style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.25))" }} />
               {profile.verified && (
                 <span className="absolute top-4 right-4 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-primary text-white shadow-md">
                   <BadgeCheck className="w-3.5 h-3.5" /> موثّق
@@ -203,133 +204,139 @@ export default function MarketerProfilePage() {
             <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
           )}
 
-          <div className="p-6">
-            {/* Avatar row — always BELOW the cover image */}
-            <div className="flex items-start gap-5 flex-wrap">
-              {/* Avatar */}
-              <div className={`w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 -mt-14 border-4 shadow-lg ${profile.coverImage && getImageSrc(profile.coverImage) ? "border-white" : "border-card"}`}>
-                {profile.photo ? (
-                  <>
-                    <img
-                      src={getImageSrc(profile.photo) ?? ""}
-                      alt={profile.fullName}
-                      className="w-full h-full object-cover"
-                      onError={e => {
-                        const img = e.currentTarget as HTMLImageElement;
-                        img.style.display = "none";
-                        const fb = img.nextElementSibling as HTMLElement | null;
-                        if (fb) fb.style.display = "flex";
-                      }}
-                    />
-                    <span className="text-3xl font-bold text-primary hidden items-center justify-center w-full h-full">
-                      {profile.fullName.charAt(0)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-3xl font-bold text-primary">{profile.fullName.charAt(0)}</span>
-                )}
-              </div>
-
-              {/* Name, office, city, specialties */}
-              <div className="flex-1 min-w-0 pt-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
-                  {profile.verified && !profile.coverImage && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                      <BadgeCheck className="w-3.5 h-3.5" />موثّق
-                    </span>
-                  )}
-                </div>
-                {profile.officeName && (
-                  <p className="text-sm text-muted-foreground font-semibold mt-1">{profile.officeName}</p>
-                )}
-                {profile.city && (
-                  <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
-                    <MapPin className="w-3.5 h-3.5 shrink-0" />{profile.city}
-                  </div>
-                )}
-                {/* Rating summary inline */}
-                {ratingsData && ratingsData.totalCount > 0 && (
-                  <div className="flex items-center gap-1.5 mt-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(ratingsData.avgRating ?? 0) ? "text-amber-400 fill-amber-400" : "text-border"}`} />
-                    ))}
-                    <span className="text-xs font-bold text-foreground">{(ratingsData.avgRating ?? 0).toFixed(1)}</span>
-                    <span className="text-xs text-muted-foreground">({ratingsData.totalCount} تقييم)</span>
-                  </div>
-                )}
-                {specialties.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {specialties.slice(0, 3).map((s, i) => (
-                      <span key={i} className="text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/15 font-medium">{s}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* CTA buttons */}
-              <div className="flex gap-2 flex-wrap shrink-0 pt-1">
-                {whatsappLink && (
-                  <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
-                    <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                      <MessageSquare className="w-4 h-4" />واتساب
-                    </a>
-                  </Button>
-                )}
-                {profile.phone && (
-                  <Button asChild size="sm" variant="outline" className="rounded-xl gap-2">
-                    <a href={`tel:${profile.phone}`}>
-                      <Phone className="w-4 h-4" />اتصال
-                    </a>
-                  </Button>
-                )}
-              </div>
+          {/* ── Content: avatar floats up over cover seam, text fully below ── */}
+          <div className="relative px-6 pb-6">
+            {/* Avatar — absolute so it doesn't push text down */}
+            <div
+              className={`absolute rounded-2xl overflow-hidden shrink-0 border-4 shadow-lg bg-primary/10 flex items-center justify-center ${profile.coverImage && getImageSrc(profile.coverImage) ? "border-white" : "border-card bg-muted"}`}
+              style={{ width: 88, height: 88, top: -44, right: 24 }}
+            >
+              {profile.photo ? (
+                <>
+                  <img
+                    src={getImageSrc(profile.photo) ?? ""}
+                    alt={profile.fullName}
+                    className="w-full h-full object-cover"
+                    onError={e => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      img.style.display = "none";
+                      const fb = img.nextElementSibling as HTMLElement | null;
+                      if (fb) fb.style.display = "flex";
+                    }}
+                  />
+                  <span className="text-3xl font-bold text-primary hidden items-center justify-center w-full h-full">
+                    {profile.fullName.charAt(0)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-3xl font-bold text-primary">{profile.fullName.charAt(0)}</span>
+              )}
             </div>
 
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border/40">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Building2 className="w-4 h-4 text-primary" />
+            {/* Text content — starts fresh below the cover, with left padding for avatar space */}
+            <div className="pt-12">
+              {/* Row: name + CTAs */}
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+                    {profile.verified && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <BadgeCheck className="w-3.5 h-3.5" />موثّق
+                      </span>
+                    )}
+                  </div>
+                  {profile.officeName && (
+                    <p className="text-sm text-muted-foreground font-semibold mt-1">{profile.officeName}</p>
+                  )}
+                  {profile.city && (
+                    <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />{profile.city}
+                    </div>
+                  )}
+                  {/* Rating inline */}
+                  {ratingsData && ratingsData.totalCount > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(ratingsData.avgRating ?? 0) ? "text-amber-400 fill-amber-400" : "text-border"}`} />
+                      ))}
+                      <span className="text-xs font-bold text-foreground">{(ratingsData.avgRating ?? 0).toFixed(1)}</span>
+                      <span className="text-xs text-muted-foreground">({ratingsData.totalCount} تقييم)</span>
+                    </div>
+                  )}
+                  {specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {specialties.slice(0, 4).map((s, i) => (
+                        <span key={i} className="text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/15 font-medium">{s}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{profile.activeListingsCount}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">إعلان نشط</p>
+
+                {/* CTA buttons */}
+                <div className="flex gap-2 flex-wrap shrink-0">
+                  {whatsappLink && (
+                    <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
+                      <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                        <MessageSquare className="w-4 h-4" />واتساب
+                      </a>
+                    </Button>
+                  )}
+                  {profile.phone && (
+                    <Button asChild size="sm" variant="outline" className="rounded-xl gap-2">
+                      <a href={`tel:${profile.phone}`}>
+                        <Phone className="w-4 h-4" />اتصال
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </div>
-              {profile.yearsExperience && (
+
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border/40">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-                    <Star className="w-4 h-4 text-accent" />
+                  <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-base font-bold text-foreground leading-none">{profile.yearsExperience}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">سنة خبرة</p>
+                    <p className="text-base font-bold text-foreground leading-none">{profile.activeListingsCount}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">إعلان نشط</p>
                   </div>
                 </div>
-              )}
-              {profile.licenseNumber && (
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
-                    <Award className="w-4 h-4 text-green-600" />
+                {profile.yearsExperience && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-foreground leading-none">{profile.yearsExperience}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">سنة خبرة</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground leading-none font-mono">{profile.licenseNumber}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">رقم الترخيص</p>
+                )}
+                {profile.licenseNumber && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                      <Award className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground leading-none font-mono">{profile.licenseNumber}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">رقم الترخيص</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              {ratingsData && ratingsData.totalCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
-                    <Star className="w-4 h-4 text-amber-500" />
+                )}
+                {ratingsData && ratingsData.totalCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-foreground leading-none">{(ratingsData.avgRating ?? 0).toFixed(1)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ratingsData.totalCount} تقييم</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-base font-bold text-foreground leading-none">{(ratingsData.avgRating ?? 0).toFixed(1)}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{ratingsData.totalCount} تقييم</p>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

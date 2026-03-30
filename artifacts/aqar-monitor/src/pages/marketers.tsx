@@ -98,11 +98,14 @@ function MarketerCard({ m }: { m: MarketerRow }) {
           )}
 
           {specialties.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {specialties.slice(0, 3).map((s, i) => (
-                <Badge key={i} variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-border/60">{s}</Badge>
-              ))}
-              {specialties.length > 3 && <Badge variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-border/60">+{specialties.length - 3}</Badge>}
+            <div className="mt-3">
+              <p className="text-[10px] font-bold text-muted-foreground mb-1.5 tracking-wide uppercase">التخصصات</p>
+              <div className="flex flex-wrap gap-1.5">
+                {specialties.slice(0, 3).map((s, i) => (
+                  <Badge key={i} variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/5">{s}</Badge>
+                ))}
+                {specialties.length > 3 && <Badge variant="outline" className="text-xs px-2 py-0.5 rounded-lg border-border/60">+{specialties.length - 3}</Badge>}
+              </div>
             </div>
           )}
 
