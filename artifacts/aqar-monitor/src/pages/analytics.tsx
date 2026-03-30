@@ -222,24 +222,37 @@ function HBar({ data, dataKey, nameKey, label, formatter }: {
 // ── Donut Chart ────────────────────────────────────────────────────────────────
 
 function Donut({ data }: { data: { name: string; value: number; color: string }[] }) {
-  if (!data.filter(d => d.value > 0).length) return <Empty text="لا توجد بيانات" />;
   const filtered = data.filter(d => d.value > 0);
+  if (!filtered.length) return <Empty text="لا توجد بيانات" />;
+  const total = filtered.reduce((s, d) => s + d.value, 0);
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={filtered} cx="50%" cy="50%"
-          innerRadius={48} outerRadius={78}
-          dataKey="value" paddingAngle={3}
-          label={({ name, percent }) => `${name} ${Math.round(percent * 100)}%`}
-          labelLine={false}
-        >
-          {filtered.map((d, i) => <Cell key={i} fill={d.color} />)}
-        </Pie>
-        <Tooltip formatter={(v: number) => [formatNumber(v), "إعلان"]}
-          contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0" }} />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className="relative w-full h-full">
+      {/* Center label positioned absolutely */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+        <span className="text-[22px] font-black text-foreground tabular-nums leading-none">{formatNumber(total)}</span>
+        <span className="text-[10px] font-semibold text-muted-foreground mt-0.5">إعلان</span>
+      </div>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+          <Pie
+            data={filtered} cx="50%" cy="50%"
+            innerRadius={54} outerRadius={84}
+            dataKey="value" paddingAngle={3}
+            startAngle={90} endAngle={-270}
+          >
+            {filtered.map((d, i) => <Cell key={i} fill={d.color} stroke="transparent" />)}
+          </Pie>
+          <Tooltip
+            formatter={(v: number, _: unknown, props: any) => {
+              const name = props?.payload?.name ?? "";
+              const pct = total > 0 ? Math.round((v / total) * 100) : 0;
+              return [`${formatNumber(v)} إعلان — ${pct}%`, name];
+            }}
+            contentStyle={{ borderRadius: 12, fontFamily: "inherit", direction: "rtl", border: "1px solid #E2E8F0", fontSize: 12 }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -733,16 +746,21 @@ function SectionC({ insights, loading }: { insights?: InsightsData; loading: boo
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Donut */}
         <SCard title="توزيع أنواع الإعلانات">
-          <div style={{ height: 200 }}>
+          <div style={{ height: 240 }}>
             {loading ? <Skeleton className="w-full h-full rounded-xl" /> : <Donut data={donutData} />}
           </div>
-          <div className="flex justify-center gap-4 mt-3">
-            {donutData.filter(d => d.value > 0).map(d => (
-              <div key={d.name} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
-                <span className="text-[11px] font-semibold text-muted-foreground">{d.name}</span>
-              </div>
-            ))}
+          <div className="flex justify-center gap-5 mt-3 flex-wrap">
+            {donutData.map(d => {
+              const total = donutData.reduce((s, x) => s + x.value, 0);
+              const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+              return (
+                <div key={d.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ background: d.color }} />
+                  <span className="text-[12px] font-bold text-foreground">{d.name}</span>
+                  <span className="text-[11px] text-muted-foreground">{d.value > 0 ? `${formatNumber(d.value)} (${pct}%)` : "لا بيانات"}</span>
+                </div>
+              );
+            })}
           </div>
         </SCard>
 
