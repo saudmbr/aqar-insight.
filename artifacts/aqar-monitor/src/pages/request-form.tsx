@@ -76,6 +76,7 @@ export default function RequestForm() {
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
+  const [customDistrict, setCustomDistrict] = useState("");
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
   const [details, setDetails] = useState("");
@@ -101,7 +102,7 @@ export default function RequestForm() {
         title,
         region: region || null,
         city,
-        district: district || null,
+        district: district === "أخرى" ? customDistrict || null : district || null,
         budgetMin: budgetMin || null,
         budgetMax: budgetMax || null,
         details: details || null,
@@ -290,15 +291,27 @@ export default function RequestForm() {
             </div>
             <FieldGroup label="الحي" hint="اختياري — يُساعد في الحصول على عروض أكثر دقة">
               {getAllAhyaaForCity(region, city).length > 0 ? (
-                <select
-                  value={district}
-                  onChange={e => setDistrict(e.target.value)}
-                  disabled={!city}
-                  className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
-                >
-                  <option value="">{city ? "كل الأحياء" : "— اختر المدينة أولاً"}</option>
-                  {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
+                <div className="space-y-2">
+                  <select
+                    value={district}
+                    onChange={e => { setDistrict(e.target.value); if (e.target.value !== "أخرى") setCustomDistrict(""); }}
+                    disabled={!city}
+                    className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
+                    style={{ color: "#111827", background: "#fff" }}
+                  >
+                    <option value="" style={{ color: "#111827", background: "#fff" }}>{city ? "كل الأحياء" : "— اختر المدينة أولاً"}</option>
+                    {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h} style={{ color: "#111827", background: "#fff" }}>{h}</option>)}
+                    <option value="أخرى" style={{ color: "#111827", background: "#fff" }}>أخرى (غير مدرج)</option>
+                  </select>
+                  {district === "أخرى" && (
+                    <Input
+                      placeholder="اكتب اسم الحي…"
+                      value={customDistrict}
+                      onChange={e => setCustomDistrict(e.target.value)}
+                      className="h-12 rounded-xl text-base"
+                    />
+                  )}
+                </div>
               ) : (
                 <Input
                   placeholder={city ? "اكتب اسم الحي" : "اختر المدينة أولاً"}

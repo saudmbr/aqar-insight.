@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { ReportDialog } from "@/components/report-dialog";
 import {
   MapPin, Phone, MessageSquare, Mail, Globe, BadgeCheck, Building2,
   Star, Grid3X3, List, ArrowRight, Briefcase, Award, Send, ThumbsUp,
@@ -289,6 +290,11 @@ export default function MarketerProfilePage() {
                       </a>
                     </Button>
                   )}
+                  <ReportDialog
+                    targetType="marketer"
+                    targetId={profile.id}
+                    targetTitle={profile.fullName ?? profile.officeName ?? undefined}
+                  />
                 </div>
               </div>
 

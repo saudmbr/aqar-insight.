@@ -12,6 +12,7 @@ import { LISTING_TYPE_MAP as _LTM } from "@/lib/listing-types";
 import { useToast } from "@/hooks/use-toast";
 import type { Listing } from "@workspace/db";
 import { useListingBenchmark, positionLabelColor } from "@/hooks/use-analytics";
+import { ReportDialog } from "@/components/report-dialog";
 import {
   ArrowRight, MapPin, BedDouble, Bath, Maximize2, Phone, MessageSquare,
   Heart, Share2, Edit, Trash2, Building2, Calendar, CheckCircle2,
@@ -403,6 +404,11 @@ export default function ListingDetail() {
               <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
               {isFav ? "محفوظ" : "حفظ"}
             </Button>
+            <ReportDialog
+              targetType="listing"
+              targetId={listing.id}
+              targetTitle={listing.title}
+            />
             {isOwner && (
               <>
                 <Button asChild variant="outline" size="sm" className="rounded-xl gap-1.5 font-semibold border-primary/30 text-primary hover:bg-primary/5">

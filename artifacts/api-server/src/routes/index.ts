@@ -13,6 +13,7 @@ import adminUsersRouter from "./admin-users";
 import adminReportsRouter from "./admin-reports";
 import marketersRouter from "./marketers";
 import storageRouter from "./storage";
+import userReportsRouter from "./user-reports";
 
 const router: IRouter = Router();
 
@@ -29,6 +30,7 @@ router.use("/customer-requests", customerRequestsRouter);
 router.use("/admin/users", adminUsersRouter);
 router.use("/admin/reports", adminReportsRouter);
 router.use("/marketers", marketersRouter);
+router.use("/reports", userReportsRouter);
 router.use(storageRouter);
 
 export default router;

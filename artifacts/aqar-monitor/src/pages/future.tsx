@@ -77,15 +77,25 @@ export default function Future() {
           style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 55%, #0F7BA0 100%)" }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_center,rgba(15,123,160,0.3),transparent)] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-40 bg-[radial-gradient(circle,rgba(15,123,160,0.15),transparent_70%)] pointer-events-none" />
           <div className="relative z-10 max-w-2xl mx-auto">
             <span className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
               <Star className="w-3.5 h-3.5" />
               خارطة الطريق
             </span>
-            <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">الوحدات المستقبلية القادمة</h1>
+            <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">المشاريع المستقبلية القادمة</h1>
             <p className="text-lg text-white/80 leading-relaxed">
-              نعمل في "عقار إنسايت" على تطوير أدوات متقدمة مدعومة بالذكاء الاصطناعي لتمكين المستثمرين من اتخاذ قرارات مبنية على بيانات موثوقة.
+              عقار إنسايت منصة تربط المشترين والبائعين والمسوّقين ومزودي الخدمات في منظومة واحدة.
+              نعمل على تطوير أدوات ذكية إضافية تجعل قرارات العقار أسرع وأوضح وأكثر ثقة.
             </p>
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+              {["ربط البائعين بالمشترين", "توثيق المسوّقين", "خدمات عقارية متكاملة", "تحليلات السوق"].map(tag => (
+                <span key={tag} className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 text-white/80 px-3 py-1.5 rounded-xl text-xs font-semibold">
+                  <Sparkles className="w-3 h-3" />
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 

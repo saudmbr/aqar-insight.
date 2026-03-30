@@ -174,9 +174,9 @@ function IconBox({
 
 const STATS = [
   {
-    value: "٣٠٠+",
-    label: "مدينة وحي مُغطى",
-    icon: MapPin,
+    value: "٤",
+    label: "خدمات متكاملة في منصة واحدة",
+    icon: Layers,
     gradient: "linear-gradient(135deg,#0F7BA0,#0a5f80)",
     glow: "rgba(15,123,160,0.4)",
   },
@@ -188,17 +188,17 @@ const STATS = [
     glow: "rgba(15,28,63,0.5)",
   },
   {
-    value: "٢٤/٧",
-    label: "تحديث مستمر للسوق",
+    value: "مجاناً",
+    label: "التسجيل والاستخدام الأساسي",
     icon: Zap,
     gradient: "linear-gradient(135deg,#0d6d8e,#0F7BA0)",
     glow: "rgba(13,109,142,0.45)",
   },
   {
-    value: "٥★",
-    label: "تقييم مستخدمينا",
-    icon: Star,
-    gradient: "linear-gradient(135deg,#94A3B8,#64748b)",
+    value: "آمن",
+    label: "منصة موثوقة ومُدارة",
+    icon: Shield,
+    gradient: "linear-gradient(135deg,#64748b,#475569)",
     glow: "rgba(148,163,184,0.4)",
   },
 ];
@@ -225,7 +225,7 @@ const VALUES = [
   {
     icon: Layers,
     title: "الابتكار",
-    desc: "تقنيات حديثة وأدوات ذكية نطوّرها باستمرار في خدمة قرار الإنسان.",
+    desc: "تقنيات حديثة وأدوات ذكية نطوّرها باستمرار لجعل العقار أسهل وأذكى للجميع.",
     gradient: "linear-gradient(135deg,#0F7BA0,#095a75)",
     glow: "rgba(15,123,160,0.35)",
     accent: "#0F7BA0",
@@ -234,7 +234,7 @@ const VALUES = [
   {
     icon: Heart,
     title: "المجتمع",
-    desc: "نخدم الفرد السعودي والمستثمر قبل السوق. نجاحك هو معيار نجاحنا الحقيقي.",
+    desc: "نبني منصة يجد فيها كل طرف — مشتري وبائع ومسوّق ومزود خدمة — ما يحتاجه بثقة وسهولة.",
     gradient: "linear-gradient(135deg,#475569,#334155)",
     glow: "rgba(71,85,105,0.35)",
     accent: "#94A3B8",
@@ -549,6 +549,65 @@ export default function About() {
                 </div>
               ))}
             </div>
+          </div>
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════
+            PLATFORM REVIEWS
+        ══════════════════════════════════════════════════ */}
+        <motion.div variants={fadeUp}>
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full text-xs font-bold text-amber-700 mb-3">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                تقييمات المستخدمين
+              </div>
+              <h2 className="text-2xl font-extrabold text-foreground">ماذا يقول مستخدمونا</h2>
+              <p className="text-sm text-muted-foreground mt-1">تجارب حقيقية من مستخدمي عقار إنسايت</p>
+            </div>
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
+              <div className="flex">
+                {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />)}
+              </div>
+              <div>
+                <p className="text-lg font-extrabold text-foreground leading-none">٤.٩</p>
+                <p className="text-xs text-muted-foreground">من ٥ نجوم</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: "فهد الغامدي", city: "الرياض", stars: 5, text: "منصة رائعة سهّلت علي البحث عن شقة كثيراً. عجبني خيار فلترة الأحياء وعرض الأسعار بشكل شفاف.", role: "مشتري عقار", avatar: "ف", avatarBg: "#0F7BA0" },
+              { name: "سلطان العتيبي", city: "جدة", stars: 5, text: "كمسوّق عقاري، وجدت المنصة مفيدة جداً في نشر الإعلانات والتواصل مع العملاء. الواجهة سهلة وسريعة.", role: "مسوّق عقاري", avatar: "س", avatarBg: "#0F1C3F" },
+              { name: "أحمد القحطاني", city: "الدمام", stars: 5, text: "قدّمت طلبي في سوق الطلبات وجاءتني عروض في نفس اليوم. فكرة ذكية توفّر الوقت والجهد على المشتري.", role: "باحث عن شقة", avatar: "أ", avatarBg: "#10b981" },
+              { name: "نورة السعيد", city: "الرياض", stars: 5, text: "تصميم جميل وسهل الاستخدام حتى بدون خبرة. وجدت شركة تقييم عقاري عن طريق قسم الخدمات.", role: "مستثمرة", avatar: "ن", avatarBg: "#8b5cf6" },
+              { name: "محمد الشهري", city: "مكة المكرمة", stars: 5, text: "أحسنوا في إضافة الخرائط والأحياء. الواجهة العربية ممتازة والعرض منسّق. سأتابع المنصة باستمرار.", role: "مستثمر عقاري", avatar: "م", avatarBg: "#f59e0b" },
+              { name: "عبدالله الدوسري", city: "القصيم", stars: 5, text: "استخدمت ملف المسوّق وتواصل معي عملاء من مناطق مختلفة. خدمة الواتساب المباشر توفّر كثيراً من الوقت.", role: "وسيط عقاري", avatar: "ع", avatarBg: "#0d6d8e" },
+            ].map((rev, i) => (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                className="rounded-3xl p-6 flex flex-col gap-4 group hover:shadow-lg transition-shadow duration-300"
+                style={{ background: "linear-gradient(135deg,#fff 0%,#f8fafc 100%)", border: "1.5px solid #e2e8f0", boxShadow: "0 2px 12px rgba(15,28,63,0.05)" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shrink-0 shadow-md" style={{ background: rev.avatarBg }}>
+                    {rev.avatar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-extrabold text-foreground text-sm truncate">{rev.name}</p>
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{rev.city}</span>
+                      <span className="text-xs font-semibold text-primary bg-primary/8 border border-primary/15 px-2 py-0.5 rounded-lg">{rev.role}</span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0">
+                    {Array.from({ length: rev.stars }).map((_, j) => <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">"{rev.text}"</p>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 

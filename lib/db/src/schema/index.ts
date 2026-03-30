@@ -7,3 +7,4 @@ export * from "./customer-requests";
 export * from "./marketer-profiles";
 export * from "./password-reset-tokens";
 export * from "./otp-verifications";
+export * from "./user-reports";

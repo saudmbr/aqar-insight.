@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getImageSrc } from "@/lib/utils";
+import { ReportDialog } from "@/components/report-dialog";
 import {
   MapPin, Phone, MessageSquare, Wrench, ArrowRight, BadgeCheck,
   Star, Clock, ChevronLeft, ChevronRight, Building2, Globe,
@@ -220,6 +221,11 @@ export default function ServiceProviderProfile() {
                       </a>
                     </Button>
                   )}
+                  <ReportDialog
+                    targetType="service_provider"
+                    targetId={provider.id}
+                    targetTitle={provider.businessName}
+                  />
                 </div>
               </div>
 

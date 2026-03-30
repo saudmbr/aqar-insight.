@@ -1,4 +1,5 @@
 import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
+import { ReportDialog } from "@/components/report-dialog";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -426,6 +427,11 @@ export default function Requests() {
                           </div>
 
                           <div className="flex items-center gap-2">
+                            <ReportDialog
+                              targetType="customer_request"
+                              targetId={r.id}
+                              targetTitle={r.title}
+                            />
                             {canDelete(r) && (
                               <Button
                                 variant="ghost"

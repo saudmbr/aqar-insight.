@@ -41,6 +41,7 @@ export default function ServiceForm() {
   const [region, setRegion] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
+  const [customDistrict, setCustomDistrict] = useState("");
   const [coveredAreas, setCoveredAreas] = useState("");
   const [description, setDescription] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
@@ -71,7 +72,7 @@ export default function ServiceForm() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName, category: category === "أخرى" ? customCategory || "أخرى" : category, region: region || null, city, district: district || null, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages, coverImage: coverImage || null, websiteUrl: websiteUrl || null }),
+        body: JSON.stringify({ businessName, category: category === "أخرى" ? customCategory || "أخرى" : category, region: region || null, city, district: district === "أخرى" ? customDistrict || null : district || null, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages, coverImage: coverImage || null, websiteUrl: websiteUrl || null }),
       });
       const data = await res.json() as { id?: number; message?: string };
       if (!res.ok) throw new Error(data.message ?? "حدث خطأ");
@@ -150,15 +151,27 @@ export default function ServiceForm() {
               </FieldGroup>
               <FieldGroup label="الحي">
                 {getAllAhyaaForCity(region, city).length > 0 ? (
-                  <select
-                    value={district}
-                    onChange={e => setDistrict(e.target.value)}
-                    disabled={!city}
-                    className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
-                  >
-                    <option value="">{city ? "كل الأحياء" : "— اختر المحافظة أولاً"}</option>
-                    {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
+                  <div className="space-y-2">
+                    <select
+                      value={district}
+                      onChange={e => { setDistrict(e.target.value); if (e.target.value !== "أخرى") setCustomDistrict(""); }}
+                      disabled={!city}
+                      className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none disabled:opacity-40"
+                      style={{ color: "#111827", background: "#fff" }}
+                    >
+                      <option value="" style={{ color: "#111827", background: "#fff" }}>{city ? "كل الأحياء" : "— اختر المحافظة أولاً"}</option>
+                      {getAllAhyaaForCity(region, city).map(h => <option key={h} value={h} style={{ color: "#111827", background: "#fff" }}>{h}</option>)}
+                      <option value="أخرى" style={{ color: "#111827", background: "#fff" }}>أخرى (غير مدرج)</option>
+                    </select>
+                    {district === "أخرى" && (
+                      <Input
+                        placeholder="اكتب اسم الحي…"
+                        value={customDistrict}
+                        onChange={e => setCustomDistrict(e.target.value)}
+                        className="h-12 rounded-xl text-base"
+                      />
+                    )}
+                  </div>
                 ) : (
                   <Input
                     placeholder={city ? "اكتب اسم الحي" : "— اختر المحافظة أولاً"}

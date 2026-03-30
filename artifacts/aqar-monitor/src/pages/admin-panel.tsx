@@ -187,6 +187,24 @@ export default function AdminPanel() {
           ))}
         </div>
 
+        {/* Quick links to other admin pages */}
+        <div className="flex flex-wrap gap-3">
+          {[
+            { label: "إدارة المستخدمين", href: "/admin/users", color: "#0F7BA0" },
+            { label: "تقارير الإعلانات", href: "/admin/reports", color: "#64748b" },
+            { label: "بلاغات المستخدمين", href: "/admin/user-reports", color: "#dc2626" },
+          ].map(link => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-border hover:border-primary/40 hover:bg-muted transition-all"
+              style={{ color: link.color }}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+
         {/* Filters */}
         <Card className="border-border/50 shadow-sm">
           <CardHeader className="pb-3 pt-4 px-5 border-b border-border/40">

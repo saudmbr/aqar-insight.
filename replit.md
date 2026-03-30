@@ -85,10 +85,27 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 **Service Providers — extended schema (current session):**
 - `service_providers` table: added `cover_image TEXT` and `website_url TEXT` via psql + Drizzle schema
 - `service-provider-profile.tsx`: LinkedIn-style cover image hero (h-44 absolute icon), website URL link
-- `service-form.tsx`: "أخرى" added to CATEGORIES + custom category input, website URL field, cover image uploader (1 image)
+- `service-form.tsx`: "أخرى" added to CATEGORIES + custom category input, website URL field, cover image uploader (1 image); district select now has "أخرى (غير مدرج)" option → shows custom input when selected
 - `service-provider-dashboard.tsx`: fixed import (SAUDI_REGIONS_LIST not SAUDI_CITIES), websiteUrl field, cover image editor in portfolio tab, fixed ImageUploader usage (value/onChange not onUpload)
 - `marketers.tsx`: region + specialty filter dropdowns with clear button (uses SAUDI_REGIONS_LIST + SPECIALTIES_LIST)
-- `requests.tsx`: contactMethod removed from card display, filters use SAUDI_REGIONS_LIST
+- `requests.tsx`: contactMethod removed from card display, filters use SAUDI_REGIONS_LIST; district select now has "أخرى" option
+- `request-form.tsx`: district select also has "أخرى (غير مدرج)" option → shows custom input when selected
+
+**User Reports / Flagging System:**
+- `lib/db/src/schema/user-reports.ts`: Drizzle schema for `user_reports` table (id, reporterId, targetType, targetId, targetTitle, reason, details, status, adminNote, createdAt, updatedAt)
+- `user_reports` table created in PostgreSQL via psql
+- `artifacts/api-server/src/routes/user-reports.ts`: POST /api/reports (public), GET /api/reports (admin), PATCH /api/reports/:id (admin)
+- Route registered at `/reports` in `routes/index.ts`
+- `artifacts/aqar-monitor/src/components/report-dialog.tsx`: ReportDialog component with modal, reason select (8 reasons), details textarea, privacy note, success state
+- `artifacts/aqar-monitor/src/pages/admin-user-reports.tsx`: Admin page at `/admin/user-reports` — views all reports, filters by status (pending/reviewed/dismissed), links to reported content, mark reviewed/dismiss actions
+- Route `/admin/user-reports` registered in `App.tsx` as `AdminRoute`
+- Quick link "بلاغات المستخدمين" added to admin panel nav bar
+- `ReportDialog` added to: `listing-detail.tsx` (near share/heart buttons), `marketer-profile.tsx` (CTA buttons area), `service-provider-profile.tsx` (CTA buttons area), `requests.tsx` (card footer, next to delete button)
+
+**Content Updates:**
+- `about.tsx`: STATS updated (٤ خدمات, ١٠٠٪ بيانات سعودية, مجاناً, آمن); الابتكار card desc updated; المجتمع card desc updated; new reviews section added
+- `future.tsx`: Hero updated to describe marketplace concept; tags added
+- `home.tsx` + `about.tsx`: Platform reviews section added (6 user cards, ٤.٩/٥ rating badge, grid layout with star ratings)
 
 **Code Rules:**
 - Legacy hooks (`useGetCities`, `useGetPriceTrends`, `useGetPropertyTypes`, `useGetDistrictComparison`, `useGetYearlyComparison`) are BANNED — they depend on the empty `properties` table. Use direct `fetch()` against analytics endpoints instead.
