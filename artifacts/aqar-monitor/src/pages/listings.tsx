@@ -11,7 +11,8 @@ import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
 import {
   Search, SlidersHorizontal, PlusCircle, Building2,
-  ChevronLeft, ChevronRight, X,
+  ChevronLeft, ChevronRight, X, MapPin, BarChart3,
+  ShieldCheck, Zap,
 } from "lucide-react";
 
 
@@ -128,30 +129,111 @@ export default function Listings() {
   return (
     <Layout>
       <div className="space-y-8 pb-12">
-        {/* Header Hero */}
+        {/* Header Hero — Ultra Premium */}
         <div
-          className="relative rounded-[2rem] overflow-hidden p-8 md:p-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
-          style={{ background: "linear-gradient(135deg, #0F1C3F 0%, #0F1C3F 60%, #0F7BA0 100%)" }}
+          className="relative rounded-[2rem] overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #060e1b 0%, #0F1C3F 45%, #0a2a4a 100%)",
+            boxShadow: "0 20px 60px rgba(6,14,27,0.5), 0 4px 20px rgba(6,14,27,0.3)",
+          }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_top_left,rgba(15,123,160,0.25),transparent)] pointer-events-none" />
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/25 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-3">
-              <Building2 className="w-3.5 h-3.5" />
-              سوق العقارات السعودي
+          {/* Decorative grid */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
+            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
+          {/* Radial glow — right */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 55% 70% at 5% 50%, rgba(15,123,160,0.28) 0%, transparent 70%)" }} />
+          {/* Radial glow — bottom */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 50% at 50% 100%, rgba(15,123,160,0.14) 0%, transparent 65%)" }} />
+          {/* Animated orb */}
+          <div className="absolute pointer-events-none rounded-full animate-pulse"
+            style={{ width: 300, height: 300, top: "-80px", left: "15%", background: "radial-gradient(circle, rgba(15,123,160,0.15) 0%, transparent 70%)", filter: "blur(50px)" }} />
+
+          <div className="relative z-10 p-8 md:p-12">
+            {/* Top row: badge + button */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8">
+              <div>
+                {/* Eyebrow */}
+                <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider"
+                  style={{ background: "rgba(15,123,160,0.20)", border: "1px solid rgba(15,123,160,0.40)", color: "rgba(148,199,220,1)" }}>
+                  <Building2 className="w-3.5 h-3.5" />
+                  سوق العقارات السعودي
+                </div>
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-3 tracking-tight">
+                  تصفح العقارات
+                </h1>
+                {/* Description */}
+                <p className="text-[15px] md:text-[16px] font-medium leading-relaxed max-w-xl"
+                  style={{ color: "rgba(255,255,255,0.65)" }}>
+                  آلاف الإعلانات العقارية في كل مناطق المملكة — ابحث وقارن وتواصل مع أفضل المسوقين بكل سهولة
+                </p>
+
+                {/* Count pill */}
+                <div className="mt-4 inline-flex items-center gap-2"
+                  style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px", fontWeight: 600 }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                  {data ? `${data.total.toLocaleString("en-US")} عقار متاح حالياً` : "جارٍ التحميل…"}
+                </div>
+              </div>
+
+              {/* CTA Button — distinctive golden */}
+              {isAuthenticated && (
+                <Link href="/listings/new" className="shrink-0">
+                  <button
+                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 whitespace-nowrap"
+                    style={{
+                      background: "rgba(245,158,11,0.13)",
+                      border: "1.5px solid rgba(245,158,11,0.55)",
+                      boxShadow: "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 32px rgba(245,158,11,0.5), 0 0 0 1px rgba(245,158,11,0.45)";
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.20)";
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)";
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.13)";
+                    }}
+                  >
+                    <PlusCircle className="w-4.5 h-4.5 flex-shrink-0"
+                      style={{ color: "#f59e0b", filter: "drop-shadow(0 0 5px rgba(245,158,11,0.7))" }} />
+                    <span style={{
+                      background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}>
+                      نشر إعلان عقاري
+                    </span>
+                  </button>
+                </Link>
+              )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">تصفح العقارات</h1>
-            <p className="text-white/80 mt-2 text-base font-medium">
-              {data ? `${data.total.toLocaleString("en-US")} عقار متاح حالياً` : "جارٍ تحميل العقارات…"}
-            </p>
+
+            {/* Feature chips row */}
+            <div className="flex flex-wrap gap-3">
+              {[
+                { icon: MapPin,      label: "تغطية كل مناطق المملكة", color: "#0F7BA0" },
+                { icon: BarChart3,   label: "تحليلات سوقية مجانية",   color: "#10b981" },
+                { icon: ShieldCheck, label: "إعلانات موثّقة",          color: "#8b5cf6" },
+                { icon: Zap,         label: "نشر فوري وسريع",          color: "#f59e0b" },
+              ].map(f => (
+                <div key={f.label}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12px] font-semibold"
+                  style={{
+                    background: `${f.color}12`,
+                    border: `1px solid ${f.color}30`,
+                    color: "rgba(255,255,255,0.75)",
+                  }}>
+                  <f.icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: f.color }} />
+                  {f.label}
+                </div>
+              ))}
+            </div>
           </div>
-          {isAuthenticated && (
-            <Button asChild size="lg" className="relative z-10 gap-2 rounded-xl shrink-0 whitespace-nowrap px-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold shadow-none">
-              <Link href="/listings/new">
-                <PlusCircle className="w-5 h-5" />
-                نشر إعلان عقاري
-              </Link>
-            </Button>
-          )}
         </div>
 
         {/* Search & Filters */}
