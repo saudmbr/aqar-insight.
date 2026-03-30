@@ -23,6 +23,7 @@ interface ServiceProvider {
   whatsapp: string | null;
   workingHours: string | null;
   portfolioImages: string | null;
+  profileImage: string | null;
   coverImage: string | null;
   websiteUrl: string | null;
   verified: boolean | null;
@@ -140,12 +141,37 @@ export default function ServiceProviderProfile() {
           )}
 
           <div className="relative px-6 pb-6">
-            {/* Business icon — absolute to float over cover seam */}
+            {/* Business icon / avatar — absolute to float over cover seam */}
             <div
-              className="absolute rounded-2xl bg-primary/10 border-4 border-white shadow-lg flex items-center justify-center"
-              style={{ width: 80, height: 80, top: provider.coverImage ? -40 : 24, right: 24 }}
+              className="absolute border-4 border-white shadow-lg overflow-hidden"
+              style={{
+                width: 80, height: 80,
+                top: provider.coverImage ? -40 : 24, right: 24,
+                borderRadius: provider.profileImage && getImageSrc(provider.profileImage) ? "50%" : "1rem",
+                background: provider.profileImage && getImageSrc(provider.profileImage) ? "transparent" : undefined,
+              }}
             >
-              <Wrench className="w-9 h-9 text-primary" />
+              {provider.profileImage && getImageSrc(provider.profileImage) ? (
+                <img
+                  src={getImageSrc(provider.profileImage) ?? ""}
+                  alt={provider.businessName}
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    const el = e.currentTarget as HTMLImageElement;
+                    el.style.display = "none";
+                    const parent = el.parentElement;
+                    if (parent) {
+                      parent.style.borderRadius = "1rem";
+                      parent.style.background = "#e0f2fe";
+                      parent.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="#0F7BA0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3-3a1 1 0 000-1.4l-1.6-1.6a1 1 0 00-1.4 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 17L20 2M10 20h4"/></svg>`;
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-primary/10 flex items-center justify-center rounded-2xl">
+                  <Wrench className="w-9 h-9 text-primary" />
+                </div>
+              )}
             </div>
 
             {/* Content area — padded to clear icon */}

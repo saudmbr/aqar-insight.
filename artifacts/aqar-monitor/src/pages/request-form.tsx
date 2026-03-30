@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, FileText, Banknote, Contact, Building2, Wrench, UserCheck } from "lucide-react";
+import { Loader2, Save, FileText, Banknote, Contact, Building2, Wrench, UserCheck, ImageIcon } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUploader } from "@/components/image-uploader";
 
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
@@ -81,6 +82,7 @@ export default function RequestForm() {
   const [marketerName, setMarketerName] = useState("");
   const [contactMethod, setContactMethod] = useState("");
   const [contactInfo, setContactInfo] = useState("");
+  const [image, setImage] = useState("");
 
   if (!isAuthenticated) { navigate("/login"); return null; }
 
@@ -105,6 +107,7 @@ export default function RequestForm() {
         details: details || null,
         contactMethod: contactMethod || null,
         contactInfo: contactInfo || null,
+        image: image.trim() ? image.trim().split("\n")[0] : null,
       };
       if (requestType === "property" || requestType === "service") {
         body.category = category || null;
@@ -317,6 +320,25 @@ export default function RequestForm() {
                 className="w-full rounded-2xl border border-input bg-background p-4 text-base leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </FieldGroup>
+          </CardContent>
+        </Card>
+
+        {/* ─── Image Attachment ──────────────────────────────────────────── */}
+        <Card className="border-border rounded-3xl shadow-sm overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-primary" />
+              صورة توضيحية (اختياري)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <ImageUploader
+              label="أرفق صورة لطلبك (اختياري)"
+              value={image}
+              onChange={setImage}
+              maxImages={1}
+            />
+            <p className="text-xs text-muted-foreground mt-2">صورة واحدة فقط — تساعد في توضيح طلبك بشكل أفضل</p>
           </CardContent>
         </Card>
 

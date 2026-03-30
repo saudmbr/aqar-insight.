@@ -32,7 +32,11 @@ import {
   Star,
   Shield,
   Zap,
+  Phone,
+  MessageSquare,
+  Mail,
 } from "lucide-react";
+import { getImageSrc } from "@/lib/utils";
 
 const REQUEST_TYPES = [
   { value: "", label: "جميع الطلبات", icon: FileText },
@@ -67,6 +71,8 @@ interface CustomerRequest {
   details?: string | null;
   marketerName?: string | null;
   contactMethod?: string | null;
+  contactInfo?: string | null;
+  image?: string | null;
   status: string;
   createdAt: string;
   posterName?: string | null;
@@ -282,11 +288,22 @@ export default function Requests() {
                   <CardContent className="p-6 md:p-8">
                     <div className="flex flex-col md:flex-row gap-6">
 
-                      {/* Type Icon */}
+                      {/* Image or Type Icon */}
                       <div className="hidden md:flex flex-col items-center gap-3 shrink-0 w-20">
-                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${typeMeta.bg} ${typeMeta.border}`}>
-                          <TypeIcon className={`w-7 h-7 ${typeMeta.color}`} />
-                        </div>
+                        {r.image && getImageSrc(r.image) ? (
+                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-border shadow-sm">
+                            <img
+                              src={getImageSrc(r.image)!}
+                              alt="صورة الطلب"
+                              className="w-full h-full object-cover"
+                              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                        ) : (
+                          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${typeMeta.bg} ${typeMeta.border}`}>
+                            <TypeIcon className={`w-7 h-7 ${typeMeta.color}`} />
+                          </div>
+                        )}
                         <span className="text-xs font-semibold text-muted-foreground text-center">
                           {new Date(r.createdAt).toLocaleDateString("ar-SA", { day: "numeric", month: "short" })}
                         </span>
@@ -331,6 +348,58 @@ export default function Requests() {
                         {r.details && (
                           <div className="bg-muted/40 rounded-2xl p-4 mb-4 border border-border/50">
                             <p className="text-sm text-foreground leading-relaxed line-clamp-2">{r.details}</p>
+                          </div>
+                        )}
+
+                        {/* Mobile image */}
+                        {r.image && getImageSrc(r.image) && (
+                          <div className="md:hidden mb-4 rounded-2xl overflow-hidden border border-border w-full max-h-40">
+                            <img
+                              src={getImageSrc(r.image)!}
+                              alt="صورة الطلب"
+                              className="w-full h-full object-cover"
+                              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Contact Info */}
+                        {r.contactInfo && (
+                          <div className="flex flex-wrap items-center gap-2 mb-4">
+                            <span className="text-xs text-muted-foreground font-semibold">للتواصل:</span>
+                            {/* If contactMethod is phone or whatsapp, show number as links */}
+                            {(r.contactMethod === "phone" || r.contactMethod === "whatsapp" || (!r.contactMethod && /^[\d+٠-٩\s-]+$/.test(r.contactInfo))) ? (
+                              <>
+                                <a
+                                  href={`tel:${r.contactInfo.replace(/\s/g, "")}`}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold hover:bg-blue-100 transition-colors"
+                                  style={{ color: "#1d4ed8", background: "#eff6ff", borderColor: "#bfdbfe" }}
+                                >
+                                  <Phone className="w-3.5 h-3.5" />
+                                  اتصال
+                                </a>
+                                <a
+                                  href={`https://wa.me/${r.contactInfo.replace(/\D/g, "").replace(/^0/, "966")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity"
+                                  style={{ color: "#fff", background: "#25d366", border: "1px solid #25d366" }}
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                  واتساب
+                                </a>
+                                <span className="text-xs text-muted-foreground font-mono">{r.contactInfo}</span>
+                              </>
+                            ) : (
+                              <a
+                                href={`mailto:${r.contactInfo}`}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity"
+                                style={{ color: "#0F7BA0", background: "#e0f7fa", border: "1px solid #b2ebf2" }}
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                                {r.contactInfo}
+                              </a>
+                            )}
                           </div>
                         )}
 

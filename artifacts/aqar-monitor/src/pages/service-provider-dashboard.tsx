@@ -30,6 +30,7 @@ interface ServiceProfile {
   websiteUrl?: string | null;
   workingHours?: string | null;
   portfolioImages?: string | null;
+  profileImage?: string | null;
   coverImage?: string | null;
   verified?: boolean;
   ratingAvg?: number;
@@ -462,6 +463,38 @@ export default function ServiceProviderDashboard() {
         {/* ── Portfolio tab ────────────────────────────────────────────────────── */}
         {activeTab === "portfolio" && (
           <div className="space-y-4">
+
+            {/* Profile image (avatar) */}
+            <Section title="الصورة الشخصية (الأفاتار)">
+              <p className="text-xs text-muted-foreground mb-2">تظهر كصورة دائرية صغيرة على ملفك الشخصي وبطاقة الخدمة.</p>
+              {profile.profileImage && getImageSrc(profile.profileImage) && (
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary shadow-md">
+                    <img src={getImageSrc(profile.profileImage) ?? ""} alt="الصورة الشخصية" className="w-full h-full object-cover" />
+                  </div>
+                  <button
+                    onClick={() => setProfile(p => ({ ...p, profileImage: null }))}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-destructive bg-destructive/10 hover:bg-destructive/20 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    حذف الصورة
+                  </button>
+                </div>
+              )}
+              <ImageUploader
+                value={profile.profileImage ?? ""}
+                onChange={(v) => setProfile(p => ({ ...p, profileImage: v.split("\n")[0] ?? null }))}
+                maxImages={1}
+                label="الصورة الشخصية"
+              />
+              <div className="flex justify-end mt-2">
+                <Button onClick={() => void handleSave()} disabled={saving} size="sm" className="rounded-xl gap-2 px-5">
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  حفظ الصورة الشخصية
+                </Button>
+              </div>
+            </Section>
+
             <Section title="صورة الغلاف">
               <p className="text-xs text-muted-foreground mb-2">تظهر كخلفية لملفك الشخصي في صفحة الخدمة. يُنصح باختيار صورة أفقية عالية الجودة.</p>
               {profile.coverImage && getImageSrc(profile.coverImage) && (

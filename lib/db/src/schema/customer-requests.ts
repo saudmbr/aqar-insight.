@@ -17,6 +17,7 @@ export const customerRequestsTable = pgTable("customer_requests", {
   marketerName: text("marketer_name"),
   contactMethod: text("contact_method"),
   contactInfo: text("contact_info"),
+  image: text("image"),
   status: text("status").notNull().default("open"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),

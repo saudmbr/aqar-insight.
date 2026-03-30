@@ -63,7 +63,7 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
     .where(eq(serviceProvidersTable.userId, req.session.userId))
     .limit(1);
 
-  const { businessName, category, region, city, district, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages, coverImage, websiteUrl } = req.body as Record<string, unknown>;
+  const { businessName, category, region, city, district, coveredAreas, description, startingPrice, contactPhone, whatsapp, workingHours, portfolioImages, coverImage, websiteUrl, profileImage } = req.body as Record<string, unknown>;
 
   if (!existing) {
     if (!businessName || !category || !city) {
@@ -85,6 +85,7 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
       portfolioImages: portfolioImages ? String(portfolioImages) : null,
       coverImage: coverImage ? String(coverImage) : null,
       websiteUrl: websiteUrl ? String(websiteUrl) : null,
+      profileImage: profileImage ? String(profileImage) : null,
     }).returning();
     res.status(201).json(created);
     return;
@@ -105,6 +106,7 @@ serviceProvidersRouter.put("/my/profile", async (req: Request, res: Response) =>
     ...(portfolioImages !== undefined && { portfolioImages: portfolioImages ? String(portfolioImages) : null }),
     ...(coverImage !== undefined && { coverImage: coverImage ? String(coverImage) : null }),
     ...(websiteUrl !== undefined && { websiteUrl: websiteUrl ? String(websiteUrl) : null }),
+    ...(profileImage !== undefined && { profileImage: profileImage ? String(profileImage) : null }),
     updatedAt: new Date(),
   }).where(eq(serviceProvidersTable.id, existing.id));
 
@@ -149,6 +151,7 @@ serviceProvidersRouter.post("/", async (req: Request, res: Response) => {
     portfolioImages: portfolioImages ? String(portfolioImages) : null,
     coverImage: coverImage ? String(coverImage) : null,
     websiteUrl: websiteUrl ? String(websiteUrl) : null,
+    profileImage: (req.body as Record<string,unknown>).profileImage ? String((req.body as Record<string,unknown>).profileImage) : null,
   }).returning();
 
   res.status(201).json(created);
@@ -201,6 +204,7 @@ serviceProvidersRouter.put("/:id", async (req: Request, res: Response) => {
     ...(portfolioImages !== undefined && { portfolioImages: portfolioImages ? String(portfolioImages) : null }),
     ...(coverImage !== undefined && { coverImage: coverImage ? String(coverImage) : null }),
     ...(websiteUrl !== undefined && { websiteUrl: websiteUrl ? String(websiteUrl) : null }),
+    ...((req.body as Record<string,unknown>).profileImage !== undefined && { profileImage: (req.body as Record<string,unknown>).profileImage ? String((req.body as Record<string,unknown>).profileImage) : null }),
     updatedAt: new Date(),
   }).where(eq(serviceProvidersTable.id, id));
 

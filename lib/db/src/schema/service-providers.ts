@@ -20,6 +20,8 @@ export const serviceProvidersTable = pgTable("service_providers", {
   // Portfolio images — newline-separated URLs
   portfolioImages: text("portfolio_images"),
 
+  // Profile avatar image
+  profileImage: text("profile_image"),
   // Profile cover image
   coverImage: text("cover_image"),
   // Website URL

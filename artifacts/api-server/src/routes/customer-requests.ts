@@ -27,6 +27,8 @@ customerRequestsRouter.get("/", async (req: Request, res: Response) => {
       details: customerRequestsTable.details,
       marketerName: customerRequestsTable.marketerName,
       contactMethod: customerRequestsTable.contactMethod,
+      contactInfo: customerRequestsTable.contactInfo,
+      image: customerRequestsTable.image,
       status: customerRequestsTable.status,
       createdAt: customerRequestsTable.createdAt,
       posterName: usersTable.fullName,
@@ -80,7 +82,7 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
     res.status(401).json({ message: "يرجى تسجيل الدخول لنشر طلب" }); return;
   }
 
-  const { requestType, title, category, region, city, district, budgetMin, budgetMax, details, marketerName, contactMethod, contactInfo } = req.body as Record<string, unknown>;
+  const { requestType, title, category, region, city, district, budgetMin, budgetMax, details, marketerName, contactMethod, contactInfo, image } = req.body as Record<string, unknown>;
 
   if (!requestType || !title || !city) {
     res.status(400).json({ message: "يرجى ملء العنوان، نوع الطلب، والمدينة" }); return;
@@ -105,6 +107,7 @@ customerRequestsRouter.post("/", async (req: Request, res: Response) => {
     marketerName: marketerName ? String(marketerName) : null,
     contactMethod: contactMethod ? String(contactMethod) : null,
     contactInfo: contactInfo ? String(contactInfo) : null,
+    image: image ? String(image) : null,
   }).returning();
 
   res.status(201).json(created);
