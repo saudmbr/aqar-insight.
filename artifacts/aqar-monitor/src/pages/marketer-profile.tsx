@@ -6,10 +6,27 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
 import {
   MapPin, Phone, MessageSquare, Mail, Globe, BadgeCheck, Building2,
-  Star, Grid3X3, List, ArrowRight, Briefcase, Award,
+  Star, Grid3X3, List, ArrowRight, Briefcase, Award, Send, ThumbsUp,
 } from "lucide-react";
+
+interface Rating {
+  id: number;
+  marketerId: number;
+  userId: number | null;
+  rating: number;
+  comment: string | null;
+  reviewerName: string | null;
+  createdAt: string;
+}
+
+interface RatingsData {
+  ratings: Rating[];
+  avgRating: number | null;
+  totalCount: number;
+}
 
 interface MarketerProfile {
   id: number;
@@ -48,13 +65,29 @@ const SORT_OPTIONS = [
 
 export default function MarketerProfilePage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<MarketerProfile | null>(null);
   const [listings, setListings] = useState<ListingCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  // Ratings state
+  const [ratingsData, setRatingsData] = useState<RatingsData | null>(null);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingHover, setRatingHover] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingName, setRatingName] = useState("");
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingSuccess, setRatingSuccess] = useState(false);
+
   const marketerId = parseInt(id ?? "");
+
+  const loadRatings = async () => {
+    if (isNaN(marketerId)) return;
+    const res = await fetch(`/api/marketers/${marketerId}/ratings`);
+    if (res.ok) setRatingsData(await res.json() as RatingsData);
+  };
 
   useEffect(() => {
     if (isNaN(marketerId)) return;
@@ -69,7 +102,35 @@ export default function MarketerProfilePage() {
       setLoading(false);
     };
     void load();
+    void loadRatings();
   }, [marketerId, sort]);
+
+  const submitRating = async () => {
+    if (!ratingValue) return;
+    setRatingSubmitting(true);
+    try {
+      const res = await fetch(`/api/marketers/${marketerId}/ratings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          rating: ratingValue,
+          comment: ratingComment.trim() || undefined,
+          reviewerName: user ? undefined : (ratingName.trim() || "زائر"),
+        }),
+      });
+      if (res.ok) {
+        setRatingSuccess(true);
+        setRatingComment("");
+        setRatingValue(0);
+        setRatingName("");
+        await loadRatings();
+        setTimeout(() => setRatingSuccess(false), 3000);
+      }
+    } finally {
+      setRatingSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -118,68 +179,83 @@ export default function MarketerProfilePage() {
 
         {/* Profile hero card */}
         <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
-          {/* Cover image / accent strip */}
+          {/* Cover image — full-width, clear, NOT overlapping content */}
           {profile.coverImage && getImageSrc(profile.coverImage) ? (
-            <div className="h-36 w-full relative overflow-hidden">
+            <div className="h-48 w-full relative overflow-hidden">
               <img
                 src={getImageSrc(profile.coverImage) ?? ""}
                 alt=""
                 className="w-full h-full object-cover"
                 onError={e => {
                   const img = e.currentTarget as HTMLImageElement;
-                  img.parentElement!.style.display = "none";
-                  const strip = img.parentElement!.nextElementSibling as HTMLElement | null;
-                  if (strip) strip.style.display = "block";
+                  if (img.parentElement) img.parentElement.style.display = "none";
                 }}
               />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(15,28,63,0.65) 0%, transparent 60%)" }} />
+              {/* Bottom fade for smooth transition into card */}
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 30%, rgba(255,255,255,0.5) 100%)" }} />
+              {profile.verified && (
+                <span className="absolute top-4 right-4 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-primary text-white shadow-md">
+                  <BadgeCheck className="w-3.5 h-3.5" /> موثّق
+                </span>
+              )}
             </div>
           ) : (
-            <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
+            <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
           )}
 
-          <div className={profile.coverImage && getImageSrc(profile.coverImage) ? "p-6 -mt-10 relative z-10" : "p-6"}>
-            {/* Main info row: avatar + details + CTAs */}
-            <div className="flex items-center gap-5 flex-wrap">
-              {/* Avatar — fixed size, white border when over cover image */}
-              <div className={`w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 ${profile.coverImage && getImageSrc(profile.coverImage) ? "border-4 border-white shadow-md" : "border border-border"}`}>
+          <div className="p-6">
+            {/* Avatar row — always BELOW the cover image */}
+            <div className="flex items-start gap-5 flex-wrap">
+              {/* Avatar */}
+              <div className={`w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0 -mt-14 border-4 shadow-lg ${profile.coverImage && getImageSrc(profile.coverImage) ? "border-white" : "border-card"}`}>
                 {profile.photo ? (
-                  <img
-                    src={getImageSrc(profile.photo) ?? ""}
-                    alt={profile.fullName}
-                    className="w-full h-full object-cover"
-                    onError={e => {
-                      const img = e.currentTarget as HTMLImageElement;
-                      img.style.display = "none";
-                      const fallback = img.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = "flex";
-                    }}
-                  />
-                ) : null}
-                <span
-                  className="text-2xl font-bold text-primary"
-                  style={profile.photo ? { display: "none" } : { display: "flex" }}
-                >
-                  {profile.fullName.charAt(0)}
-                </span>
+                  <>
+                    <img
+                      src={getImageSrc(profile.photo) ?? ""}
+                      alt={profile.fullName}
+                      className="w-full h-full object-cover"
+                      onError={e => {
+                        const img = e.currentTarget as HTMLImageElement;
+                        img.style.display = "none";
+                        const fb = img.nextElementSibling as HTMLElement | null;
+                        if (fb) fb.style.display = "flex";
+                      }}
+                    />
+                    <span className="text-3xl font-bold text-primary hidden items-center justify-center w-full h-full">
+                      {profile.fullName.charAt(0)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl font-bold text-primary">{profile.fullName.charAt(0)}</span>
+                )}
               </div>
 
               {/* Name, office, city, specialties */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pt-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
-                  {profile.verified && (
+                  <h1 className="text-2xl font-extrabold text-foreground leading-tight">{profile.fullName}</h1>
+                  {profile.verified && !profile.coverImage && (
                     <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
                       <BadgeCheck className="w-3.5 h-3.5" />موثّق
                     </span>
                   )}
                 </div>
                 {profile.officeName && (
-                  <p className="text-sm text-muted-foreground font-medium mt-1">{profile.officeName}</p>
+                  <p className="text-sm text-muted-foreground font-semibold mt-1">{profile.officeName}</p>
                 )}
                 {profile.city && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5 shrink-0" />{profile.city}
+                  </div>
+                )}
+                {/* Rating summary inline */}
+                {ratingsData && ratingsData.totalCount > 0 && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(ratingsData.avgRating ?? 0) ? "text-amber-400 fill-amber-400" : "text-border"}`} />
+                    ))}
+                    <span className="text-xs font-bold text-foreground">{(ratingsData.avgRating ?? 0).toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">({ratingsData.totalCount} تقييم)</span>
                   </div>
                 )}
                 {specialties.length > 0 && (
@@ -192,7 +268,7 @@ export default function MarketerProfilePage() {
               </div>
 
               {/* CTA buttons */}
-              <div className="flex gap-2 flex-wrap shrink-0">
+              <div className="flex gap-2 flex-wrap shrink-0 pt-1">
                 {whatsappLink && (
                   <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
                     <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
@@ -240,6 +316,17 @@ export default function MarketerProfilePage() {
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none font-mono">{profile.licenseNumber}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">رقم الترخيص</p>
+                  </div>
+                </div>
+              )}
+              {ratingsData && ratingsData.totalCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-foreground leading-none">{(ratingsData.avgRating ?? 0).toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{ratingsData.totalCount} تقييم</p>
                   </div>
                 </div>
               )}
@@ -372,6 +459,149 @@ export default function MarketerProfilePage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ─── Ratings Section ─────────────────────────────────────── */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+              <Star className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">تقييمات المسوّق</h2>
+              {ratingsData && ratingsData.totalCount > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  متوسط التقييم {(ratingsData.avgRating ?? 0).toFixed(1)} من 5 — بناءً على {ratingsData.totalCount} تقييم
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* Submit rating form */}
+            <div className="bg-card rounded-2xl border border-border/60 p-6 shadow-sm space-y-5">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <ThumbsUp className="w-4 h-4 text-primary" />
+                {ratingSuccess ? "شكراً على تقييمك!" : "قيّم هذا المسوّق"}
+              </h3>
+
+              {ratingSuccess ? (
+                <div className="py-6 flex flex-col items-center gap-3 text-center">
+                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                    <ThumbsUp className="w-8 h-8 text-green-600" />
+                  </div>
+                  <p className="font-semibold text-foreground">تم إرسال تقييمك بنجاح</p>
+                  <p className="text-sm text-muted-foreground">نقدّر مساهمتك في تحسين تجربة الجميع</p>
+                </div>
+              ) : (
+                <>
+                  {/* Star picker */}
+                  <div>
+                    <p className="text-sm font-semibold text-foreground mb-2">التقييم</p>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button
+                          key={n}
+                          onClick={() => setRatingValue(n)}
+                          onMouseEnter={() => setRatingHover(n)}
+                          onMouseLeave={() => setRatingHover(0)}
+                          className="transition-transform hover:scale-110"
+                          title={`${n} نجوم`}
+                        >
+                          <Star
+                            className={`w-8 h-8 transition-colors ${
+                              n <= (ratingHover || ratingValue)
+                                ? "text-amber-400 fill-amber-400"
+                                : "text-border"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {ratingValue > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {["", "ضعيف", "مقبول", "جيد", "جيد جداً", "ممتاز"][ratingValue]}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Name (if not logged in) */}
+                  {!user && (
+                    <div>
+                      <label className="text-sm font-semibold text-foreground block mb-1.5">اسمك (اختياري)</label>
+                      <input
+                        type="text"
+                        placeholder="زائر مجهول"
+                        value={ratingName}
+                        onChange={e => setRatingName(e.target.value)}
+                        className="w-full border border-input rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                    </div>
+                  )}
+
+                  {/* Comment */}
+                  <div>
+                    <label className="text-sm font-semibold text-foreground block mb-1.5">تعليقك (اختياري)</label>
+                    <textarea
+                      placeholder="اكتب تعليقاً مختصراً عن تجربتك مع هذا المسوّق..."
+                      value={ratingComment}
+                      onChange={e => setRatingComment(e.target.value)}
+                      rows={3}
+                      className="w-full border border-input rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+
+                  <button
+                    onClick={submitRating}
+                    disabled={!ratingValue || ratingSubmitting}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      background: ratingValue ? "linear-gradient(135deg, #0F7BA0, #0a5f7e)" : undefined,
+                      color: ratingValue ? "white" : undefined,
+                      border: ratingValue ? "none" : "1px solid #e5e7eb",
+                    }}
+                  >
+                    <Send className="w-4 h-4" />
+                    {ratingSubmitting ? "جارٍ الإرسال…" : "إرسال التقييم"}
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Ratings list */}
+            <div className="space-y-4">
+              {!ratingsData || ratingsData.ratings.length === 0 ? (
+                <div className="bg-card rounded-2xl border border-border border-dashed p-8 text-center">
+                  <Star className="w-10 h-10 text-border mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">لا توجد تقييمات بعد — كن أول من يقيّم هذا المسوّق</p>
+                </div>
+              ) : (
+                ratingsData.ratings.map(r => (
+                  <div key={r.id} className="bg-card rounded-2xl border border-border/60 p-5 shadow-sm">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
+                          {(r.reviewerName ?? "ز").charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{r.reviewerName ?? "زائر"}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString("ar-SA")}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`w-4 h-4 ${i < r.rating ? "text-amber-400 fill-amber-400" : "text-border"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    {r.comment && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">{r.comment}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

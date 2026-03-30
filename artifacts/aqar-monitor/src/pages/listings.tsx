@@ -134,7 +134,7 @@ export default function Listings() {
           className="relative rounded-[2rem] overflow-hidden"
           style={{
             background: "linear-gradient(135deg, #060e1b 0%, #0F1C3F 45%, #0a2a4a 100%)",
-            boxShadow: "0 20px 60px rgba(6,14,27,0.5), 0 4px 20px rgba(6,14,27,0.3)",
+            boxShadow: "0 4px 24px rgba(6,14,27,0.18)",
           }}
         >
           {/* Decorative grid */}
@@ -178,39 +178,37 @@ export default function Listings() {
                 </div>
               </div>
 
-              {/* CTA Button — distinctive golden */}
-              {isAuthenticated && (
-                <Link href="/listings/new" className="shrink-0">
-                  <button
-                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 whitespace-nowrap"
-                    style={{
-                      background: "rgba(245,158,11,0.13)",
-                      border: "1.5px solid rgba(245,158,11,0.55)",
-                      boxShadow: "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
-                      backdropFilter: "blur(8px)",
-                    }}
-                    onMouseEnter={e => {
-                      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 32px rgba(245,158,11,0.5), 0 0 0 1px rgba(245,158,11,0.45)";
-                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.20)";
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)";
-                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.13)";
-                    }}
-                  >
-                    <PlusCircle className="w-4.5 h-4.5 flex-shrink-0"
-                      style={{ color: "#f59e0b", filter: "drop-shadow(0 0 5px rgba(245,158,11,0.7))" }} />
-                    <span style={{
-                      background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }}>
-                      نشر إعلان عقاري
-                    </span>
-                  </button>
-                </Link>
-              )}
+              {/* CTA Button — distinctive golden — always visible */}
+              <Link href={isAuthenticated ? "/listings/new" : "/login"} className="shrink-0">
+                <button
+                  className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 whitespace-nowrap"
+                  style={{
+                    background: "rgba(245,158,11,0.13)",
+                    border: "1.5px solid rgba(245,158,11,0.55)",
+                    boxShadow: "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 32px rgba(245,158,11,0.5), 0 0 0 1px rgba(245,158,11,0.45)";
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.20)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 22px rgba(245,158,11,0.28), inset 0 1px 0 rgba(255,255,255,0.07)";
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.13)";
+                  }}
+                >
+                  <PlusCircle className="w-4 h-4 flex-shrink-0"
+                    style={{ color: "#f59e0b", filter: "drop-shadow(0 0 5px rgba(245,158,11,0.7))" }} />
+                  <span style={{
+                    background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}>
+                    نشر إعلان عقاري
+                  </span>
+                </button>
+              </Link>
             </div>
 
             {/* Feature chips row */}

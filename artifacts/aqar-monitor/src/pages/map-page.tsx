@@ -214,34 +214,35 @@ export default function MapPage() {
       </div>
 
       {/* Filter panel — always visible */}
-      <div className="bg-white border-b border-border shadow-sm">
-        <div className="px-4 py-2 flex items-center gap-2 border-b border-border/50 bg-muted/30">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-semibold text-foreground">أدوات الفلترة</span>
+      <div className="border-b border-border shadow-sm" style={{ background: "#f8fafc" }}>
+        {/* Filter bar header */}
+        <div className="px-4 py-2.5 flex items-center gap-3 border-b border-border/60" style={{ background: "#eef2f7" }}>
+          <SlidersHorizontal className="w-4 h-4 text-primary flex-shrink-0" />
+          <span className="text-sm font-bold text-foreground">فلاتر البحث</span>
           {hasFilters && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20">
-              {[region, city, propertyType, listingType, minPrice, maxPrice].filter(Boolean).length} فلتر نشط
-            </Badge>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary text-white">
+              {[region, city, propertyType, listingType, minPrice, maxPrice].filter(Boolean).length} نشط
+            </span>
           )}
           <div className="flex-1" />
           {hasFilters && (
             <button
               onClick={clearFilters}
-              className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1 transition-colors bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
               مسح الكل
             </button>
           )}
         </div>
-        <form onSubmit={handleSearch} className="px-4 py-3 flex flex-wrap gap-2 items-end">
+        <form onSubmit={handleSearch} className="px-4 py-3 flex flex-wrap gap-3 items-end">
           {/* المنطقة */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">المنطقة</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">المنطقة</label>
             <select
               value={region}
               onChange={e => { setRegion(e.target.value); setCity(""); }}
-              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-medium text-foreground"
             >
               <option value="">كل المناطق</option>
               {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
@@ -249,26 +250,26 @@ export default function MapPage() {
           </div>
 
           {/* المحافظة */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">المحافظة</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">المحافظة</label>
             <select
               value={city}
               onChange={e => setCity(e.target.value)}
               disabled={!region}
-              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-40"
+              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed font-medium text-foreground"
             >
-              <option value="">{region ? "كل المحافظات" : "— اختر منطقة"}</option>
+              <option value="">{region ? "كل المحافظات" : "اختر منطقة أولاً"}</option>
               {getMuhafazat(region).map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
 
           {/* نوع العقار */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">نوع العقار</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">نوع العقار</label>
             <select
               value={propertyType}
               onChange={e => setPropertyType(e.target.value)}
-              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-medium text-foreground"
             >
               <option value="">كل الأنواع</option>
               {PROPERTY_TYPE_GROUPS.map(g => (
@@ -280,12 +281,12 @@ export default function MapPage() {
           </div>
 
           {/* نوع الإعلان */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">نوع الإعلان</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">نوع الإعلان</label>
             <select
               value={listingType}
               onChange={e => setListingType(e.target.value)}
-              className="border border-input bg-background rounded-lg px-2.5 py-1.5 text-sm h-8 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="border-2 border-border bg-white rounded-lg px-3 py-1.5 text-sm h-9 min-w-[120px] focus:outline-none focus:border-primary font-medium text-foreground"
             >
               <option value="">الكل</option>
               {LISTING_TYPE_GROUPS.map(g => (
@@ -297,26 +298,26 @@ export default function MapPage() {
           </div>
 
           {/* نطاق السعر */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">السعر (من)</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">من (ر.س)</label>
             <Input
               type="number" placeholder="0" value={minPrice}
               onChange={e => setMinPrice(e.target.value)}
-              className="h-8 w-24 text-sm"
+              className="h-9 w-28 text-sm border-2 font-medium"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-muted-foreground font-medium">السعر (إلى)</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-foreground">إلى (ر.س)</label>
             <Input
               type="number" placeholder="بلا حد" value={maxPrice}
               onChange={e => setMaxPrice(e.target.value)}
-              className="h-8 w-24 text-sm"
+              className="h-9 w-28 text-sm border-2 font-medium"
             />
           </div>
 
-          <Button type="submit" size="sm" className="h-8 gap-1.5 self-end text-xs px-4">
-            <Search className="w-3 h-3" />
-            تطبيق
+          <Button type="submit" size="sm" className="h-9 gap-2 self-end text-sm px-5 font-bold">
+            <Search className="w-3.5 h-3.5" />
+            بحث
           </Button>
         </form>
       </div>

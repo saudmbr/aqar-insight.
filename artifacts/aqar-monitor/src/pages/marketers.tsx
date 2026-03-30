@@ -157,11 +157,11 @@ export default function Marketers() {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/90 px-3 py-1 rounded-full text-xs font-semibold mb-4">
               <Users className="w-3.5 h-3.5" />
-              دليل المسوّقين المحترفين
+              موثّقون ومعتمدون
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">دليل المسوّقين العقاريين</h1>
             <p className="text-white/75 mt-2 text-base max-w-2xl">
-              تصفح كوكبة من أفضل المسوّقين العقاريين المحترفين، واطّلع على كتالوج عقاراتهم
+              اعثر على المسوّق العقاري المناسب لك — قارن الخبرات، اطّلع على الإعلانات، وتواصل مباشرةً بضغطة واحدة
             </p>
           </div>
         </div>

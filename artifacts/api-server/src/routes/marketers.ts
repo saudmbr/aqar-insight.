@@ -1,7 +1,19 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { eq, desc, sql, and } from "drizzle-orm";
+import { eq, desc, sql, and, avg, count } from "drizzle-orm";
 import { db, marketerProfilesTable, usersTable, listingsTable } from "@workspace/db";
+import { pgTable, serial, integer, text, timestamp, unique } from "drizzle-orm/pg-core";
+
+// Ratings table (inline — no drizzle schema file)
+const marketerRatingsTable = pgTable("marketer_ratings", {
+  id: serial("id").primaryKey(),
+  marketerId: integer("marketer_id").notNull(),
+  userId: integer("user_id"),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  reviewerName: text("reviewer_name"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => [unique().on(t.marketerId, t.userId)]);
 
 const marketersRouter = Router();
 
@@ -243,6 +255,70 @@ marketersRouter.delete("/:id", async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id));
   await db.delete(marketerProfilesTable).where(eq(marketerProfilesTable.id, id));
   res.json({ success: true });
+});
+
+// ─── Public: get ratings for a marketer ───────────────────────────────────────
+marketersRouter.get("/:id/ratings", async (req: Request, res: Response) => {
+  const id = parseInt(String(req.params.id));
+  if (isNaN(id)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
+
+  const rows = await db
+    .select()
+    .from(marketerRatingsTable)
+    .where(eq(marketerRatingsTable.marketerId, id))
+    .orderBy(desc(marketerRatingsTable.createdAt));
+
+  const stats = await db
+    .select({
+      avgRating: avg(marketerRatingsTable.rating),
+      totalCount: count(marketerRatingsTable.id),
+    })
+    .from(marketerRatingsTable)
+    .where(eq(marketerRatingsTable.marketerId, id));
+
+  res.json({
+    ratings: rows,
+    avgRating: stats[0]?.avgRating ? parseFloat(String(stats[0].avgRating)) : null,
+    totalCount: Number(stats[0]?.totalCount ?? 0),
+  });
+});
+
+// ─── Auth: submit a rating for a marketer ─────────────────────────────────────
+marketersRouter.post("/:id/ratings", async (req: Request, res: Response) => {
+  const marketerId = parseInt(String(req.params.id));
+  if (isNaN(marketerId)) { res.status(400).json({ message: "معرّف غير صحيح" }); return; }
+
+  const { rating, comment, reviewerName } = req.body as { rating: number; comment?: string; reviewerName?: string };
+  if (!rating || rating < 1 || rating > 5) {
+    res.status(400).json({ message: "التقييم يجب أن يكون بين 1 و5" }); return;
+  }
+
+  const userId = req.session.userId ?? null;
+
+  try {
+    const [row] = await db
+      .insert(marketerRatingsTable)
+      .values({
+        marketerId,
+        userId,
+        rating: Number(rating),
+        comment: comment ? String(comment).trim() : null,
+        reviewerName: reviewerName ? String(reviewerName).trim() : null,
+      })
+      .onConflictDoUpdate({
+        target: [marketerRatingsTable.marketerId, marketerRatingsTable.userId],
+        set: {
+          rating: Number(rating),
+          comment: comment ? String(comment).trim() : null,
+          reviewerName: reviewerName ? String(reviewerName).trim() : null,
+        },
+      })
+      .returning();
+
+    res.json(row);
+  } catch {
+    res.status(500).json({ message: "فشل حفظ التقييم" });
+  }
 });
 
 export default marketersRouter;
