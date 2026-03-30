@@ -21,7 +21,8 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: Colors.border,
           elevation: 0,
-          height: isWeb ? 84 : 60,
+          height: isWeb ? 84 : 62,
+          paddingBottom: isWeb ? 16 : 6,
         },
         tabBarBackground: () =>
           isIOS ? (
@@ -29,42 +30,59 @@ export default function TabLayout() {
           ) : (
             <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.white }]} />
           ),
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginBottom: isIOS ? 0 : 4 },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'الرئيسية',
-          tabBarIcon: ({ color, size }) => <Feather name="home" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="home" size={focused ? 23 : 21} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="listings"
         options={{
           title: 'العقارات',
-          tabBarIcon: ({ color }) => <Feather name="list" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="grid" size={focused ? 23 : 21} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="map"
+        name="discover"
         options={{
-          title: 'الخريطة',
-          tabBarIcon: ({ color }) => <Feather name="map" size={22} color={color} />,
+          title: 'اكتشف',
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="compass" size={focused ? 23 : 21} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
           title: 'المفضلة',
-          tabBarIcon: ({ color }) => <Feather name="heart" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="heart" size={focused ? 23 : 21} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'حسابي',
-          tabBarIcon: ({ color }) => <Feather name="user" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="user" size={focused ? 23 : 21} color={color} />
+          ),
+        }}
+      />
+      {/* Keep map accessible as hidden tab */}
+      <Tabs.Screen
+        name="map"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

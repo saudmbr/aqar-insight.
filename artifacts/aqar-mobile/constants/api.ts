@@ -10,10 +10,29 @@ export const API_BASE = DOMAIN
 export const endpoints = {
   listings: `${API_BASE}/api/listings`,
   listing: (id: number) => `${API_BASE}/api/listings/${id}`,
+  listingSimilar: (id: number) => `${API_BASE}/api/listings/${id}/similar`,
+  mapPins: `${API_BASE}/api/listings/map-pins`,
   login: `${API_BASE}/api/auth/login`,
-  register: `${API_BASE}/api/auth/register`,
+  register: `${API_BASE}/api/auth/signup`,
   logout: `${API_BASE}/api/auth/logout`,
-  user: `${API_BASE}/api/user`,
+  me: `${API_BASE}/api/auth/me`,
+  profile: `${API_BASE}/api/auth/profile`,
+  marketers: `${API_BASE}/api/marketers`,
+  marketer: (id: number) => `${API_BASE}/api/marketers/${id}`,
+  marketerListings: (id: number) => `${API_BASE}/api/marketers/${id}/listings`,
+  services: `${API_BASE}/api/service-providers`,
+  service: (id: number) => `${API_BASE}/api/service-providers/${id}`,
+  requests: `${API_BASE}/api/customer-requests`,
+  request: (id: number) => `${API_BASE}/api/customer-requests/${id}`,
+  myRequests: `${API_BASE}/api/customer-requests/my/requests`,
+  myListings: `${API_BASE}/api/listings/my/listings`,
+  filterOptions: `${API_BASE}/api/listings/meta/options`,
+  analyticsInsights: `${API_BASE}/api/analytics/listings-insights`,
+  analyticsTrends: `${API_BASE}/api/analytics/listings-trends`,
+  platformRating: `${API_BASE}/api/platform-rating`,
+  favorites: `${API_BASE}/api/favorites`,
+  toggleFavorite: (id: number) => `${API_BASE}/api/favorites/${id}/toggle`,
+  favoriteStatus: (id: number) => `${API_BASE}/api/favorites/${id}/status`,
 };
 
 export interface Listing {
@@ -21,14 +40,16 @@ export interface Listing {
   title: string;
   description?: string;
   price: number;
-  listingType: 'sale' | 'rent';
+  listingType: 'sale' | 'rent' | string;
   propertyType: string;
   region?: string;
   city?: string;
+  markaz?: string;
   district?: string;
   areaSqm?: number;
   bedrooms?: number;
   bathrooms?: number;
+  floors?: number;
   images?: string[] | null;
   sellerName?: string;
   marketerName?: string;
@@ -39,15 +60,101 @@ export interface Listing {
   featured?: boolean;
   urgent?: boolean;
   verified?: boolean;
+  status?: string;
+  pricePerSqm?: number;
 }
 
 export interface User {
   id: number;
   username: string;
-  email: string;
+  email?: string;
   fullName?: string;
   role: string;
   phone?: string;
+}
+
+export interface Marketer {
+  id: number;
+  userId?: number;
+  fullName?: string;
+  username?: string;
+  officeName?: string;
+  bio?: string;
+  city?: string;
+  servedAreas?: string[];
+  specialties?: string[];
+  yearsExperience?: number;
+  photo?: string;
+  coverImage?: string;
+  whatsapp?: string;
+  phone?: string;
+  verified?: boolean;
+  activeListingsCount?: number;
+  createdAt?: string;
+}
+
+export interface ServiceProvider {
+  id: number;
+  businessName: string;
+  category: string;
+  city?: string;
+  description?: string;
+  startingPrice?: number;
+  portfolioImages?: string[] | null;
+  coverImage?: string;
+  profileImage?: string;
+  verified?: boolean;
+  ratingAvg?: number;
+  ratingCount?: number;
+  createdAt?: string;
+  userId?: number;
+  websiteUrl?: string;
+}
+
+export interface CustomerRequest {
+  id: number;
+  title: string;
+  description?: string;
+  requestType: 'property' | 'service' | 'marketer' | string;
+  city?: string;
+  region?: string;
+  district?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  contactPhone?: string;
+  contactWhatsapp?: string;
+  posterName?: string;
+  status: 'open' | 'closed' | string;
+  createdAt: string;
+  images?: string[] | null;
+  userId?: number;
+}
+
+export interface AnalyticsKpis {
+  totalListings: number;
+  avgPrice: number;
+  medianPrice: number;
+  avgPricePerSqm: number;
+  saleCount: number;
+  rentCount: number;
+  investCount?: number;
+  newLast7Days: number;
+  newLast30Days: number;
+  turnoverRate: number;
+  areaDataRate?: number;
+  maxPrice?: number;
+  minPrice?: number;
+}
+
+export interface AnalyticsInsights {
+  kpis: AnalyticsKpis;
+  byRegion?: Array<{ region?: string; name?: string; count: number; avgPrice: number }>;
+  byCity?: Array<{ city?: string; name?: string; count: number; avgPrice: number }>;
+  byPropertyType?: Array<{ propertyType: string; count: number; avgPrice: number; percentage?: number }>;
+  byListingType?: Array<{ listingType?: string; name?: string; count: number }>;
+  smartInsights?: string[];
+  marketScore?: { score: number; label: string; components: Record<string, number>; explanation?: string };
+  supplyDemand?: { activityRatio: number; marketBalance: number; marketBalanceLabel: string };
 }
 
 export interface ListingsApiResponse {
@@ -64,16 +171,46 @@ export interface ListingsResponse {
   totalPages: number;
 }
 
+export interface MapPin {
+  id: number;
+  latitude: number;
+  longitude: number;
+  price: number;
+  listingType: string;
+}
+
 export const listingTypeLabel: Record<string, string> = {
   sale: 'للبيع',
   sell: 'للبيع',
   rent: 'للإيجار',
+  installment: 'تقسيط',
+  investment: 'استثمار',
+  auction: 'مزاد',
 };
 
 export const listingTypeColor: Record<string, string> = {
   sale: '#0F7BA0',
   sell: '#0F7BA0',
   rent: '#C9A84C',
+};
+
+export const REQUEST_TYPE_LABELS: Record<string, string> = {
+  property: 'عقار',
+  service: 'خدمة',
+  marketer: 'مسوّق',
+};
+
+export const SERVICE_CATEGORY_ICONS: Record<string, string> = {
+  construction: '🏗️',
+  interior_design: '🛋️',
+  maintenance: '🔧',
+  property_management: '🏢',
+  landscaping: '🌿',
+  electrical: '⚡',
+  plumbing: '🚿',
+  painting: '🎨',
+  cleaning: '🧹',
+  security: '🔒',
 };
 
 export function formatPrice(price: number): string {
@@ -86,6 +223,12 @@ export function formatPrice(price: number): string {
     return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}ك`;
   }
   return price.toLocaleString('ar-SA');
+}
+
+export function formatNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م`;
+  if (n >= 1000) return `${(n / 1000).toFixed(0)}ك`;
+  return n.toLocaleString();
 }
 
 export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
@@ -110,3 +253,14 @@ export async function fetchListings(params: URLSearchParams): Promise<ListingsRe
     totalPages: Math.ceil((raw.total ?? 0) / (raw.pageSize ?? 10)),
   };
 }
+
+export const SAUDI_REGIONS = [
+  'الرياض', 'مكة المكرمة', 'المدينة المنورة', 'القصيم',
+  'المنطقة الشرقية', 'عسير', 'تبوك', 'حائل', 'الحدود الشمالية',
+  'جازان', 'نجران', 'الباحة', 'الجوف',
+];
+
+export const PROPERTY_TYPES = [
+  'شقة', 'فيلا', 'أرض', 'دور', 'مبنى', 'استراحة',
+  'مزرعة', 'محل تجاري', 'مكتب', 'مستودع',
+];

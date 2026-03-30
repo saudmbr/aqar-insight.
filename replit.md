@@ -119,19 +119,27 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 
 **Structure:**
 - `app/_layout.tsx` — Root layout: QueryClient, AuthProvider, FavoritesProvider, SafeAreaProvider, Inter fonts
-- `app/(tabs)/_layout.tsx` — 5-tab bar (Tabs from expo-router): الرئيسية / العقارات / الخريطة / المفضلة / حسابي
-- `app/(tabs)/index.tsx` — Home: navy hero header, search bar, type filter pills, stats row, listing grid
-- `app/(tabs)/listings.tsx` — Listings browser: search + type/propertyType filters, paginated grid
-- `app/(tabs)/map.tsx` — Map: region picker (5 cities), horizontal listing cards panel
+- `app/(tabs)/_layout.tsx` — 5-tab bar (Tabs from expo-router): الرئيسية / العقارات / اكتشف / المفضلة / حسابي (map is hidden tab)
+- `app/(tabs)/index.tsx` — Home: hero header, search, market score badge, KPI strip, 8-item quick actions grid, listings, smart insights, CTA banner
+- `app/(tabs)/listings.tsx` — Full listings: search + filter modal (propertyType, region, city, listingType), active chip display, paginated grid
+- `app/(tabs)/map.tsx` — Map: region picker (5 cities), horizontal listing cards panel (hidden from tabs, accessible from Home)
 - `app/(tabs)/favorites.tsx` — Saved listings (local AsyncStorage, grid layout)
-- `app/(tabs)/profile.tsx` — Profile/Auth state, menu items, login/register buttons
+- `app/(tabs)/discover.tsx` — NEW: Hub with Analytics KPIs, market score, smart insights, marketers, services, requests
+- `app/(tabs)/profile.tsx` — Full profile: stats, dashboard, menu linking all features
 - `app/listing/[id].tsx` — Detail: image gallery, price, specs grid, seller name, call/WhatsApp CTAs
 - `app/auth/login.tsx` + `app/auth/register.tsx` — Auth forms with dark navy background
+- `app/marketers/index.tsx` — Marketers directory with search/city filter
+- `app/marketers/[id].tsx` — Marketer profile: bio, specialties, listings grid, call/WhatsApp
+- `app/services/index.tsx` — Service providers with category pills filter
+- `app/services/[id].tsx` — Service provider profile: description, portfolio, contact
+- `app/requests/index.tsx` — Customer requests: type tabs, call/WhatsApp actions, FAB
+- `app/requests/new.tsx` — Submit new request form (type, title, budget, contact)
+- `app/analytics/index.tsx` — Analytics: 4 tabs (overview, types, regions, smart insights)
 - `context/AuthContext.tsx` — Login/logout/register + AsyncStorage persistence
 - `context/FavoritesContext.tsx` — Local favorites with haptic feedback
 - `components/ListingCard.tsx` — Grid + horizontal variants (grid cards are `(width-48)/2` wide)
 - `constants/colors.ts` — Brand colors (navy #0B1628, teal #0F7BA0, gold #C9A84C)
-- `constants/api.ts` — API_BASE, endpoints, Listing interface, `fetchListings()` helper
+- `constants/api.ts` — API_BASE, all endpoints, all interfaces (Listing, Marketer, ServiceProvider, CustomerRequest, AnalyticsInsights), helper functions
 
 **API Integration Notes:**
 - API response: `{ data: [...], total, page, pageSize }` — NOT `{ listings: [...] }`

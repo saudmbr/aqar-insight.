@@ -44,6 +44,13 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="listing/[id]" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="auth" options={{ headerShown: false, presentation: 'modal' }} />
+              <Stack.Screen name="marketers/index" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="marketers/[id]" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="services/index" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="services/[id]" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="requests/index" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="requests/new" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="analytics/index" options={{ headerShown: false, presentation: 'card' }} />
             </Stack>
           </FavoritesProvider>
         </AuthProvider>
