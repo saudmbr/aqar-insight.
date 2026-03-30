@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/layout/layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { SAR } from "@/components/sar-amount";
 import { LISTING_TYPE_SHORT_MAP } from "@/lib/listing-types";
 import { motion } from "framer-motion";
 import {
@@ -392,11 +393,11 @@ export default function AdminReports() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">متوسط السعر</div>
-                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-primary">{formatCurrency(Number(data?.listings.priceStats?.avg_price ?? 0))}</div>}
+                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-primary"><SAR value={Number(data?.listings.priceStats?.avg_price ?? 0)} /></div>}
               </div>
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">متوسط سعر المتر</div>
-                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground">{formatCurrency(Number(data?.listings.priceStats?.avg_psm ?? 0))}</div>}
+                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground"><SAR value={Number(data?.listings.priceStats?.avg_psm ?? 0)} perSqm /></div>}
               </div>
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">موثّق (Verified)</div>
@@ -505,16 +506,16 @@ export default function AdminReports() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">متوسط السعر الكلي</div>
-                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-primary">{formatCurrency(Number(data?.listings.priceStats?.avg_price ?? 0))}</div>}
+                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-primary"><SAR value={Number(data?.listings.priceStats?.avg_price ?? 0)} /></div>}
                 <div className="text-[11px] text-muted-foreground mt-1">على الإعلانات النشطة</div>
               </div>
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">متوسط سعر المتر</div>
-                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground">{formatCurrency(Number(data?.listings.priceStats?.avg_psm ?? 0))}</div>}
+                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground"><SAR value={Number(data?.listings.priceStats?.avg_psm ?? 0)} perSqm /></div>}
               </div>
               <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-sm">
                 <div className="text-xs font-bold text-muted-foreground mb-1">أعلى سعر مسجّل</div>
-                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground">{formatCurrency(Number(data?.listings.priceStats?.max_price ?? 0))}</div>}
+                {isLoading ? <Skeleton className="h-7 w-32" /> : <div className="text-xl font-extrabold text-foreground"><SAR value={Number(data?.listings.priceStats?.max_price ?? 0)} /></div>}
               </div>
             </div>
             <SectionCard title="أعلى المدن سعراً لمتر" sub="مبني على الإعلانات النشطة فقط">

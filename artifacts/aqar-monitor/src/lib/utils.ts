@@ -6,10 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number | undefined | null): string {
-  if (value === undefined || value === null) return "0 ر.س";
+  if (value === undefined || value === null) return "0 ريال";
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
-  }).format(value) + " ر.س";
+  }).format(value) + " ريال";
 }
 
 export function formatNumber(value: number | undefined | null): string {

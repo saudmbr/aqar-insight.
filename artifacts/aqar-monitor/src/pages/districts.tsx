@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/utils";
+import { SAR } from "@/components/sar-amount";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,11 +101,11 @@ function BarTooltip({ active, payload, label, avgPsm }: {
       <div className="space-y-2">
         <div className="flex justify-between gap-6 items-center">
           <span className="text-muted-foreground text-xs">سعر المتر</span>
-          <span className="font-black text-sm" style={{ color: "#0F7BA0" }}>{formatCurrency(d.avgPricePerSqm)} / م²</span>
+          <span className="font-black text-sm" style={{ color: "#0F7BA0" }}><SAR value={d.avgPricePerSqm} perSqm /></span>
         </div>
         <div className="flex justify-between gap-6 items-center">
           <span className="text-muted-foreground text-xs">متوسط السعر</span>
-          <span className="font-bold text-foreground text-xs">{d.avgPrice > 0 ? formatCurrency(d.avgPrice) : "—"}</span>
+          <span className="font-bold text-foreground text-xs">{d.avgPrice > 0 ? <SAR value={d.avgPrice} /> : "—"}</span>
         </div>
         <div className="flex justify-between gap-6 items-center">
           <span className="text-muted-foreground text-xs">عدد الإعلانات</span>
@@ -370,8 +371,8 @@ function DistrictHeatMap({ districts, overallAvgPsm }: { districts: DistrictMapD
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
               {[
-                { label: "متوسط السعر",    val: formatCurrency(selected.avgPrice),       accent: true },
-                { label: "سعر المتر",       val: `${formatCurrency(selected.avgPricePerSqm)} / م²`, accent: false },
+                { label: "متوسط السعر",    val: <SAR value={selected.avgPrice} />,             accent: true },
+                { label: "سعر المتر",       val: <><SAR value={selected.avgPricePerSqm} /> / م²</>, accent: false },
                 { label: "الإعلانات",       val: `${selected.count} إعلان`,              accent: false },
                 {
                   label: "مقارنة بالسوق",
@@ -630,7 +631,7 @@ function DistrictComparison({ districts, avgPsm }: { districts: InsightsDistrict
                 </div>
                 <div>
                   <div className="text-2xl font-black text-foreground leading-none">
-                    {d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}
+                    {d.avgPricePerSqm > 0 ? <SAR value={d.avgPricePerSqm} perSqm /> : "—"}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">ريال / م²</div>
                 </div>
@@ -904,7 +905,7 @@ export default function Districts() {
               <div className="mt-5 flex items-center gap-2.5 text-xs bg-[#FFFBEB] rounded-xl px-4 py-2.5 border border-[#FDE68A] w-fit">
                 <span className="w-5 h-0.5 bg-amber-400 shrink-0 rounded" style={{ borderTop: "2px dashed #F59E0B" }} />
                 <span className="text-amber-700 font-semibold">متوسط سعر السوق:</span>
-                <span className="font-black text-amber-800">{formatCurrency(avgPsm)} / م²</span>
+                <span className="font-black text-amber-800"><SAR value={avgPsm} perSqm /></span>
               </div>
             )}
 
@@ -1038,10 +1039,10 @@ export default function Districts() {
                             </span>
                           </td>
                           <td className="px-5 py-4 font-bold text-foreground">
-                            {d.avgPrice > 0 ? formatCurrency(d.avgPrice) : "—"}
+                            {d.avgPrice > 0 ? <SAR value={d.avgPrice} /> : "—"}
                           </td>
                           <td className="px-5 py-4 font-semibold text-muted-foreground text-[13px]">
-                            {d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}
+                            {d.avgPricePerSqm > 0 ? <SAR value={d.avgPricePerSqm} perSqm /> : "—"}
                           </td>
                           <td className="px-5 py-4">
                             <LabelBadge label={lbl} small />

@@ -230,7 +230,7 @@ function ListingCard({ listing }: { listing: Listing }) {
           <div className="mt-auto pt-3 border-t border-border/50">
             {/* السعر + المساحة في صف واحد */}
             <div className="flex items-center justify-between gap-1 mb-1.5">
-              <span className="text-[15px] font-extrabold text-foreground min-w-0 truncate">{formatCurrency(listing.price)}</span>
+              <span className="text-[15px] font-extrabold text-foreground min-w-0 truncate"><SAR value={listing.price} /></span>
               {listing.areaSqm ? (
                 <span className="flex-shrink-0 bg-muted rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground whitespace-nowrap">
                   {formatNumber(listing.areaSqm)} م²
@@ -543,8 +543,8 @@ export default function Home() {
                       <div key={r.region} className="flex items-center justify-between py-1.5"
                         style={i > 0 ? { borderTop: "1px solid rgba(255,255,255,0.07)" } : {}}>
                         <span className="text-[11px] text-white/80 font-medium truncate max-w-[120px]">{r.region}</span>
-                        <span className="text-[12px] font-black text-white tabular-nums">
-                          {formatCurrency(r.avgPricePerSqm ?? 0)}
+                        <span className="text-[12px] font-black text-white tabular-nums" style={{ "--riyal-filter": "invert(1)" } as React.CSSProperties}>
+                          <SAR value={r.avgPricePerSqm ?? 0} perSqm />
                         </span>
                       </div>
                     ))
@@ -777,7 +777,7 @@ export default function Home() {
                 >
                   {[
                     { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2, color: "#0F7BA0" },
-                    { label: "متوسط سعر المتر", value: formatCurrency(kpis?.avgPricePerSqm), icon: Banknote, color: "#10b981" },
+                    { label: "متوسط سعر المتر", value: <SAR value={kpis?.avgPricePerSqm} perSqm imgClassName="invert" />, icon: Banknote, color: "#10b981" },
                     { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity, color: "#8b5cf6" },
                   ].map((s, i) => (
                     <div key={s.label} className="flex items-center gap-3 group/stat">
@@ -923,7 +923,8 @@ export default function Home() {
             </div>
             <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
               {(latestServices ?? []).slice(0, 8).map(sp => {
-                const imgs = (() => { try { return JSON.parse(sp.portfolioImages ?? "[]") as string[]; } catch { return []; } })();
+                const imgs = (() => { try { return JSON.parse((sp as any).portfolioImages ?? "[]") as string[]; } catch { return []; } })();
+                const heroImg = getImageSrc(imgs[0]) ?? getImageSrc((sp as any).coverImage) ?? getImageSrc((sp as any).profileImage);
                 return (
                   <Link key={sp.id} href={`/services/${sp.id}`}
                     className="shrink-0 w-[240px] rounded-2xl overflow-hidden flex flex-col hover:-translate-y-0.5 transition-transform"
@@ -931,8 +932,8 @@ export default function Home() {
                   >
                     <div className="h-[120px] relative overflow-hidden"
                       style={{ background: "linear-gradient(135deg, #0B1628 0%, #0F3A5C 60%, #0F7BA0 100%)" }}>
-                      {imgs[0]
-                        ? <img src={getImageSrc(imgs[0])} alt={sp.businessName} className="w-full h-full object-cover" />
+                      {heroImg
+                        ? <img src={heroImg} alt={sp.businessName} className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center opacity-30">
                             <Wrench className="w-10 h-10 text-white" />
                           </div>
@@ -1427,8 +1428,8 @@ export default function Home() {
                             <td className="px-5 py-3.5">
                               <span className="inline-flex items-center justify-center bg-primary/10 text-primary text-[12px] font-bold rounded-lg px-2.5 py-0.5">{r.count}</span>
                             </td>
-                            <td className="px-5 py-3.5 font-semibold text-foreground">{formatCurrency(r.avgPrice)}</td>
-                            <td className="px-5 py-3.5 text-muted-foreground">{r.avgPricePerSqm > 0 ? formatCurrency(r.avgPricePerSqm) : "—"}</td>
+                            <td className="px-5 py-3.5 font-semibold text-foreground"><SAR value={r.avgPrice} /></td>
+                            <td className="px-5 py-3.5 text-muted-foreground">{r.avgPricePerSqm > 0 ? <SAR value={r.avgPricePerSqm} perSqm /> : "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1466,7 +1467,7 @@ export default function Home() {
                             <td className="px-5 py-3.5">
                               <span className="inline-flex items-center justify-center bg-accent/10 text-accent-foreground text-[12px] font-bold rounded-lg px-2.5 py-0.5">{d.count}</span>
                             </td>
-                            <td className="px-5 py-3.5 font-semibold text-foreground">{d.avgPricePerSqm > 0 ? formatCurrency(d.avgPricePerSqm) : "—"}</td>
+                            <td className="px-5 py-3.5 font-semibold text-foreground">{d.avgPricePerSqm > 0 ? <SAR value={d.avgPricePerSqm} perSqm /> : "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1547,8 +1548,8 @@ export default function Home() {
                             regionMetric === "count"
                               ? "عدد الإعلانات"
                               : regionMetric === "avgPrice"
-                              ? "متوسط السعر (ر.س)"
-                              : "سعر المتر (ر.س/م²)",
+                              ? "متوسط السعر (ريال)"
+                              : "سعر المتر (ريال/م²)",
                           ]}
                           labelFormatter={(label) => `📍 ${label}`}
                         />

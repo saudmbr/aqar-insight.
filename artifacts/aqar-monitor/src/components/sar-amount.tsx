@@ -27,5 +27,5 @@ export function SAR({ value, className = "", imgClassName = "", perSqm = false }
 
 export function SARStr(value: number | null | undefined): string {
   const n = value ?? 0;
-  return n.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " ر.س";
+  return n.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " ريال";
 }

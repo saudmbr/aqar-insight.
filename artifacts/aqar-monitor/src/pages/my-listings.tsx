@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { getImageSrc } from "@/lib/utils";
+import { SAR } from "@/components/sar-amount";
 import type { Listing } from "@workspace/db";
 import {
   PlusCircle, Building2, Eye, Edit, Trash2, RotateCcw,
@@ -134,7 +135,7 @@ function ListingRow({
               </h3>
             </Link>
             <p className="text-primary font-extrabold text-lg shrink-0">
-              {formatCurrency(listing.price)}
+              <SAR value={listing.price} />
             </p>
           </div>
 

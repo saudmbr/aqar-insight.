@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Search, ChevronRight, ChevronLeft } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { SAR } from "@/components/sar-amount";
 import { LISTING_TYPE_GROUPS, LISTING_TYPE_MAP } from "@/lib/listing-types";
 
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
@@ -228,12 +228,12 @@ export default function Records() {
                               {statusLabel(item.status)}
                             </Badge>
                           </td>
-                          <td className="px-4 py-3 font-medium">{formatCurrency(item.price)}</td>
+                          <td className="px-4 py-3 font-medium"><SAR value={item.price} /></td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {item.areaSqm ? `${item.areaSqm} م²` : "—"}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
-                            {item.pricePerSqm ? formatCurrency(item.pricePerSqm) : "—"}
+                            {item.pricePerSqm ? <SAR value={item.pricePerSqm} perSqm /> : "—"}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {new Date(item.createdAt).toLocaleDateString("en-GB")}

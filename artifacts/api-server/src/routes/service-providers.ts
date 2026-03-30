@@ -23,6 +23,8 @@ serviceProvidersRouter.get("/", async (req: Request, res: Response) => {
       description: serviceProvidersTable.description,
       startingPrice: serviceProvidersTable.startingPrice,
       portfolioImages: serviceProvidersTable.portfolioImages,
+      coverImage: serviceProvidersTable.coverImage,
+      profileImage: serviceProvidersTable.profileImage,
       verified: serviceProvidersTable.verified,
       ratingAvg: serviceProvidersTable.ratingAvg,
       ratingCount: serviceProvidersTable.ratingCount,

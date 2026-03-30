@@ -249,7 +249,7 @@ export default function AdminAdd() {
                       <div className="flex items-center gap-2 text-sm text-primary font-medium">
                         <span>سعر المتر المربع (محسوب تلقائياً):</span>
                         <span className="font-bold">
-                          {pricePerSqm.toLocaleString("en-US", { maximumFractionDigits: 0 })} ر.س/م²
+                          {pricePerSqm.toLocaleString("en-US", { maximumFractionDigits: 0 })} ريال/م²
                         </span>
                       </div>
                     )}

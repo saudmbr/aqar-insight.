@@ -8,7 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ListingCard, type ListingCardData } from "@/components/listing-card";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { getImageSrc } from "@/lib/utils";
+import { SAR } from "@/components/sar-amount";
 import {
   Building2, Heart, FileText, PlusCircle, Edit, Trash2,
   MapPin, Eye, LayoutDashboard, CheckCircle, Archive, Ban,
@@ -241,7 +242,7 @@ export default function Dashboard() {
                                 {l.city}{l.district ? ` · ${l.district}` : ""}
                               </div>
                               <div className="flex flex-wrap items-center justify-between gap-3">
-                                <p className="text-xl font-extrabold text-foreground">{formatCurrency(l.price)}</p>
+                                <p className="text-xl font-extrabold text-foreground"><SAR value={l.price} /></p>
                                 {/* Action Buttons */}
                                 <div className="flex flex-wrap gap-2">
                                   {/* View */}

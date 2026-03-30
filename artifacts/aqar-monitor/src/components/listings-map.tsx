@@ -54,9 +54,9 @@ const SAUDI_CITIES: Record<string, [number, number]> = {
 };
 
 function formatPrice(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م ر.س`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}ألف ر.س`;
-  return `${n} ر.س`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م ريال`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}ألف ريال`;
+  return `${n} ريال`;
 }
 
 type Props = {
