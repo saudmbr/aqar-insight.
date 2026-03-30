@@ -20,6 +20,11 @@ export const serviceProvidersTable = pgTable("service_providers", {
   // Portfolio images — newline-separated URLs
   portfolioImages: text("portfolio_images"),
 
+  // Profile cover image
+  coverImage: text("cover_image"),
+  // Website URL
+  websiteUrl: text("website_url"),
+
   verified: boolean("verified").default(false),
   ratingAvg: real("rating_avg").default(0),
   ratingCount: integer("rating_count").default(0),

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText } from "lucide-react";
+import { Loader2, Save, Wrench, Contact, Image as ImageIcon, Map, FileText, Globe, Video } from "lucide-react";
 import { ImageUploader } from "@/components/image-uploader";
 import { useAuth } from "@/contexts/auth-context";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
@@ -14,7 +14,7 @@ import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saud
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
   "مطابخ", "مصاعد", "نظافة ومكافحة حشرات", "تصميم داخلي", "تصميم معماري", "تقييم عقاري",
-  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء",
+  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء", "أخرى",
 ];
 
 function FieldGroup({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
@@ -46,8 +46,11 @@ export default function ServiceForm() {
   const [startingPrice, setStartingPrice] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [workingHours, setWorkingHours] = useState("");
   const [portfolioImages, setPortfolioImages] = useState("");
+  const [coverImage, setCoverImage] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
 
   if (!isAuthenticated) {
     navigate("/login");
@@ -68,7 +71,7 @@ export default function ServiceForm() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessName, category, region: region || null, city, district: district || null, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages }),
+        body: JSON.stringify({ businessName, category: category === "أخرى" ? customCategory || "أخرى" : category, region: region || null, city, district: district || null, coveredAreas, description, startingPrice: startingPrice || null, contactPhone, whatsapp, workingHours, portfolioImages, coverImage: coverImage || null, websiteUrl: websiteUrl || null }),
       });
       const data = await res.json() as { id?: number; message?: string };
       if (!res.ok) throw new Error(data.message ?? "حدث خطأ");
@@ -109,10 +112,18 @@ export default function ServiceForm() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <FieldGroup label="التصنيف الرئيسي" required>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none">
+                <select value={category} onChange={e => setCategory(e.target.value)} className="h-12 w-full rounded-xl border border-input bg-background px-4 text-base focus:ring-2 focus:ring-primary/20 outline-none" style={{ color: "#111827" }}>
                   <option value="">اختر التصنيف</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                {category === "أخرى" && (
+                  <Input
+                    placeholder="اكتب نوع نشاطك..."
+                    value={customCategory}
+                    onChange={e => setCustomCategory(e.target.value)}
+                    className="h-12 rounded-xl text-base mt-2"
+                  />
+                )}
               </FieldGroup>
               <FieldGroup label="المنطقة" required>
                 <select
@@ -212,6 +223,12 @@ export default function ServiceForm() {
               <FieldGroup label="رقم الواتساب">
                 <Input type="tel" placeholder="9665XXXXXXXX" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className="h-12 rounded-xl text-left font-mono text-lg tracking-wider" dir="ltr" />
               </FieldGroup>
+              <FieldGroup label="رابط الموقع الإلكتروني">
+                <div className="relative">
+                  <Globe className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                  <Input type="url" placeholder="https://www.example.com" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} className="h-12 rounded-xl text-left font-mono text-sm pr-12" dir="ltr" />
+                </div>
+              </FieldGroup>
             </CardContent>
           </Card>
 
@@ -219,16 +236,28 @@ export default function ServiceForm() {
             <CardHeader className="bg-muted/30 border-b border-border py-5 px-6">
               <CardTitle className="text-lg flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" />
-                معرض الأعمال (الصور)
+                الصور والغلاف
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <ImageUploader
-                value={portfolioImages}
-                onChange={setPortfolioImages}
-                maxImages={8}
-                label="معرض الأعمال"
-              />
+            <CardContent className="p-6 space-y-6">
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-2">صورة الغلاف (خلفية الملف الشخصي)</p>
+                <ImageUploader
+                  value={coverImage}
+                  onChange={v => setCoverImage(v.split("\n")[0] ?? "")}
+                  maxImages={1}
+                  label="صورة الغلاف"
+                />
+              </div>
+              <div className="border-t border-border pt-4">
+                <p className="text-sm font-semibold text-foreground mb-2">معرض الأعمال</p>
+                <ImageUploader
+                  value={portfolioImages}
+                  onChange={setPortfolioImages}
+                  maxImages={8}
+                  label="معرض الأعمال"
+                />
+              </div>
             </CardContent>
           </Card>
         </div>

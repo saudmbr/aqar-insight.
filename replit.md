@@ -82,6 +82,14 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - `objectStorage.ts` `signed_url` destructure cast to typed object.
 - API server achieves **0 TypeScript errors** as of current session.
 
+**Service Providers — extended schema (current session):**
+- `service_providers` table: added `cover_image TEXT` and `website_url TEXT` via psql + Drizzle schema
+- `service-provider-profile.tsx`: LinkedIn-style cover image hero (h-44 absolute icon), website URL link
+- `service-form.tsx`: "أخرى" added to CATEGORIES + custom category input, website URL field, cover image uploader (1 image)
+- `service-provider-dashboard.tsx`: fixed import (SAUDI_REGIONS_LIST not SAUDI_CITIES), websiteUrl field, cover image editor in portfolio tab, fixed ImageUploader usage (value/onChange not onUpload)
+- `marketers.tsx`: region + specialty filter dropdowns with clear button (uses SAUDI_REGIONS_LIST + SPECIALTIES_LIST)
+- `requests.tsx`: contactMethod removed from card display, filters use SAUDI_REGIONS_LIST
+
 **Code Rules:**
 - Legacy hooks (`useGetCities`, `useGetPriceTrends`, `useGetPropertyTypes`, `useGetDistrictComparison`, `useGetYearlyComparison`) are BANNED — they depend on the empty `properties` table. Use direct `fetch()` against analytics endpoints instead.
 - Admin auth: session-based `req.session.isAdmin`; `AdminRoute` component in `protected-route.tsx`.

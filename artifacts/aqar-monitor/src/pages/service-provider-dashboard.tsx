@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -27,8 +27,10 @@ interface ServiceProfile {
   startingPrice?: number | null;
   contactPhone?: string | null;
   whatsapp?: string | null;
+  websiteUrl?: string | null;
   workingHours?: string | null;
   portfolioImages?: string | null;
+  coverImage?: string | null;
   verified?: boolean;
   ratingAvg?: number;
   ratingCount?: number;
@@ -39,7 +41,7 @@ interface ServiceProfile {
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
   "مطابخ", "مصاعد", "نظافة ومكافحة حشرات", "تصميم داخلي", "تصميم معماري", "تقييم عقاري",
-  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء",
+  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء", "أخرى",
 ];
 
 
@@ -299,15 +301,16 @@ export default function ServiceProviderDashboard() {
                     ))}
                   </select>
                 </Field>
-                <Field label="المدينة *">
+                <Field label="المنطقة *">
                   <select
                     value={profile.city ?? ""}
                     onChange={e => setProfile(p => ({ ...p, city: e.target.value }))}
                     className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    style={{ color: "#111827" }}
                   >
-                    <option value="">اختر المدينة</option>
-                    {CITIES.map(c => (
-                      <option key={c} value={c}>{c}</option>
+                    <option value="">اختر المنطقة</option>
+                    {SAUDI_REGIONS_LIST.map(r => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </Field>
@@ -353,6 +356,19 @@ export default function ServiceProviderDashboard() {
                       value={profile.whatsapp ?? ""}
                       onChange={e => setProfile(p => ({ ...p, whatsapp: e.target.value }))}
                       placeholder="966xxxxxxxxx"
+                      className="rounded-xl pr-9"
+                      dir="ltr"
+                    />
+                  </div>
+                </Field>
+                <Field label="الموقع الإلكتروني">
+                  <div className="relative">
+                    <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="url"
+                      value={profile.websiteUrl ?? ""}
+                      onChange={e => setProfile(p => ({ ...p, websiteUrl: e.target.value || null }))}
+                      placeholder="https://www.example.com"
                       className="rounded-xl pr-9"
                       dir="ltr"
                     />
@@ -446,49 +462,52 @@ export default function ServiceProviderDashboard() {
         {/* ── Portfolio tab ────────────────────────────────────────────────────── */}
         {activeTab === "portfolio" && (
           <div className="space-y-4">
-            <Section title="إضافة صورة جديدة">
-              <p className="text-xs text-muted-foreground">أضف صور أعمالك ومشاريعك السابقة لإقناع العملاء.</p>
+            <Section title="صورة الغلاف">
+              <p className="text-xs text-muted-foreground mb-2">تظهر كخلفية لملفك الشخصي في صفحة الخدمة. يُنصح باختيار صورة أفقية عالية الجودة.</p>
+              {profile.coverImage && getImageSrc(profile.coverImage) && (
+                <div className="relative rounded-xl overflow-hidden border border-border mb-3 aspect-[3/1]">
+                  <img src={getImageSrc(profile.coverImage) ?? ""} alt="صورة الغلاف" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setProfile(p => ({ ...p, coverImage: null }))}
+                    className="absolute top-2 left-2 w-7 h-7 rounded-full bg-destructive text-white flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
               <ImageUploader
-                onUpload={(url) => handleAddPortfolioImage(url)}
-                label="رفع صورة عمل"
+                value={profile.coverImage ?? ""}
+                onChange={(v) => setProfile(p => ({ ...p, coverImage: v.split("\n")[0] ?? null }))}
+                maxImages={1}
+                label="صورة الغلاف"
               />
+              <div className="flex justify-end mt-2">
+                <Button onClick={() => void handleSave()} disabled={saving} size="sm" className="rounded-xl gap-2 px-5">
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  حفظ الغلاف
+                </Button>
+              </div>
             </Section>
 
-            <Section title={`صور معرض الأعمال (${portfolioList.length})`}>
-              {portfolioList.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Building2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">لا توجد صور بعد — أضف صور أعمالك لتبرز في دليل الخدمات</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {portfolioList.map((img, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-border aspect-video bg-muted">
-                      <img
-                        src={getImageSrc(img) ?? ""}
-                        alt={`صورة عمل ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => handleRemovePortfolioImage(idx)}
-                        className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-destructive text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                        title="حذف الصورة"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {portfolioList.length > 0 && (
-                <div className="flex justify-end">
-                  <Button onClick={() => void handleSave()} disabled={saving} className="rounded-xl gap-2">
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    حفظ معرض الأعمال
-                  </Button>
-                </div>
-              )}
+            <Section title="إضافة صور الأعمال">
+              <p className="text-xs text-muted-foreground">أضف صور أعمالك ومشاريعك السابقة لإقناع العملاء.</p>
+              <ImageUploader
+                value={portfolioList.join("\n")}
+                onChange={(v) => {
+                  const newUrls = v.split("\n").filter(Boolean);
+                  setPortfolioList(newUrls);
+                }}
+                maxImages={8}
+                label="معرض الأعمال"
+              />
+              <div className="flex justify-end mt-2">
+                <Button onClick={() => void handleSave()} disabled={saving} size="sm" className="rounded-xl gap-2 px-5">
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  حفظ المعرض
+                </Button>
+              </div>
             </Section>
+
           </div>
         )}
       </div>

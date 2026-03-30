@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -115,9 +115,9 @@ export default function Services() {
             </div>
             <div className="relative sm:w-64 shrink-0">
               <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-              <select value={city} onChange={e => setCity(e.target.value)} className="w-full h-14 pr-12 rounded-2xl border border-border/80 bg-muted/30 text-base font-medium appearance-none outline-none focus:ring-2 focus:ring-primary/20">
-                <option value="">جميع المدن</option>
-                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <select value={city} onChange={e => setCity(e.target.value)} className="w-full h-14 pr-12 rounded-2xl border border-border/80 bg-muted/30 text-base font-medium appearance-none outline-none focus:ring-2 focus:ring-primary/20" style={{ color: "#111827" }}>
+                <option value="">جميع المناطق</option>
+                {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <Button type="submit" size="lg" className="h-14 rounded-2xl px-8 font-bold text-base shrink-0 hidden sm:flex">

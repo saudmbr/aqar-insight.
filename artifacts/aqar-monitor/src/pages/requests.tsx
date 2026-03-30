@@ -1,4 +1,4 @@
-import { SAUDI_CITIES as CITIES } from "@/lib/saudi-cities";
+import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -236,9 +236,10 @@ export default function Requests() {
               value={city}
               onChange={e => setCity(e.target.value)}
               className="w-full h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary cursor-pointer"
+              style={{ color: "#111827" }}
             >
-              <option value="">كل المدن</option>
-              {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="">كل المناطق</option>
+              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
         </div>
@@ -366,11 +367,6 @@ export default function Requests() {
                                 <Trash2 className="w-4 h-4" />
                                 حذف
                               </Button>
-                            )}
-                            {r.contactMethod && (
-                              <span className="text-xs text-muted-foreground">
-                                تواصل عبر: <span className="text-foreground font-bold">{r.contactMethod}</span>
-                              </span>
                             )}
                           </div>
                         </div>

@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getImageSrc } from "@/lib/utils";
 import {
   MapPin, Phone, MessageSquare, Wrench, ArrowRight, BadgeCheck,
-  Star, Clock, ChevronLeft, ChevronRight, Building2,
+  Star, Clock, ChevronLeft, ChevronRight, Building2, Globe,
 } from "lucide-react";
 
 interface ServiceProvider {
@@ -23,6 +23,8 @@ interface ServiceProvider {
   whatsapp: string | null;
   workingHours: string | null;
   portfolioImages: string | null;
+  coverImage: string | null;
+  websiteUrl: string | null;
   verified: boolean | null;
   ratingAvg: number | null;
   ratingCount: number | null;
@@ -115,59 +117,85 @@ export default function ServiceProviderProfile() {
           </Link>
         </div>
 
-        {/* Profile hero card — clean side-by-side layout, no banner */}
+        {/* Profile hero card — LinkedIn-style with cover image */}
         <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden">
-          {/* Teal accent strip at top */}
-          <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
-
-          <div className="p-6">
-            {/* Main info row: icon + details + CTAs */}
-            <div className="flex items-center gap-5 flex-wrap">
-              {/* Business icon */}
-              <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-border flex items-center justify-center shrink-0">
-                <Wrench className="w-9 h-9 text-primary" />
-              </div>
-
-              {/* Business name, category, city */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
-                  {provider.verified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                      <BadgeCheck className="w-3.5 h-3.5" />موثّق
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center flex-wrap gap-2 mt-1.5">
-                  <Badge variant="outline" className="rounded-lg text-xs px-2.5 py-1 border-primary/20 text-primary bg-primary/5 font-semibold">
-                    {provider.category}
-                  </Badge>
-                  {provider.city && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="w-3.5 h-3.5 shrink-0" />{provider.city}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* CTA buttons */}
-              <div className="flex gap-2 flex-wrap shrink-0">
-                {whatsappLink && (
-                  <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
-                    <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                      <MessageSquare className="w-4 h-4" />واتساب
-                    </a>
-                  </Button>
-                )}
-                {provider.contactPhone && (
-                  <Button asChild size="sm" variant="outline" className="rounded-xl gap-2">
-                    <a href={`tel:${provider.contactPhone}`}>
-                      <Phone className="w-4 h-4" />اتصال
-                    </a>
-                  </Button>
-                )}
-              </div>
+          {/* Cover image or gradient strip */}
+          {provider.coverImage && getImageSrc(provider.coverImage) ? (
+            <div className="h-44 w-full relative overflow-hidden">
+              <img
+                src={getImageSrc(provider.coverImage) ?? ""}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+              <div className="absolute inset-x-0 bottom-0 h-8" style={{ background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.2))" }} />
+              {provider.verified && (
+                <span className="absolute top-4 right-4 flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-primary text-white shadow-md">
+                  <BadgeCheck className="w-3.5 h-3.5" /> موثّق
+                </span>
+              )}
             </div>
+          ) : (
+            <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #0F1C3F 0%, #0F7BA0 100%)" }} />
+          )}
+
+          <div className="relative px-6 pb-6">
+            {/* Business icon — absolute to float over cover seam */}
+            <div
+              className="absolute rounded-2xl bg-primary/10 border-4 border-white shadow-lg flex items-center justify-center"
+              style={{ width: 80, height: 80, top: provider.coverImage ? -40 : 24, right: 24 }}
+            >
+              <Wrench className="w-9 h-9 text-primary" />
+            </div>
+
+            {/* Content area — padded to clear icon */}
+            <div className={provider.coverImage ? "pt-10" : "pt-28"}>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                {/* Business name, category, city */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl font-extrabold text-foreground leading-tight">{provider.businessName}</h1>
+                    {provider.verified && !provider.coverImage && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        <BadgeCheck className="w-3.5 h-3.5" />موثّق
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                    <Badge variant="outline" className="rounded-lg text-xs px-2.5 py-1 border-primary/20 text-primary bg-primary/5 font-semibold">
+                      {provider.category}
+                    </Badge>
+                    {provider.city && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />{provider.city}
+                      </div>
+                    )}
+                    {provider.websiteUrl && (
+                      <a href={provider.websiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                        <Globe className="w-3.5 h-3.5 shrink-0" />الموقع الإلكتروني
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* CTA buttons */}
+                <div className="flex gap-2 flex-wrap shrink-0">
+                  {whatsappLink && (
+                    <Button asChild size="sm" className="rounded-xl gap-2 bg-[#25D366] hover:bg-[#1ebe5b] text-white">
+                      <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                        <MessageSquare className="w-4 h-4" />واتساب
+                      </a>
+                    </Button>
+                  )}
+                  {provider.contactPhone && (
+                    <Button asChild size="sm" variant="outline" className="rounded-xl gap-2">
+                      <a href={`tel:${provider.contactPhone}`}>
+                        <Phone className="w-4 h-4" />اتصال
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
 
             {/* Stats row */}
             <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border/40">
@@ -204,6 +232,7 @@ export default function ServiceProviderProfile() {
                   </div>
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>

@@ -4,8 +4,14 @@ import { Layout } from "@/components/layout/layout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Phone, Search, BadgeCheck, Building2, Star, Users, ChevronLeft, ShieldCheck, MessageCircle, SlidersHorizontal } from "lucide-react";
+import { MapPin, Phone, Search, BadgeCheck, Building2, Star, Users, ChevronLeft, ShieldCheck, MessageCircle, SlidersHorizontal, X } from "lucide-react";
 import { getImageSrc } from "@/lib/utils";
+import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
+
+const SPECIALTIES_LIST = [
+  "شقق سكنية", "فلل", "أراضي", "تجاري", "مكاتب", "مستودعات", "فنادق",
+  "مجمعات سكنية", "الاستثمار العقاري", "إدارة العقارات", "التقييم العقاري",
+];
 
 interface MarketerRow {
   id: number;
@@ -132,6 +138,8 @@ export default function Marketers() {
   const [marketers, setMarketers] = useState<MarketerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
+  const [specialtyFilter, setSpecialtyFilter] = useState("");
 
   useEffect(() => {
     void fetch("/api/marketers").then(r => r.json()).then((data: MarketerRow[]) => {
@@ -140,12 +148,17 @@ export default function Marketers() {
     });
   }, []);
 
-  const filtered = marketers.filter(m =>
-    !search ||
-    m.fullName.includes(search) ||
-    m.officeName?.includes(search) ||
-    m.city?.includes(search)
-  );
+  const filtered = marketers.filter(m => {
+    if (search && !m.fullName.includes(search) && !m.officeName?.includes(search) && !m.city?.includes(search)) return false;
+    if (regionFilter && m.city !== regionFilter) return false;
+    if (specialtyFilter) {
+      const specs = m.specialties ? (JSON.parse(m.specialties) as string[]) : [];
+      if (!specs.includes(specialtyFilter)) return false;
+    }
+    return true;
+  });
+
+  const hasFilters = !!(search || regionFilter || specialtyFilter);
 
   return (
     <Layout>
@@ -223,21 +236,60 @@ export default function Marketers() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-lg">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="ابحث باسم المسوّق، المكتب، أو المدينة..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pr-12 h-12 rounded-xl text-base"
-          />
+        {/* Filters bar */}
+        <div className="bg-card border border-border/60 rounded-2xl p-4 space-y-3">
+          {/* Row 1: search */}
+          <div className="relative">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="ابحث باسم المسوّق، المكتب، أو المدينة..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pr-12 h-12 rounded-xl text-base"
+            />
+          </div>
+          {/* Row 2: region + specialty dropdowns + clear */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[160px]">
+              <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <select
+                value={regionFilter}
+                onChange={e => setRegionFilter(e.target.value)}
+                className="w-full h-10 pr-9 rounded-xl border border-border bg-background text-sm font-semibold appearance-none outline-none focus:border-primary"
+                style={{ color: "#111827" }}
+              >
+                <option value="">كل المناطق</option>
+                {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div className="relative flex-1 min-w-[160px]">
+              <Building2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <select
+                value={specialtyFilter}
+                onChange={e => setSpecialtyFilter(e.target.value)}
+                className="w-full h-10 pr-9 rounded-xl border border-border bg-background text-sm font-semibold appearance-none outline-none focus:border-primary"
+                style={{ color: "#111827" }}
+              >
+                <option value="">كل التخصصات</option>
+                {SPECIALTIES_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            {hasFilters && (
+              <button
+                onClick={() => { setSearch(""); setRegionFilter(""); setSpecialtyFilter(""); }}
+                className="h-10 px-3 rounded-xl text-xs font-bold text-destructive bg-destructive/8 hover:bg-destructive/15 border border-destructive/20 flex items-center gap-1.5 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                مسح الفلاتر
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Count */}
         {!loading && (
           <p className="text-sm text-muted-foreground">
-            {filtered.length} مسوّق {search ? "مطابق للبحث" : "مسجّل"}
+            {filtered.length} مسوّق {hasFilters ? "مطابق للبحث" : "مسجّل"}
           </p>
         )}
 
