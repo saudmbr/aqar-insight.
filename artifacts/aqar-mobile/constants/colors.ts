@@ -1,11 +1,29 @@
-const tintColorLight = "#2f95dc";
+export const Colors = {
+  navy: '#0B1628',
+  navyDark: '#060D1C',
+  navyMid: '#132236',
+  teal: '#0F7BA0',
+  tealLight: '#0D99C5',
+  tealDim: '#0A5F7A',
+  gold: '#C9A84C',
+  goldLight: '#E2C06A',
+  white: '#FFFFFF',
+  background: '#F4F6FA',
+  card: '#FFFFFF',
+  text: '#0F1C3F',
+  textSub: '#4B5563',
+  textMuted: '#9CA3AF',
+  border: '#E5E7EB',
+  borderLight: '#F1F3F7',
+  success: '#10B981',
+  danger: '#EF4444',
+  sell: '#0F7BA0',
+  rent: '#C9A84C',
+  tabBar: '#FFFFFF',
+  tabBarActive: '#0F7BA0',
+  tabBarInactive: '#9CA3AF',
+  skeleton: '#E9EDF5',
+  overlay: 'rgba(11,22,40,0.6)',
+} as const;
 
-export default {
-  light: {
-    text: "#000",
-    background: "#fff",
-    tint: tintColorLight,
-    tabIconDefault: "#ccc",
-    tabIconSelected: tintColorLight,
-  },
-};
+export type ColorKey = keyof typeof Colors;

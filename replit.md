@@ -113,6 +113,34 @@ The homepage (`home.tsx`) integrates a hero section with quick search, category 
 - Number formatting: western/Latin digits via `en-US` locale throughout.
 - `getImageSrc(path)` helper used on all image fields for proper GCS URL resolution.
 
+## Mobile App (Expo React Native)
+
+**App:** `artifacts/aqar-mobile` — "عقار إنسايت" Expo React Native app, preview path `/aqar-mobile/`, port 18183.
+
+**Structure:**
+- `app/_layout.tsx` — Root layout: QueryClient, AuthProvider, FavoritesProvider, SafeAreaProvider, Inter fonts
+- `app/(tabs)/_layout.tsx` — 5-tab bar (Tabs from expo-router): الرئيسية / العقارات / الخريطة / المفضلة / حسابي
+- `app/(tabs)/index.tsx` — Home: navy hero header, search bar, type filter pills, stats row, listing grid
+- `app/(tabs)/listings.tsx` — Listings browser: search + type/propertyType filters, paginated grid
+- `app/(tabs)/map.tsx` — Map: region picker (5 cities), horizontal listing cards panel
+- `app/(tabs)/favorites.tsx` — Saved listings (local AsyncStorage, grid layout)
+- `app/(tabs)/profile.tsx` — Profile/Auth state, menu items, login/register buttons
+- `app/listing/[id].tsx` — Detail: image gallery, price, specs grid, seller name, call/WhatsApp CTAs
+- `app/auth/login.tsx` + `app/auth/register.tsx` — Auth forms with dark navy background
+- `context/AuthContext.tsx` — Login/logout/register + AsyncStorage persistence
+- `context/FavoritesContext.tsx` — Local favorites with haptic feedback
+- `components/ListingCard.tsx` — Grid + horizontal variants (grid cards are `(width-48)/2` wide)
+- `constants/colors.ts` — Brand colors (navy #0B1628, teal #0F7BA0, gold #C9A84C)
+- `constants/api.ts` — API_BASE, endpoints, Listing interface, `fetchListings()` helper
+
+**API Integration Notes:**
+- API response: `{ data: [...], total, page, pageSize }` — NOT `{ listings: [...] }`
+- `listingType`: `"sale"` | `"rent"` (NOT `"sell"`)
+- `propertyType`: Arabic string directly (e.g. "شقة"), no mapping needed
+- `district` (not `neighborhood`), `areaSqm` (not `area`), `sellerName` (not `marketerName`)
+- `images` can be `null`; use `Array.isArray(images) ? images[0] : undefined`
+- `fetchListings(params)` wraps API call and normalizes to `{ listings, total, page, totalPages }`
+
 ## External Dependencies
 
 - **Database:** PostgreSQL
