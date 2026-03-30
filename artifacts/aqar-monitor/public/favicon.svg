@@ -1,13 +1,69 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0B1628"/>
-      <stop offset="100%" stop-color="#122040"/>
+      <stop offset="0%" stop-color="#060D1C"/>
+      <stop offset="100%" stop-color="#0B1D35"/>
     </linearGradient>
+    <linearGradient id="bldg1" x1="0" y1="0" x2="50" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a91bc"/>
+      <stop offset="100%" stop-color="#0a5a78"/>
+    </linearGradient>
+    <linearGradient id="bldg2" x1="0" y1="0" x2="50" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9dc5"/>
+      <stop offset="100%" stop-color="#0F7BA0"/>
+    </linearGradient>
+    <linearGradient id="bldg3" x1="0" y1="0" x2="50" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0c75a0"/>
+      <stop offset="100%" stop-color="#0a3d5c"/>
+    </linearGradient>
+    <clipPath id="b1c"><rect x="22" y="48" width="34" height="90" rx="3"/></clipPath>
+    <clipPath id="b2c"><rect x="72" y="20" width="36" height="118" rx="3"/></clipPath>
+    <clipPath id="b3c"><rect x="124" y="60" width="32" height="78" rx="3"/></clipPath>
   </defs>
 
   <!-- Background square with rounded corners -->
-  <rect width="180" height="180" rx="34" fill="url(#bg)"/>
+  <rect width="180" height="180" rx="36" fill="url(#bg)"/>
+
+  <!-- Left building -->
+  <rect x="22" y="48" width="34" height="90" rx="3" fill="url(#bldg1)"/>
+  <g clip-path="url(#b1c)" opacity="0.4">
+    <rect x="10" y="60"  width="60" height="6" rx="1" fill="#0B1628"/>
+    <rect x="10" y="72"  width="60" height="6" rx="1" fill="#0B1628"/>
+    <rect x="10" y="84"  width="60" height="6" rx="1" fill="#0B1628"/>
+    <rect x="10" y="96"  width="60" height="6" rx="1" fill="#0B1628"/>
+    <rect x="10" y="108" width="60" height="6" rx="1" fill="#0B1628"/>
+    <rect x="10" y="120" width="60" height="6" rx="1" fill="#0B1628"/>
+  </g>
+
+  <!-- Center building (tallest) -->
+  <rect x="72" y="20" width="36" height="118" rx="3" fill="url(#bldg2)"/>
+  <g clip-path="url(#b2c)" opacity="0.4">
+    <rect x="60" y="34"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="47"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="60"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="73"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="86"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="99"  width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="112" width="60" height="7" rx="1" fill="#060D1C"/>
+    <rect x="60" y="125" width="60" height="7" rx="1" fill="#060D1C"/>
+  </g>
+
+  <!-- Right building -->
+  <rect x="124" y="60" width="32" height="78" rx="3" fill="url(#bldg3)"/>
+  <g clip-path="url(#b3c)" opacity="0.4">
+    <rect x="112" y="72"  width="56" height="6" rx="1" fill="#0B1628"/>
+    <rect x="112" y="84"  width="56" height="6" rx="1" fill="#0B1628"/>
+    <rect x="112" y="96"  width="56" height="6" rx="1" fill="#0B1628"/>
+    <rect x="112" y="108" width="56" height="6" rx="1" fill="#0B1628"/>
+    <rect x="112" y="120" width="56" height="6" rx="1" fill="#0B1628"/>
+  </g>
+
+  <!-- Ground line -->
+  <rect x="14" y="138" width="152" height="3" rx="1.5" fill="#0F7BA0" opacity="0.4"/>
+
+  <!-- Antenna on center -->
+  <rect x="88.5" y="10" width="3" height="12" rx="1.5" fill="#0F7BA0" opacity="0.8"/>
+  <circle cx="90" cy="9" r="3.5" fill="#0F7BA0"/>
 
   <!--
     SkylineIcon reproduced exactly from logo-brand.tsx mode="white"
