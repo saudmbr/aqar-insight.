@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Loader2, LockKeyhole, User, ShieldCheck, BadgeCheck } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { LogoBrand } from "@/components/logo-brand";
 
 // ── Geometric background pattern ──────────────────────────────────────────────
 const BgPattern = () => (
@@ -160,18 +161,8 @@ export default function Login() {
           style={{ background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)" }} />
 
         {/* ── Logo ── */}
-        <div className="relative z-10 flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #0F7BA0, #0A5C78)", boxShadow: "0 4px 18px rgba(15,123,160,0.45)" }}>
-            <svg viewBox="0 0 32 32" fill="none" className="w-6 h-6">
-              <path d="M16 3L3 11.5V29H11V20h10v9h8V11.5L16 3z" fill="white" opacity="0.95" />
-              <rect x="13" y="20" width="6" height="9" rx="1" fill="#0F7BA0" opacity="0.55" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-white font-black text-xl leading-none tracking-tight">عقار إنسايت</div>
-            <div className="text-[11px] font-medium tracking-wider mt-0.5" style={{ color: "#C9A84C" }}>Aqar Insight™</div>
-          </div>
+        <div className="relative z-10">
+          <LogoBrand variant="sidebar" linkTo="/" />
         </div>
 
         {/* ── Illustration + headline ── */}
@@ -223,16 +214,7 @@ export default function Login() {
 
           {/* Mobile logo */}
           <div className="flex flex-col items-center gap-1 lg:hidden mb-2">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #0B1628, #0F7BA0)", boxShadow: "0 4px 18px rgba(15,123,160,0.35)" }}>
-              <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7">
-                <path d="M16 3L3 11.5V29H11V20h10v9h8V11.5L16 3z" fill="white" opacity="0.95" />
-              </svg>
-            </div>
-            <div className="text-center mt-1">
-              <div className="font-black text-lg text-foreground">عقار إنسايت</div>
-              <div className="text-[11px] font-semibold" style={{ color: "#C9A84C" }}>Aqar Insight™</div>
-            </div>
+            <LogoBrand variant="hero" linkTo="/" />
           </div>
 
           {/* ── Card ── */}
@@ -370,19 +352,6 @@ export default function Login() {
                   }
                 </button>
               </form>
-
-              {/* Trust micro-row */}
-              <div className="flex items-center justify-center gap-4">
-                {[
-                  { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "اتصال آمن" },
-                  { icon: <BadgeCheck  className="w-3.5 h-3.5" />, text: "بيانات مشفرة" },
-                ].map(t => (
-                  <div key={t.text} className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: "#94A3B8" }}>
-                    <span style={{ color: "#0F7BA0" }}>{t.icon}</span>
-                    {t.text}
-                  </div>
-                ))}
-              </div>
 
               {/* Divider */}
               <div className="flex items-center gap-3">

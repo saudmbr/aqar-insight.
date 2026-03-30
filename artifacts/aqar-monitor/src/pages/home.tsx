@@ -15,7 +15,7 @@ import {
   Building2, MapPin, Banknote, TrendingUp, Activity, Search,
   BarChart3, AlertCircle, ArrowLeft, Users, Star, Home as HomeIcon,
   Lightbulb, ChevronDown, X, SlidersHorizontal, RefreshCcw,
-  ArrowUpRight, ArrowDownRight, PlusCircle, ChevronLeft,
+  ArrowUpRight, ArrowDownRight, PlusCircle, ChevronLeft, Wrench, BadgeCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -79,6 +79,16 @@ type Listing = {
 type Filters = {
   city: string; district: string; propertyType: string; listingType: string;
   minPrice: string; maxPrice: string; minArea: string; maxArea: string;
+};
+type ServiceProvider = {
+  id: number; businessName: string; category: string; city: string;
+  description?: string; startingPrice?: number; portfolioImages?: string;
+  verified: boolean; ratingAvg: number; ratingCount: number; createdAt: string;
+};
+type CustomerRequest = {
+  id: number; requestType: string; title: string; category?: string;
+  city: string; district?: string; budgetMin?: number; budgetMax?: number;
+  details?: string; status: string; createdAt: string; posterName?: string;
 };
 
 const EMPTY_FILTERS: Filters = {
@@ -319,6 +329,26 @@ export default function Home() {
     staleTime: 300_000,
   });
 
+  const { data: latestServices } = useQuery<ServiceProvider[]>({
+    queryKey: ["home-latest-services"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE()}/api/service-providers`);
+      if (!res.ok) throw new Error("فشل");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+
+  const { data: latestRequests } = useQuery<CustomerRequest[]>({
+    queryKey: ["home-latest-requests"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE()}/api/customer-requests?status=open`);
+      if (!res.ok) throw new Error("فشل");
+      return res.json();
+    },
+    staleTime: 120_000,
+  });
+
   const { data: listingsData, isLoading: loadingListings } = useQuery<{ data: Listing[]; total: number }>({
     queryKey: ["home-listings", listingsQs],
     queryFn: async () => {
@@ -502,20 +532,20 @@ export default function Home() {
                 <div className="w-6 h-6 rounded-lg bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="w-3.5 h-3.5 text-cyan-300" />
                 </div>
-                <p className="text-[10px] text-white/70 font-bold tracking-wide">أعلى 5 مدن · متوسط سعر م²</p>
+                <p className="text-[10px] text-white/70 font-bold tracking-wide">أعلى 5 مناطق · متوسط سعر م²</p>
               </div>
-              {/* أعلى 5 مدن حسب متوسط سعر المتر — بيانات حقيقية */}
-              {insights?.byCity && insights.byCity.length > 0
-                ? [...insights.byCity]
-                    .filter(c => (c.avgPricePerSqm ?? 0) > 0)
+              {/* أعلى 5 مناطق حسب متوسط سعر المتر — بيانات حقيقية */}
+              {insights?.byRegion && insights.byRegion.length > 0
+                ? [...insights.byRegion]
+                    .filter(r => (r.avgPricePerSqm ?? 0) > 0)
                     .sort((a, b) => (b.avgPricePerSqm ?? 0) - (a.avgPricePerSqm ?? 0))
                     .slice(0, 5)
-                    .map((c, i) => (
-                      <div key={c.city} className="flex items-center justify-between py-1.5"
+                    .map((r, i) => (
+                      <div key={r.region} className="flex items-center justify-between py-1.5"
                         style={i > 0 ? { borderTop: "1px solid rgba(255,255,255,0.07)" } : {}}>
-                        <span className="text-[11px] text-white/80 font-medium truncate max-w-[120px]">{c.city}</span>
+                        <span className="text-[11px] text-white/80 font-medium truncate max-w-[120px]">{r.region}</span>
                         <span className="text-[12px] font-black text-white tabular-nums">
-                          {formatCurrency(c.avgPricePerSqm ?? 0)}
+                          {formatCurrency(r.avgPricePerSqm ?? 0)}
                         </span>
                       </div>
                     ))
@@ -542,27 +572,6 @@ export default function Home() {
               </div>
               <p className="text-3xl font-black text-white leading-none">{kpis ? formatNumber(kpis.totalListings) : "—"}</p>
               <p className="text-[10px] text-white/50 mt-0.5">عقار متاح الآن</p>
-            </motion.div>
-
-            {/* Bottom-left-2: this month listings */}
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-              className="absolute bottom-28 left-56 hidden xl:flex flex-col gap-1 rounded-2xl px-4 py-4 pointer-events-none w-44"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.13)",
-                backdropFilter: "blur(14px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-              }}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <Activity className="w-3 h-3 text-cyan-300 flex-shrink-0" />
-                <span className="text-[10px] text-white/55 font-medium tracking-wide">هذا الشهر</span>
-              </div>
-              <p className="text-3xl font-black text-white leading-none">{kpis ? formatNumber(kpis.newLast30Days) : "—"}</p>
-              <p className="text-[10px] text-white/50 mt-0.5">إعلان جديد</p>
             </motion.div>
 
             {/* Main content */}
@@ -1491,6 +1500,134 @@ export default function Home() {
             )}
           </motion.div>
         )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          SERVICES SECTION
+      ══════════════════════════════════════════════════════════════ */}
+      {(latestServices?.length ?? 0) > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-10 px-4 md:px-0"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-[18px] font-black text-foreground tracking-tight">أحدث مزودي الخدمات</h2>
+              <p className="text-[12.5px] text-muted-foreground mt-0.5">خدمات عقارية موثوقة من مزودين معتمدين</p>
+            </div>
+            <Link href="/services"
+              className="text-[12px] font-black px-4 py-1.5 rounded-xl transition-colors hover:opacity-75"
+              style={{ color: "#0F7BA0", background: "rgba(15,123,160,0.07)" }}>
+              عرض الكل
+            </Link>
+          </div>
+
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            {(latestServices ?? []).slice(0, 8).map(sp => {
+              const imgs = (() => { try { return JSON.parse(sp.portfolioImages ?? "[]") as string[]; } catch { return []; } })();
+              return (
+                <Link key={sp.id} href={`/services/${sp.id}`}
+                  className="shrink-0 w-[240px] rounded-2xl overflow-hidden flex flex-col hover:-translate-y-0.5 transition-transform"
+                  style={{ background: "#fff", boxShadow: "0 2px 12px rgba(11,22,40,0.08)", border: "1px solid rgba(226,232,240,0.8)" }}
+                >
+                  {/* Image or placeholder */}
+                  <div className="h-[120px] relative overflow-hidden"
+                    style={{ background: "linear-gradient(135deg, #0B1628 0%, #0F3A5C 60%, #0F7BA0 100%)" }}>
+                    {imgs[0]
+                      ? <img src={getImageSrc(imgs[0])} alt={sp.businessName} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center opacity-30">
+                          <Wrench className="w-10 h-10 text-white" />
+                        </div>
+                    }
+                    {sp.verified && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black"
+                        style={{ background: "rgba(15,123,160,0.85)", color: "#fff", backdropFilter: "blur(6px)" }}>
+                        <BadgeCheck className="w-3 h-3" /> موثوق
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3 flex-1 flex flex-col gap-1.5">
+                    <p className="font-black text-[13px] text-foreground leading-tight line-clamp-1">{sp.businessName}</p>
+                    <p className="text-[11px] font-semibold px-2 py-0.5 rounded-lg w-fit"
+                      style={{ background: "rgba(15,123,160,0.07)", color: "#0F7BA0" }}>{sp.category}</p>
+                    <div className="flex items-center justify-between mt-auto pt-1.5"
+                      style={{ borderTop: "1px solid #F1F5F9" }}>
+                      <span className="text-[11px] text-muted-foreground">{sp.city}</span>
+                      {sp.startingPrice && sp.startingPrice > 0
+                        ? <span className="text-[11px] font-black" style={{ color: "#C9A84C" }}>يبدأ من {formatCurrency(sp.startingPrice)}</span>
+                        : <span className="text-[10px] text-muted-foreground/50">تواصل للسعر</span>
+                      }
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          CUSTOMER REQUESTS SECTION
+      ══════════════════════════════════════════════════════════════ */}
+      {(latestRequests?.length ?? 0) > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="mt-10 mb-4 px-4 md:px-0"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-[18px] font-black text-foreground tracking-tight">أحدث طلبات العملاء</h2>
+              <p className="text-[12.5px] text-muted-foreground mt-0.5">طلبات مفتوحة تبحث عن عقار أو خدمة مناسبة</p>
+            </div>
+            <Link href="/requests"
+              className="text-[12px] font-black px-4 py-1.5 rounded-xl transition-colors hover:opacity-75"
+              style={{ color: "#C9A84C", background: "rgba(201,168,76,0.08)" }}>
+              عرض الكل
+            </Link>
+          </div>
+
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            {(latestRequests ?? []).slice(0, 8).map(req => (
+              <Link key={req.id} href={`/requests/${req.id}`}
+                className="shrink-0 w-[260px] rounded-2xl p-4 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform"
+                style={{ background: "#fff", boxShadow: "0 2px 12px rgba(11,22,40,0.08)", border: "1px solid rgba(226,232,240,0.8)" }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-black text-[13px] text-foreground leading-snug line-clamp-2 flex-1">{req.title}</p>
+                  <span className="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black"
+                    style={{ background: req.requestType === "buy" ? "rgba(15,123,160,0.08)" : "rgba(201,168,76,0.08)", color: req.requestType === "buy" ? "#0F7BA0" : "#B8860B" }}>
+                    {req.requestType === "buy" ? "شراء" : req.requestType === "rent" ? "إيجار" : req.requestType === "invest" ? "استثمار" : "خدمة"}
+                  </span>
+                </div>
+
+                {req.category && (
+                  <p className="text-[11px] text-muted-foreground/80 font-medium">{req.category}</p>
+                )}
+
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-auto pt-2"
+                  style={{ borderTop: "1px solid #F1F5F9" }}>
+                  <MapPin className="w-3 h-3 shrink-0" style={{ color: "#0F7BA0" }} />
+                  <span className="font-medium">{req.city}{req.district ? ` / ${req.district}` : ""}</span>
+                  {(req.budgetMin || req.budgetMax) && (
+                    <>
+                      <span className="text-muted-foreground/40 mx-1">·</span>
+                      <span className="font-black" style={{ color: "#C9A84C" }}>
+                        {req.budgetMax ? formatCurrency(req.budgetMax) : formatCurrency(req.budgetMin ?? 0)}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       </motion.div>
       <PlatformRatingWidget />

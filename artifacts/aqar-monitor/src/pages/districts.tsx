@@ -3,6 +3,7 @@ import { Layout } from "@/components/layout/layout";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/utils";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
+import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -653,7 +654,7 @@ function DistrictComparison({ districts, avgPsm }: { districts: InsightsDistrict
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function Districts() {
-  const [city,         setCity]         = useState("");
+  const [region,       setRegion]       = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [listingType,  setListingType]  = useState("");
   const [barSort,      setBarSort]      = useState<"price" | "count">("price");
@@ -666,11 +667,11 @@ export default function Districts() {
 
   const qs = useMemo(() => {
     const p = new URLSearchParams();
-    if (city)         p.set("city", city);
+    if (region)       p.set("region", region);
     if (propertyType) p.set("propertyType", propertyType);
     if (listingType)  p.set("listingType", listingType);
     return p.toString();
-  }, [city, propertyType, listingType]);
+  }, [region, propertyType, listingType]);
 
   const { data: filterOpts } = useQuery<FilterOptions>({
     queryKey: ["dist-filter-opts"],
@@ -776,9 +777,9 @@ export default function Districts() {
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4"
           style={{ boxShadow: "0 1px 8px rgba(11,22,40,0.05)" }}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <select value={city}         onChange={e => setCity(e.target.value)}         className={INPUT_CLS} style={{ color: "#111827", background: "#fff" }}>
-              <option value="" style={{ color: "#111827" }}>كل المدن</option>
-              {(filterOpts?.cities ?? []).map(c => <option key={c} value={c} style={{ color: "#111827" }}>{c}</option>)}
+            <select value={region}       onChange={e => setRegion(e.target.value)}       className={INPUT_CLS} style={{ color: "#111827", background: "#fff" }}>
+              <option value="" style={{ color: "#111827" }}>كل المناطق</option>
+              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r} style={{ color: "#111827" }}>{r}</option>)}
             </select>
             <select value={propertyType} onChange={e => setPropertyType(e.target.value)} className={INPUT_CLS} style={{ color: "#111827", background: "#fff" }}>
               <option value="" style={{ color: "#111827" }}>كل أنواع العقارات</option>
@@ -793,9 +794,9 @@ export default function Districts() {
               ))}
             </select>
           </div>
-          {(city || propertyType || listingType) && (
+          {(region || propertyType || listingType) && (
             <button
-              onClick={() => { setCity(""); setPropertyType(""); setListingType(""); }}
+              onClick={() => { setRegion(""); setPropertyType(""); setListingType(""); }}
               className="mt-3 text-xs font-semibold text-muted-foreground hover:text-red-500 border border-[#E2E8F0] hover:border-red-200 rounded-xl px-4 py-2 transition-all"
             >
               × مسح الفلاتر

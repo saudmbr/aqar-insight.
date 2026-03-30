@@ -2,9 +2,10 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Eye, EyeOff, Loader2, LockKeyhole, Mail, User,
-  Briefcase, Wrench, Search, ChevronDown, CheckCircle2, ShieldCheck, BadgeCheck,
+  Briefcase, Wrench, Search, ChevronDown, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { LogoBrand } from "@/components/logo-brand";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -17,12 +18,12 @@ const CATEGORIES = [
 type AccountType = "user" | "real_estate_marketer" | "service_provider";
 
 const ACCOUNT_TYPES = [
-  { key: "user"                 as AccountType, label: "عميل / باحث عن عقار",  sub: "أبحث عن شراء أو استئجار عقار", icon: <Search    className="w-4.5 h-4.5" /> },
-  { key: "real_estate_marketer" as AccountType, label: "مسوّق عقاري",           sub: "أعمل في تسويق وبيع العقارات",  icon: <Briefcase className="w-4.5 h-4.5" /> },
-  { key: "service_provider"     as AccountType, label: "مزوّد خدمة عقارية",     sub: "أقدم خدمات متعلقة بالعقار",   icon: <Wrench    className="w-4.5 h-4.5" /> },
+  { key: "user"                 as AccountType, label: "عميل / باحث عن عقار",  sub: "أبحث عن شراء أو استئجار عقار", icon: <Search    className="w-4 h-4" /> },
+  { key: "real_estate_marketer" as AccountType, label: "مسوّق عقاري",           sub: "أعمل في تسويق وبيع العقارات",  icon: <Briefcase className="w-4 h-4" /> },
+  { key: "service_provider"     as AccountType, label: "مزوّد خدمة عقارية",     sub: "أقدم خدمات متعلقة بالعقار",   icon: <Wrench    className="w-4 h-4" /> },
 ];
 
-// ── Background grid ───────────────────────────────────────────────────────────
+// ── Geometric background pattern ─────────────────────────────────────────────
 const BgPattern = () => (
   <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -34,61 +35,39 @@ const BgPattern = () => (
   </svg>
 );
 
-// ── Signup illustration: property types scene ─────────────────────────────────
+// ── Signup illustration ───────────────────────────────────────────────────────
 const SignupIllustration = () => (
   <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg"
     className="w-full max-w-[280px]" aria-hidden="true">
-
-    {/* Background ambient circles */}
     <circle cx="150" cy="150" r="120" fill="rgba(15,123,160,0.06)" />
     <circle cx="150" cy="150" r="80"  fill="rgba(15,123,160,0.05)" />
-
-    {/* ── Left: Villa / House ── */}
     <g transform="translate(14, 120)">
-      {/* Roof */}
       <polygon points="50,0 0,32 100,32" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-      {/* Chimney */}
       <rect x="68" y="-14" width="10" height="20" rx="1" fill="rgba(255,255,255,0.15)" />
-      {/* Body */}
       <rect x="8" y="30" width="84" height="60" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-      {/* Door */}
       <rect x="37" y="62" width="18" height="28" rx="2" fill="rgba(15,123,160,0.5)" />
       <circle cx="50" cy="77" r="1.5" fill="rgba(255,255,255,0.6)" />
-      {/* Windows */}
       <rect x="14" y="40" width="18" height="16" rx="1.5" fill="rgba(15,123,160,0.5)" />
       <rect x="68" y="40" width="18" height="16" rx="1.5" fill="rgba(15,123,160,0.4)" />
-      {/* Window cross */}
       <line x1="23" y1="40" x2="23" y2="56" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
       <line x1="14" y1="48" x2="32" y2="48" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
     </g>
-
-    {/* ── Center: Tower ── */}
     <g transform="translate(110, 52)">
-      {/* Spire */}
       <polygon points="40,0 33,22 47,22" fill="rgba(255,255,255,0.85)" />
       <rect x="38.5" y="0" width="3" height="10" fill="rgba(201,168,76,0.8)" />
-      {/* Top cap */}
       <rect x="28" y="20" width="24" height="10" rx="2" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-      {/* Tower body */}
       <rect x="30" y="28" width="20" height="160" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-      {/* Windows */}
       {[38,52,66,80,94,108,122,136,150,164].map(y => (
         <g key={y}>
           <rect x="33" y={y} width="5" height="7" rx="1" fill="rgba(15,123,160,0.65)" />
           <rect x="41" y={y} width="5" height="7" rx="1" fill="rgba(15,123,160,0.45)" />
         </g>
       ))}
-      {/* Entrance */}
       <rect x="34" y="172" width="12" height="16" rx="1" fill="rgba(15,123,160,0.5)" />
     </g>
-
-    {/* ── Right: Office building ── */}
     <g transform="translate(196, 100)">
-      {/* Roof bar */}
       <rect x="0" y="0" width="80" height="8" rx="2" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
-      {/* Body */}
       <rect x="4" y="6" width="72" height="122" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
-      {/* Window grid */}
       {[16,32,48,64,80,96].map(y => (
         <g key={y}>
           <rect x="10" y={y} width="14" height="10" rx="1.5" fill="rgba(15,123,160,0.5)" />
@@ -96,34 +75,24 @@ const SignupIllustration = () => (
           <rect x="54" y={y} width="14" height="10" rx="1.5" fill="rgba(15,123,160,0.45)" />
         </g>
       ))}
-      {/* Entrance */}
       <rect x="28" y="106" width="24" height="22" rx="2" fill="rgba(15,123,160,0.45)" />
     </g>
-
-    {/* ── Ground ── */}
     <rect x="14" y="248" width="272" height="2" rx="1" fill="rgba(255,255,255,0.1)" />
-
-    {/* ── Central connecting arc ── */}
     <path d="M55 248 Q150 260 245 248" stroke="rgba(15,123,160,0.3)" strokeWidth="1" fill="none" strokeDasharray="4 3" />
-
-    {/* ── Central key icon (below tower) ── */}
     <g transform="translate(138, 258)">
       <circle cx="12" cy="8" r="7" stroke="rgba(201,168,76,0.7)" strokeWidth="2" fill="none" />
       <rect x="17" y="7" width="14" height="2.5" rx="1" fill="rgba(201,168,76,0.7)" />
       <rect x="27" y="9.5" width="2.5" height="4" rx="0.5" fill="rgba(201,168,76,0.7)" />
       <rect x="22" y="9.5" width="2.5" height="3" rx="0.5" fill="rgba(201,168,76,0.7)" />
     </g>
-
-    {/* ── Sparkles ── */}
     <circle cx="30"  cy="62"  r="1.5" fill="rgba(255,255,255,0.3)" />
     <circle cx="270" cy="78"  r="1"   fill="rgba(255,255,255,0.25)" />
     <circle cx="96"  cy="96"  r="1"   fill="rgba(255,255,255,0.2)" />
     <circle cx="260" cy="138" r="1.5" fill="rgba(255,255,255,0.2)" />
-    <circle cx="40"  cy="195" r="1"   fill="rgba(255,255,255,0.15)" />
   </svg>
 );
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Field label component ─────────────────────────────────────────────────────
 function Field({ label, required, hint, children }: {
   label: string; required?: boolean; hint?: string; children: React.ReactNode;
 }) {
@@ -157,15 +126,17 @@ export default function Signup() {
   const { signup: _signup } = useAuth();
   const [, navigate] = useLocation();
 
-  const [fullName,        setFullName]        = useState("");
-  const [username,        setUsername]        = useState("");
-  const [email,           setEmail]           = useState("");
-  const [password,        setPassword]        = useState("");
-  const [showPass,        setShowPass]        = useState(false);
-  const [accountType,     setAccountType]     = useState<AccountType>("user");
-  const [serviceCategory, setServiceCategory] = useState("");
-  const [customCategory,  setCustomCategory]  = useState("");
-  const [termsAccepted,   setTermsAccepted]   = useState(false);
+  const [fullName,         setFullName]         = useState("");
+  const [username,         setUsername]         = useState("");
+  const [email,            setEmail]            = useState("");
+  const [password,         setPassword]         = useState("");
+  const [confirmPassword,  setConfirmPassword]  = useState("");
+  const [showPass,         setShowPass]         = useState(false);
+  const [showConfirmPass,  setShowConfirmPass]  = useState(false);
+  const [accountType,      setAccountType]      = useState<AccountType>("user");
+  const [serviceCategory,  setServiceCategory]  = useState("");
+  const [customCategory,   setCustomCategory]   = useState("");
+  const [termsAccepted,    setTermsAccepted]    = useState(false);
   const [error,  setError]  = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -178,6 +149,7 @@ export default function Signup() {
     if (!/^[a-zA-Z0-9_]+$/.test(username.trim()))        return "اسم المستخدم: أحرف إنجليزية وأرقام وشرطة سفلية فقط";
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "يرجى إدخال بريد إلكتروني صحيح";
     if (password.length < 8)                              return "كلمة المرور يجب أن تكون 8 أحرف على الأقل";
+    if (password !== confirmPassword)                     return "كلمة المرور وتأكيدها غير متطابقتين";
     if (accountType === "service_provider" && !serviceCategory) return "يرجى اختيار تصنيف الخدمة";
     if (accountType === "service_provider" && isOther && !customCategory.trim()) return "يرجى كتابة نوع خدمتك";
     if (!termsAccepted) return "يجب الموافقة على الشروط والأحكام للمتابعة";
@@ -216,6 +188,8 @@ export default function Signup() {
     }
   };
 
+  const passwordsMatch = confirmPassword === "" || password === confirmPassword;
+
   return (
     <div dir="rtl" className="min-h-screen flex overflow-hidden" style={{ background: "#0B1628" }}>
 
@@ -232,19 +206,9 @@ export default function Signup() {
         <div className="absolute top-0 right-0 w-56 h-56 pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%)" }} />
 
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, #0F7BA0, #0A5C78)", boxShadow: "0 4px 18px rgba(15,123,160,0.45)" }}>
-            <svg viewBox="0 0 32 32" fill="none" className="w-6 h-6">
-              <path d="M16 3L3 11.5V29H11V20h10v9h8V11.5L16 3z" fill="white" opacity="0.95" />
-              <rect x="13" y="20" width="6" height="9" rx="1" fill="#0F7BA0" opacity="0.55" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-white font-black text-xl leading-none tracking-tight">عقار إنسايت</div>
-            <div className="text-[11px] font-medium tracking-wider mt-0.5" style={{ color: "#C9A84C" }}>Aqar Insight™</div>
-          </div>
+        {/* Logo — matches site */}
+        <div className="relative z-10">
+          <LogoBrand variant="sidebar" linkTo="/" />
         </div>
 
         {/* Illustration + headline */}
@@ -261,21 +225,7 @@ export default function Signup() {
           </div>
         </div>
 
-        {/* Trust badges */}
-        <div className="relative z-10 space-y-4">
-          <div className="flex gap-2.5 flex-wrap">
-            {[
-              { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "اتصال مشفّر SSL" },
-              { icon: <BadgeCheck  className="w-3.5 h-3.5" />, label: "حماية البيانات" },
-            ].map(b => (
-              <div key={b.label}
-                className="flex items-center gap-2 rounded-xl px-3.5 py-2"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <span style={{ color: "#C9A84C" }}>{b.icon}</span>
-                <span className="text-white/65 text-[11.5px] font-semibold">{b.label}</span>
-              </div>
-            ))}
-          </div>
+        <div className="relative z-10">
           <p className="text-white/20 text-[11px]">© {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة</p>
         </div>
       </div>
@@ -294,13 +244,7 @@ export default function Signup() {
 
           {/* Mobile logo */}
           <div className="flex flex-col items-center gap-1 lg:hidden mb-1">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #0B1628, #0F7BA0)", boxShadow: "0 4px 18px rgba(15,123,160,0.3)" }}>
-              <svg viewBox="0 0 32 32" fill="none" className="w-6 h-6">
-                <path d="M16 3L3 11.5V29H11V20h10v9h8V11.5L16 3z" fill="white" opacity="0.95" />
-              </svg>
-            </div>
-            <div className="font-black text-base text-foreground">عقار إنسايت</div>
+            <LogoBrand variant="hero" linkTo="/" />
           </div>
 
           {/* Card */}
@@ -334,10 +278,7 @@ export default function Signup() {
                             if (t.key !== "service_provider") { setServiceCategory(""); setCustomCategory(""); }
                           }}
                           className="flex items-center gap-3 px-4 py-3 rounded-xl border text-right transition-all"
-                          style={{
-                            borderColor: active ? "#0F7BA0" : "#E2E8F0",
-                            background:  active ? "rgba(15,123,160,0.04)" : "#FAFBFD",
-                          }}
+                          style={{ borderColor: active ? "#0F7BA0" : "#E2E8F0", background: active ? "rgba(15,123,160,0.04)" : "#FAFBFD" }}
                         >
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all"
                             style={{ background: active ? "rgba(15,123,160,0.12)" : "#F0F4F8", color: active ? "#0F7BA0" : "#94A3B8" }}>
@@ -410,24 +351,21 @@ export default function Signup() {
                   </div>
                 </Field>
 
-                {/* Username */}
+                {/* Username — no @ prefix */}
                 <Field label="اسم المستخدم" required hint="أحرف إنجليزية، أرقام، وشرطة سفلية فقط">
-                  <div className="relative">
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold pointer-events-none select-none">@</span>
-                    <input
-                      type="text"
-                      autoComplete="username"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      placeholder="m_alomari"
-                      dir="ltr"
-                      className={`${inputCls} pr-9 pl-4 font-mono`}
-                      style={{ borderColor: "#DFE8F0" }}
-                      {...focusH}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    placeholder="m_alomari"
+                    dir="ltr"
+                    className={`${inputCls} px-4 font-mono`}
+                    style={{ borderColor: "#DFE8F0" }}
+                    {...focusH}
+                  />
                 </Field>
 
                 {/* Email */}
@@ -474,6 +412,45 @@ export default function Signup() {
                   </div>
                 </Field>
 
+                {/* Confirm Password */}
+                <Field label="تأكيد كلمة المرور" required>
+                  <div className="relative">
+                    <LockKeyhole className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                    <input
+                      type={showConfirmPass ? "text" : "password"}
+                      autoComplete="new-password"
+                      autoCapitalize="none"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputCls} pr-9 pl-10`}
+                      style={{ borderColor: !passwordsMatch ? "#EF4444" : "#DFE8F0" }}
+                      onFocus={e => { e.currentTarget.style.borderColor = !passwordsMatch ? "#EF4444" : "#0F7BA0"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(15,123,160,0.08)"; e.currentTarget.style.background = "#EFF8FF"; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = !passwordsMatch ? "#EF4444" : "#DFE8F0"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = "#F7FAFD"; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPass(p => !p)}
+                      tabIndex={-1}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  {!passwordsMatch && confirmPassword !== "" && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <AlertCircle className="w-3 h-3 text-red-500 shrink-0" />
+                      <p className="text-[11px] text-red-500 font-semibold">كلمة المرور غير متطابقة</p>
+                    </div>
+                  )}
+                  {passwordsMatch && confirmPassword !== "" && password !== "" && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                      <p className="text-[11px] text-green-600 font-semibold">كلمتا المرور متطابقتان</p>
+                    </div>
+                  )}
+                </Field>
+
                 {/* Terms */}
                 <div
                   className="rounded-xl px-4 py-3.5"
@@ -500,19 +477,19 @@ export default function Signup() {
                     </div>
                     <span className="text-[12.5px] leading-relaxed text-foreground">
                       أوافق على{" "}
-                      <Link href="/legal-terms" target="_blank"
+                      <a href="/legal-terms" target="_blank" rel="noopener noreferrer"
                         className="font-bold underline underline-offset-2"
                         style={{ color: "#0F7BA0" }}
                         onClick={e => e.stopPropagation()}>
                         الشروط والأحكام
-                      </Link>
+                      </a>
                       {" "}و{" "}
-                      <Link href="/legal-privacy" target="_blank"
+                      <a href="/legal-privacy" target="_blank" rel="noopener noreferrer"
                         className="font-bold underline underline-offset-2"
                         style={{ color: "#0F7BA0" }}
                         onClick={e => e.stopPropagation()}>
                         سياسة الخصوصية
-                      </Link>
+                      </a>
                     </span>
                   </label>
                 </div>
