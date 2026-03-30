@@ -1,0 +1,158 @@
+Enhance the existing "مقارنة الأحياء" page to improve clarity, decision-making, and visual quality WITHOUT changing the core structure or breaking existing functionality.
+
+Goal:
+Upgrade the page to a premium, clear, and decision-focused experience while keeping all current components in place.
+
+==================================================
+1) DESIGN IMPROVEMENT (IMPORTANT)
+==================================================
+
+- Upgrade the full page design to be:
+  - more premium
+  - more elegant
+  - cleaner
+  - easier to read
+
+- Improve:
+  - spacing between sections
+  - card design (padding, shadow, border radius)
+  - typography hierarchy
+  - color consistency (use navy + teal palette)
+
+- Do NOT change layout structure
+- Do NOT move existing sections
+- Only enhance visual quality
+
+==================================================
+2) ADD DECISION LAYER (CRITICAL)
+==================================================
+
+Add a smart summary at the top of the page:
+
+Example:
+"أفضل حي حاليًا: [اسم الحي] — سعر أقل من السوق بـ X% مع نشاط مرتفع"
+
+- This must be generated dynamically from platform data
+- Update based on filters
+
+==================================================
+3) ADD SMART LABELS TO NEIGHBORHOODS
+==================================================
+
+For each neighborhood (in charts, table, map):
+
+Add a label:
+- 🟢 فرصة
+- 🟡 متوازن
+- 🔴 مرتفع
+
+Based on:
+- price vs market average
+- activity level
+
+==================================================
+4) IMPROVE COMPARISON OUTPUT
+==================================================
+
+In the comparison panel:
+
+- Add a clear result line:
+
+Example:
+"الحي الأول أفضل للشراء حاليًا بسبب سعر أقل ونشاط أعلى"
+
+- This must be dynamically calculated
+
+==================================================
+5) REDUCE VISUAL CLUTTER
+==================================================
+
+- Keep current data but:
+  - reduce visible density
+  - improve spacing
+  - hide secondary details behind hover or expand
+
+- Make key numbers more prominent
+
+==================================================
+6) IMPROVE CHART READABILITY
+==================================================
+
+- Improve:
+  - bar spacing
+  - label clarity
+  - tooltip design
+  - legend readability
+
+- Highlight:
+  - top neighborhoods
+  - market average line
+
+==================================================
+7) HEATMAP ENHANCEMENT
+==================================================
+
+- Smooth color gradients
+- Better tooltip design
+- Improve popup card design
+
+- Add short smart text inside popup:
+  - "فرصة سعرية"
+  - "أعلى من السوق"
+
+==================================================
+8) TABLE IMPROVEMENT
+==================================================
+
+- Improve:
+  - row spacing
+  - column alignment
+  - readability
+
+- Highlight:
+  - best values
+  - outliers
+
+==================================================
+9) ADD SMART INSIGHTS (LIMITED)
+==================================================
+
+- Add 2–3 insights only above or below sections
+
+Example:
+- "حي X هو الأكثر نشاطًا حاليًا"
+- "الأسعار في حي X أقل من المتوسط بـ X%"
+
+- No generic text
+- Data-driven only
+
+==================================================
+10) KEEP EVERYTHING STABLE
+==================================================
+
+- Do NOT break:
+  - filters
+  - charts
+  - map
+  - table
+  - comparison logic
+
+- Only enhance and improve
+
+==================================================
+11) FINAL RESULT
+==================================================
+
+The page should feel like:
+- a premium comparison tool
+- easy to understand within seconds
+- focused on helping users choose the best neighborhood
+
+==================================================
+12) FINAL DELIVERABLE
+==================================================
+
+Provide:
+- list of improvements
+- confirmation no layout was broken
+- examples of new smart outputs
