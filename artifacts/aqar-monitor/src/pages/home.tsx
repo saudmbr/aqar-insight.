@@ -16,6 +16,7 @@ import {
   BarChart3, AlertCircle, ArrowLeft, Users, Star, Home as HomeIcon,
   Lightbulb, ChevronDown, X, SlidersHorizontal, RefreshCcw,
   ArrowUpRight, ArrowDownRight, PlusCircle, ChevronLeft, Wrench, BadgeCheck,
+  Lock, Map, Loader2,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -543,8 +544,8 @@ export default function Home() {
                       <div key={r.region} className="flex items-center justify-between py-1.5"
                         style={i > 0 ? { borderTop: "1px solid rgba(255,255,255,0.07)" } : {}}>
                         <span className="text-[11px] text-white/80 font-medium truncate max-w-[120px]">{r.region}</span>
-                        <span className="text-[12px] font-black text-white tabular-nums" style={{ "--riyal-filter": "invert(1)" } as React.CSSProperties}>
-                          <SAR value={r.avgPricePerSqm ?? 0} perSqm />
+                        <span className="text-[12px] font-black text-white tabular-nums">
+                          <SAR value={r.avgPricePerSqm ?? 0} perSqm dark />
                         </span>
                       </div>
                     ))
@@ -777,7 +778,7 @@ export default function Home() {
                 >
                   {[
                     { label: "إعلان نشط", value: formatNumber(kpis?.totalListings), icon: Building2, color: "#0F7BA0" },
-                    { label: "متوسط سعر المتر", value: <SAR value={kpis?.avgPricePerSqm} perSqm imgClassName="invert" />, icon: Banknote, color: "#10b981" },
+                    { label: "متوسط سعر المتر", value: <SAR value={kpis?.avgPricePerSqm} perSqm dark />, icon: Banknote, color: "#10b981" },
                     { label: "إعلانات هذا الشهر", value: formatNumber(kpis?.newLast30Days), icon: Activity, color: "#8b5cf6" },
                   ].map((s, i) => (
                     <div key={s.label} className="flex items-center gap-3 group/stat">
@@ -795,6 +796,74 @@ export default function Home() {
                 </motion.div>
               )}
             </div>
+          </div>
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════════════════
+            INTERACTIVE MAP — HERO SECTION
+        ══════════════════════════════════════════════════════════════ */}
+        <motion.div variants={fadeUp}>
+          <div className="relative rounded-3xl overflow-hidden"
+            style={{ height: 340, border: "1px solid rgba(226,232,240,0.7)", boxShadow: "0 4px 24px rgba(11,22,40,0.08)" }}>
+            {/* Header bar */}
+            <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-3.5"
+              style={{ background: "linear-gradient(to bottom, rgba(6,13,28,0.88), transparent)" }}>
+              <div className="flex items-center gap-2">
+                <Map className="w-4 h-4 text-cyan-300" />
+                <span className="font-bold text-white text-[13.5px]">الخريطة التفاعلية</span>
+                <span className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.55)" }}>· استعرض العقارات على الخريطة</span>
+              </div>
+              {isAuthenticated && (
+                <Link href="/map">
+                  <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-bold text-white transition-all hover:opacity-90"
+                    style={{ background: "rgba(15,123,160,0.4)", border: "1px solid rgba(15,123,160,0.55)" }}>
+                    فتح الخريطة الكاملة <ArrowLeft className="w-3 h-3" />
+                  </button>
+                </Link>
+              )}
+            </div>
+
+            {isAuthenticated ? (
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center" style={{ background: "#0B1628" }}>
+                  <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                </div>
+              }>
+                <PropertyMap pins={mapPins} clustered />
+              </Suspense>
+            ) : (
+              <div className="w-full h-full relative flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #0B1628 0%, #0F2744 50%, #0B1628 100%)" }}>
+                {/* Dot grid pattern */}
+                <div className="absolute inset-0 opacity-20"
+                  style={{ backgroundImage: "radial-gradient(circle, rgba(15,123,160,0.6) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+                {/* Fake pin dots */}
+                {[{t:22,l:35},{t:45,l:60},{t:30,l:72},{t:60,l:20},{t:55,l:45},{t:70,l:78}].map((p,i)=>(
+                  <div key={i} className="absolute w-3 h-3 rounded-full animate-pulse"
+                    style={{ top:`${p.t}%`, left:`${p.l}%`, background:"#0F7BA0", boxShadow:"0 0 8px rgba(15,123,160,0.8)", animationDelay:`${i*0.4}s` }} />
+                ))}
+                {/* Login overlay */}
+                <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6"
+                  style={{ background: "rgba(6,13,28,0.65)", backdropFilter: "blur(12px)", borderRadius: 24, padding: "32px 40px", border: "1px solid rgba(15,123,160,0.2)" }}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{ background: "rgba(15,123,160,0.15)", border: "1px solid rgba(15,123,160,0.3)" }}>
+                    <Lock className="w-6 h-6" style={{ color: "#0F7BA0" }} />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-[16px] mb-1.5">سجّل للوصول للخريطة التفاعلية</p>
+                    <p className="text-[12.5px] font-medium" style={{ color: "rgba(255,255,255,0.55)" }}>
+                      استعرض مئات العقارات على الخريطة وقارن الأسعار بين الأحياء
+                    </p>
+                  </div>
+                  <Link href="/login">
+                    <button className="px-7 py-2.5 rounded-xl font-bold text-white text-[13px] transition-all hover:opacity-90"
+                      style={{ background: "#0F7BA0", boxShadow: "0 4px 18px rgba(15,123,160,0.45)" }}>
+                      تسجيل الدخول
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -1652,66 +1721,6 @@ export default function Home() {
                 </Link>
               );
             })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════
-          CUSTOMER REQUESTS SECTION
-      ══════════════════════════════════════════════════════════════ */}
-      {(latestRequests?.length ?? 0) > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-10 mb-4 px-4 md:px-0"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-[18px] font-black text-foreground tracking-tight">أحدث طلبات العملاء</h2>
-              <p className="text-[12.5px] text-muted-foreground mt-0.5">طلبات مفتوحة تبحث عن عقار أو خدمة مناسبة</p>
-            </div>
-            <Link href="/requests"
-              className="text-[12px] font-black px-4 py-1.5 rounded-xl transition-colors hover:opacity-75"
-              style={{ color: "#C9A84C", background: "rgba(201,168,76,0.08)" }}>
-              عرض الكل
-            </Link>
-          </div>
-
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
-            {(latestRequests ?? []).slice(0, 8).map(req => (
-              <Link key={req.id} href={`/requests/${req.id}`}
-                className="shrink-0 w-[260px] rounded-2xl p-4 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform"
-                style={{ background: "#fff", boxShadow: "0 2px 12px rgba(11,22,40,0.08)", border: "1px solid rgba(226,232,240,0.8)" }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-black text-[13px] text-foreground leading-snug line-clamp-2 flex-1">{req.title}</p>
-                  <span className="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black"
-                    style={{ background: req.requestType === "buy" ? "rgba(15,123,160,0.08)" : "rgba(201,168,76,0.08)", color: req.requestType === "buy" ? "#0F7BA0" : "#B8860B" }}>
-                    {req.requestType === "buy" ? "شراء" : req.requestType === "rent" ? "إيجار" : req.requestType === "invest" ? "استثمار" : "خدمة"}
-                  </span>
-                </div>
-
-                {req.category && (
-                  <p className="text-[11px] text-muted-foreground/80 font-medium">{req.category}</p>
-                )}
-
-                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-auto pt-2"
-                  style={{ borderTop: "1px solid #F1F5F9" }}>
-                  <MapPin className="w-3 h-3 shrink-0" style={{ color: "#0F7BA0" }} />
-                  <span className="font-medium">{req.city}{req.district ? ` / ${req.district}` : ""}</span>
-                  {(req.budgetMin || req.budgetMax) && (
-                    <>
-                      <span className="text-muted-foreground/40 mx-1">·</span>
-                      <span className="font-black" style={{ color: "#C9A84C" }}>
-                        {req.budgetMax ? formatCurrency(req.budgetMax) : formatCurrency(req.budgetMin ?? 0)}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </Link>
-            ))}
           </div>
         </motion.div>
       )}

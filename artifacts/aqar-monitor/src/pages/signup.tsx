@@ -477,14 +477,14 @@ export default function Signup() {
                     </div>
                     <span className="text-[12.5px] leading-relaxed text-foreground">
                       أوافق على{" "}
-                      <a href="/legal-terms" target="_blank" rel="noopener noreferrer"
+                      <a href="/terms" target="_blank" rel="noopener noreferrer"
                         className="font-bold underline underline-offset-2"
                         style={{ color: "#0F7BA0" }}
                         onClick={e => e.stopPropagation()}>
                         الشروط والأحكام
                       </a>
                       {" "}و{" "}
-                      <a href="/legal-privacy" target="_blank" rel="noopener noreferrer"
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer"
                         className="font-bold underline underline-offset-2"
                         style={{ color: "#0F7BA0" }}
                         onClick={e => e.stopPropagation()}>

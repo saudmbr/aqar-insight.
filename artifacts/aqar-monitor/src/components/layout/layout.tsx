@@ -7,7 +7,7 @@ import { AppSidebar } from "./app-sidebar";
 import { TopBar } from "./top-bar";
 import { useAuth } from "@/contexts/auth-context";
 import { useLang } from "@/contexts/language-context";
-import { Scale, Shield, BookOpen } from "lucide-react";
+import { Scale, Shield, BookOpen, ChevronUp, FileText } from "lucide-react";
 import { LogoBrand } from "@/components/logo-brand";
 
 interface LayoutProps {
@@ -19,6 +19,7 @@ export function Layout({ children }: LayoutProps) {
   const { t, lang } = useLang();
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [policyOpen, setPolicyOpen] = useState(false);
   const isAr = lang === "ar";
 
   const style = {
@@ -164,31 +165,49 @@ export function Layout({ children }: LayoutProps) {
                       © {new Date().getFullYear()} عقار إنسايت · جميع الحقوق محفوظة
                     </p>
                   </div>
-                  <nav className="flex items-center gap-1 order-1 sm:order-2 flex-wrap justify-center">
-                    <Link
-                      href="/privacy"
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+                  <div className="relative order-1 sm:order-2">
+                    <button
+                      onClick={() => setPolicyOpen(v => !v)}
+                      className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors px-3.5 py-2 rounded-xl hover:bg-muted border border-border/50 font-medium"
                     >
-                      <Shield className="w-3 h-3" />
-                      سياسة الخصوصية
-                    </Link>
-                    <span className="text-border">·</span>
-                    <Link
-                      href="/terms"
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
-                    >
-                      <Scale className="w-3 h-3" />
-                      الشروط والأحكام
-                    </Link>
-                    <span className="text-border">·</span>
-                    <Link
-                      href="/usage"
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
-                    >
-                      <BookOpen className="w-3 h-3" />
-                      سياسة الاستخدام
-                    </Link>
-                  </nav>
+                      <FileText className="w-3.5 h-3.5" />
+                      الشروط والأحكام وسياسة الخصوصية
+                      <ChevronUp className={`w-3 h-3 transition-transform duration-200 ${policyOpen ? "rotate-0" : "rotate-180"}`} />
+                    </button>
+                    {policyOpen && (
+                      <div
+                        className="absolute bottom-full mb-2 right-0 rounded-2xl shadow-xl border border-border/70 overflow-hidden z-50 min-w-[230px]"
+                        style={{ background: "#fff" }}
+                      >
+                        <Link
+                          href="/terms"
+                          onClick={() => setPolicyOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-3 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors font-medium"
+                        >
+                          <Scale className="w-4 h-4 text-primary/70 shrink-0" />
+                          الشروط والأحكام
+                        </Link>
+                        <div style={{ height: 1, background: "#F1F5F9", margin: "0 12px" }} />
+                        <Link
+                          href="/privacy"
+                          onClick={() => setPolicyOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-3 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors font-medium"
+                        >
+                          <Shield className="w-4 h-4 text-primary/70 shrink-0" />
+                          سياسة الخصوصية
+                        </Link>
+                        <div style={{ height: 1, background: "#F1F5F9", margin: "0 12px" }} />
+                        <Link
+                          href="/usage"
+                          onClick={() => setPolicyOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-3 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors font-medium"
+                        >
+                          <BookOpen className="w-4 h-4 text-primary/70 shrink-0" />
+                          سياسة الاستخدام
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </footer>
             </main>
