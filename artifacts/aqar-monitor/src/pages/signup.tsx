@@ -1,13 +1,9 @@
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Eye, EyeOff, Loader2, LockKeyhole, Mail, User,
-  Briefcase, Wrench, Search, ChevronDown, Phone,
-  ShieldCheck, RefreshCw, CheckCircle2, ArrowRight,
+  Briefcase, Wrench, Search, ChevronDown, ArrowLeft, CheckCircle2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
 import { LogoBrand } from "@/components/logo-brand";
 
@@ -16,66 +12,86 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
   "مطابخ", "مصاعد", "نظافة ومكافحة حشرات", "تصميم داخلي", "تصميم معماري", "تقييم عقاري",
-  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء",
+  "إدارة عقارات", "تصوير عقاري", "صيانة", "مقاولات", "مواد بناء", "أخرى",
 ];
 
 type AccountType = "user" | "real_estate_marketer" | "service_provider";
-type Step = "form" | "otp";
 
 const ACCOUNT_TYPES = [
-  { key: "user" as AccountType,                    label: "عميل باحث عن عقار",   sub: "أبحث عن شراء أو استئجار عقار",  icon: <Search    className="w-5 h-5" /> },
-  { key: "real_estate_marketer" as AccountType,    label: "مسوّق عقاري",          sub: "أعمل في تسويق وبيع العقارات",   icon: <Briefcase className="w-5 h-5" /> },
-  { key: "service_provider" as AccountType,        label: "مزوّد خدمة عقارية",    sub: "أقدم خدمات متعلقة بالعقار",     icon: <Wrench    className="w-5 h-5" /> },
+  {
+    key: "user"                    as AccountType,
+    label: "عميل / باحث عن عقار",
+    sub:   "أبحث عن شراء أو استئجار عقار",
+    icon:  <Search    className="w-5 h-5" />,
+  },
+  {
+    key: "real_estate_marketer"    as AccountType,
+    label: "مسوّق عقاري",
+    sub:   "أعمل في تسويق وبيع العقارات",
+    icon:  <Briefcase className="w-5 h-5" />,
+  },
+  {
+    key: "service_provider"        as AccountType,
+    label: "مزوّد خدمة عقارية",
+    sub:   "أقدم خدمات متعلقة بالعقار",
+    icon:  <Wrench    className="w-5 h-5" />,
+  },
 ];
 
-const RESEND_COOLDOWN = 60;
+// ── Field component ────────────────────────────────────────────────────────────
+
+function Field({ label, required, hint, children }: {
+  label: string; required?: boolean; hint?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[13px] font-bold text-foreground block">
+        {label}
+        {required && <span className="text-red-500 mr-0.5">*</span>}
+      </label>
+      {children}
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+// ── Input styling helpers ──────────────────────────────────────────────────────
+
+const inputBase = "w-full h-11 rounded-xl border text-sm text-foreground bg-background outline-none transition-all placeholder:text-muted-foreground/50";
+const focusHandlers = {
+  onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = "#0F7BA0";
+    e.currentTarget.style.boxShadow   = "0 0 0 3px rgba(15,123,160,0.1)";
+  },
+  onBlur:  (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    e.currentTarget.style.borderColor = "#E2E8F0";
+    e.currentTarget.style.boxShadow   = "none";
+  },
+};
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function Signup() {
   const { signup } = useAuth();
   const [, navigate] = useLocation();
 
-  const [step, setStep] = useState<Step>("form");
+  const [fullName,         setFullName]         = useState("");
+  const [username,         setUsername]         = useState("");
+  const [email,            setEmail]            = useState("");
+  const [password,         setPassword]         = useState("");
+  const [showPass,         setShowPass]         = useState(false);
+  const [accountType,      setAccountType]      = useState<AccountType>("user");
+  const [serviceCategory,  setServiceCategory]  = useState("");
+  const [customCategory,   setCustomCategory]   = useState("");
+  const [termsAccepted,    setTermsAccepted]    = useState(false);
 
-  const [fullName, setFullName]           = useState("");
-  const [username, setUsername]           = useState("");
-  const [email, setEmail]                 = useState("");
-  const [password, setPassword]           = useState("");
-  const [showPassword, setShowPassword]   = useState(false);
-  const [accountType, setAccountType]     = useState<AccountType>("user");
-  const [serviceCategory, setServiceCategory] = useState("");
-  const [phone, setPhone]                 = useState("");
+  const [error,   setError]   = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [otpCode, setOtpCode]             = useState("");
-  const [otpInputs, setOtpInputs]         = useState(["", "", "", "", "", ""]);
-  const otpRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-  ];
+  const isOther = serviceCategory === "أخرى";
+  const finalCategory = isOther ? (customCategory.trim() ? `أخرى: ${customCategory.trim()}` : "") : serviceCategory;
 
-  const [cooldown, setCooldown]           = useState(0);
-  const [normalizedPhone, setNormalizedPhone] = useState("");
-  const [error, setError]                 = useState<string | null>(null);
-  const [success, setSuccess]             = useState<string | null>(null);
-  const [loading, setLoading]             = useState(false);
-  const [sendingOtp, setSendingOtp]       = useState(false);
-  const [testOtp, setTestOtp]             = useState<string | null>(null);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setTimeout(() => setCooldown(c => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [cooldown]);
-
-  useEffect(() => {
-    const joined = otpInputs.join("");
-    setOtpCode(joined);
-  }, [otpInputs]);
-
-  const validateForm = (): string | null => {
+  const validate = (): string | null => {
     if (!fullName.trim() || fullName.trim().length < 2)
       return "الاسم الكامل يجب أن يكون حرفين على الأقل";
     if (!username.trim() || username.trim().length < 3)
@@ -88,177 +104,39 @@ export default function Signup() {
       return "كلمة المرور يجب أن تكون 8 أحرف على الأقل";
     if (accountType === "service_provider" && !serviceCategory)
       return "يرجى اختيار تصنيف الخدمة";
-    if (!phone.trim())
-      return "رقم الجوال مطلوب للتسجيل";
-    const cleaned = phone.trim().replace(/[\s\-().]/g, "");
-    const validPhone =
-      /^05\d{8}$/.test(cleaned) ||
-      /^\+9665\d{8}$/.test(cleaned) ||
-      /^9665\d{8}$/.test(cleaned) ||
-      /^005\d{8}$/.test(cleaned);
-    if (!validPhone)
-      return "يرجى إدخال رقم جوال سعودي صحيح (مثال: 0501234567)";
+    if (accountType === "service_provider" && isOther && !customCategory.trim())
+      return "يرجى كتابة نوع خدمتك";
+    if (!termsAccepted)
+      return "يجب الموافقة على الشروط والأحكام للمتابعة";
     return null;
   };
 
-  const handleSendOtp = async () => {
-    const err = validateForm();
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const err = validate();
     if (err) { setError(err); return; }
     setError(null);
-    setSendingOtp(true);
-    try {
-      const res = await fetch(`${BASE}/api/auth/otp/send`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim() }),
-      });
-      const data = await res.json() as { success?: boolean; message?: string; phone?: string; testMode?: boolean; testOtp?: string };
-      if (!res.ok) {
-        setError(data.message ?? "حدث خطأ أثناء إرسال الرمز");
-        return;
-      }
-      setNormalizedPhone(data.phone ?? phone.trim());
-      setOtpInputs(["", "", "", "", "", ""]);
-      setTestOtp(data.testMode && data.testOtp ? data.testOtp : null);
-      setStep("otp");
-      setCooldown(RESEND_COOLDOWN);
-      if (!data.testMode) {
-        setSuccess("تم إرسال رمز التحقق إلى رقم الجوال");
-        setTimeout(() => setSuccess(null), 4000);
-      }
-      setTimeout(() => otpRefs[0].current?.focus(), 100);
-    } catch {
-      setError("حدث خطأ في الاتصال، يرجى المحاولة مجدداً");
-    } finally {
-      setSendingOtp(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0) return;
-    setError(null);
-    setSendingOtp(true);
-    try {
-      const res = await fetch(`${BASE}/api/auth/otp/send`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim() }),
-      });
-      const data = await res.json() as { success?: boolean; message?: string; testMode?: boolean; testOtp?: string };
-      if (!res.ok) { setError(data.message ?? "خطأ في إرسال الرمز"); return; }
-      setOtpInputs(["", "", "", "", "", ""]);
-      setTestOtp(data.testMode && data.testOtp ? data.testOtp : null);
-      setCooldown(RESEND_COOLDOWN);
-      if (!data.testMode) {
-        setSuccess("تم إعادة إرسال رمز التحقق");
-        setTimeout(() => setSuccess(null), 4000);
-      }
-      setTimeout(() => otpRefs[0].current?.focus(), 100);
-    } catch {
-      setError("حدث خطأ في الاتصال");
-    } finally {
-      setSendingOtp(false);
-    }
-  };
-
-  const handleOtpInput = (idx: number, val: string) => {
-    const digit = val.replace(/\D/g, "").slice(-1);
-    const next = [...otpInputs];
-    next[idx] = digit;
-    setOtpInputs(next);
-    if (digit && idx < 5) {
-      otpRefs[idx + 1].current?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpInputs[idx] && idx > 0) {
-      otpRefs[idx - 1].current?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (!pasted) return;
-    const next = [...otpInputs];
-    for (let i = 0; i < 6; i++) {
-      next[i] = pasted[i] ?? "";
-    }
-    setOtpInputs(next);
-    const lastFilled = Math.min(pasted.length - 1, 5);
-    otpRefs[lastFilled].current?.focus();
-  };
-
-  const handleVerifyAndSignup = async (e: FormEvent) => {
-    e.preventDefault();
-    const code = otpInputs.join("");
-    if (code.length < 6) {
-      setError("يرجى إدخال رمز التحقق المكوّن من 6 أرقام");
-      return;
-    }
-    setError(null);
     setLoading(true);
-
     try {
-      const verifyRes = await fetch(`${BASE}/api/auth/otp/verify`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phone.trim(), code }),
-      });
-      const verifyData = await verifyRes.json() as {
-        success?: boolean;
-        message?: string;
-        expired?: boolean;
-        tooManyAttempts?: boolean;
-      };
-
-      if (!verifyRes.ok) {
-        setError(verifyData.message ?? "رمز التحقق غير صحيح");
-        if (verifyData.expired || verifyData.tooManyAttempts) {
-          setOtpInputs(["", "", "", "", "", ""]);
-        }
-        return;
-      }
-
-      const signupRes = await fetch(`${BASE}/api/auth/signup`, {
+      const res = await fetch(`${BASE}/api/auth/signup`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName, username, email, password,
-          userType: accountType,
-          serviceCategory: accountType === "service_provider" ? serviceCategory : undefined,
-          phone: phone.trim(),
+          fullName:        fullName.trim(),
+          username:        username.trim(),
+          email:           email.trim(),
+          password,
+          userType:        accountType,
+          serviceCategory: accountType === "service_provider" ? finalCategory : undefined,
         }),
       });
-      const signupData = await signupRes.json() as {
-        success?: boolean;
-        message?: string;
-        userId?: number;
-        username?: string;
-        fullName?: string;
-        role?: string;
-      };
+      const data = await res.json() as { success?: boolean; message?: string; role?: string };
+      if (!res.ok) { setError(data.message ?? "خطأ في إنشاء الحساب"); return; }
 
-      if (!signupRes.ok) {
-        setError(signupData.message ?? "خطأ في إنشاء الحساب");
-        if (signupData.message?.includes("جوال") || (signupData as { requiresOtpVerification?: boolean }).requiresOtpVerification) {
-          setStep("form");
-        }
-        return;
-      }
-
-      if (signupData.role === "real_estate_marketer") {
-        navigate("/marketer/dashboard");
-      } else if (signupData.role === "service_provider") {
-        navigate("/services/dashboard");
-      } else {
-        navigate("/");
-      }
+      if (data.role === "real_estate_marketer") navigate("/marketer/dashboard");
+      else if (data.role === "service_provider") navigate("/services/dashboard");
+      else navigate("/");
     } catch {
       setError("حدث خطأ في الاتصال، يرجى المحاولة مجدداً");
     } finally {
@@ -267,339 +145,306 @@ export default function Signup() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen bg-background flex items-center justify-center p-4"
-      style={{
-        background:
-          "radial-gradient(ellipse at 30% 20%, hsl(191 80% 28% / 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, hsl(218 55% 10% / 0.05) 0%, transparent 60%), var(--background)",
-      }}
-    >
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex flex-col items-center">
-          <LogoBrand variant="hero" linkTo="/" />
+    <div dir="rtl" className="min-h-screen flex" style={{ background: "#F6F7FA" }}>
+
+      {/* ── Left decorative panel ─────────────────────────────────── */}
+      <div
+        className="hidden lg:flex flex-col items-center justify-center w-[38%] shrink-0 relative overflow-hidden"
+        style={{ background: "linear-gradient(145deg, #0B1628 0%, #0F2A45 60%, #0F7BA0 100%)" }}
+      >
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "radial-gradient(circle at 25% 35%, #0F7BA0 0%, transparent 55%), radial-gradient(circle at 75% 70%, #0B1628 0%, transparent 60%)" }} />
+        <div className="relative z-10 text-center px-10 space-y-5">
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto"
+            style={{ background: "rgba(15,123,160,0.25)", border: "1.5px solid rgba(15,123,160,0.4)" }}>
+            <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10">
+              <path d="M20 4L4 14v22h10V24h12v12h10V14L20 4z" fill="#0F7BA0" opacity="0.9" />
+              <rect x="16" y="24" width="8" height="12" rx="1" fill="white" opacity="0.15" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-black text-white leading-tight">انضم إلينا</h1>
+          <p className="text-base text-white/60 leading-relaxed max-w-xs mx-auto">
+            أنشئ حسابك واستفد من كامل خدمات منصة عقار إنسايت
+          </p>
+          <div className="flex flex-col gap-3 mt-2 text-right max-w-xs mx-auto">
+            {[
+              { t: "عميل", d: "ابحث عن العقار المناسب" },
+              { t: "مسوّق عقاري", d: "أعلن وتابع عقاراتك" },
+              { t: "مزوّد خدمة", d: "اعرض خدماتك لآلاف العملاء" },
+            ].map(f => (
+              <div key={f.t} className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: "rgba(15,123,160,0.3)" }}>
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
+                    <path d="M2 6l3 3 5-5" stroke="#0F7BA0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <span className="text-sm text-white/70"><strong className="text-white">{f.t}:</strong> {f.d}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-lg shadow-black/5">
+      {/* ── Right: form ───────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-10">
+        <div className="w-full max-w-[440px] space-y-6">
 
-          {/* ─── Step Indicator ─────────────────────────────────── */}
-          <div className="flex items-center gap-2 mb-6">
-            <div className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
-              step === "form"
-                ? "bg-primary text-primary-foreground"
-                : "bg-green-100 text-green-700"
-            }`}>
-              {step === "otp"
-                ? <CheckCircle2 className="w-3.5 h-3.5" />
-                : <span className="w-4 h-4 rounded-full bg-white/30 text-[10px] flex items-center justify-center font-bold">١</span>
-              }
-              بيانات الحساب
-            </div>
-            <div className="flex-1 h-px bg-border/60" />
-            <div className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
-              step === "otp"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
-            }`}>
-              <span className="w-4 h-4 rounded-full bg-white/30 text-[10px] flex items-center justify-center font-bold">٢</span>
-              التحقق بالجوال
-            </div>
+          {/* Logo (mobile) */}
+          <div className="flex flex-col items-center lg:hidden">
+            <LogoBrand variant="hero" linkTo="/" />
           </div>
 
-          {/* ─── STEP 1: Registration Form ──────────────────────── */}
-          {step === "form" && (
-            <div className="space-y-4">
-              <div className="mb-1 space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">إنشاء حساب جديد</h2>
-                <p className="text-sm text-muted-foreground">أنشئ حسابك للاستفادة من جميع الخدمات</p>
-              </div>
+          {/* Card */}
+          <div className="rounded-3xl border border-white/80 p-7 space-y-5"
+            style={{ background: "#fff", boxShadow: "0 4px 32px rgba(11,22,40,0.08)" }}>
 
-              {/* Account type */}
+            {/* Header */}
+            <div className="space-y-0.5">
+              <h2 className="text-[22px] font-black text-foreground tracking-tight">إنشاء حساب جديد</h2>
+              <p className="text-sm text-muted-foreground">أنشئ حسابك للاستفادة من جميع الخدمات</p>
+            </div>
+
+            <form onSubmit={e => void handleSubmit(e)} className="space-y-4" noValidate>
+
+              {/* ── Account type ── */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-foreground">نوع الحساب</Label>
+                <p className="text-[13px] font-bold text-foreground">نوع الحساب</p>
                 <div className="grid grid-cols-1 gap-2">
-                  {ACCOUNT_TYPES.map(type => (
-                    <button
-                      key={type.key}
-                      type="button"
-                      onClick={() => { setAccountType(type.key); if (type.key !== "service_provider") setServiceCategory(""); }}
-                      className={`flex items-center gap-3 p-3 rounded-xl border text-right transition-all ${
-                        accountType === type.key
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-border/60 hover:border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                        accountType === type.key ? "bg-primary/10" : "bg-muted"
-                      }`}>
-                        {type.icon}
-                      </div>
-                      <div className="text-right flex-1 min-w-0">
-                        <p className={`text-sm font-semibold ${accountType === type.key ? "text-primary" : "text-foreground"}`}>
-                          {type.label}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">{type.sub}</p>
-                      </div>
-                      <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                        accountType === type.key ? "border-primary bg-primary" : "border-border"
-                      }`}>
-                        {accountType === type.key && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                    </button>
-                  ))}
+                  {ACCOUNT_TYPES.map(t => {
+                    const active = accountType === t.key;
+                    return (
+                      <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => { setAccountType(t.key); if (t.key !== "service_provider") { setServiceCategory(""); setCustomCategory(""); } }}
+                        className="flex items-center gap-3 p-3.5 rounded-xl border text-right transition-all"
+                        style={{
+                          borderColor: active ? "#0F7BA0" : "#E2E8F0",
+                          background:  active ? "rgba(15,123,160,0.05)" : "#fff",
+                        }}
+                      >
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all"
+                          style={{ background: active ? "rgba(15,123,160,0.12)" : "#F1F5F9", color: active ? "#0F7BA0" : "#64748B" }}>
+                          {t.icon}
+                        </div>
+                        <div className="flex-1 text-right min-w-0">
+                          <p className="text-sm font-bold" style={{ color: active ? "#0F7BA0" : "#111827" }}>{t.label}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{t.sub}</p>
+                        </div>
+                        <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+                          style={{ borderColor: active ? "#0F7BA0" : "#CBD5E1", background: active ? "#0F7BA0" : "transparent" }}>
+                          {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Service category */}
+              {/* ── Service category (service_provider only) ── */}
               {accountType === "service_provider" && (
-                <div className="space-y-2">
-                  <Label htmlFor="serviceCategory" className="text-sm font-medium text-foreground">
-                    تصنيف الخدمة <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Wrench className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                    <select
-                      id="serviceCategory"
-                      value={serviceCategory}
-                      onChange={e => setServiceCategory(e.target.value)}
-                      className="w-full h-11 rounded-xl border border-input bg-background pr-9 pl-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring appearance-none"
-                    >
-                      <option value="">اختر تصنيف خدمتك</option>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  </div>
+                <div className="space-y-2 p-4 rounded-2xl" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                  <Field label="تصنيف الخدمة" required>
+                    <div className="relative">
+                      <Wrench className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <select
+                        value={serviceCategory}
+                        onChange={e => { setServiceCategory(e.target.value); if (e.target.value !== "أخرى") setCustomCategory(""); }}
+                        className={`${inputBase} pr-10 pl-8 appearance-none`}
+                        style={{ borderColor: "#E2E8F0", color: "#111827", background: "#fff" }}
+                        {...focusHandlers}
+                      >
+                        <option value="" style={{ color: "#111827", background: "#fff" }}>اختر تصنيف خدمتك</option>
+                        {CATEGORIES.map(c => <option key={c} value={c} style={{ color: "#111827", background: "#fff" }}>{c}</option>)}
+                      </select>
+                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  </Field>
+
+                  {isOther && (
+                    <div className="pt-1">
+                      <Field label="اكتب نوع الخدمة" required>
+                        <input
+                          type="text"
+                          value={customCategory}
+                          onChange={e => setCustomCategory(e.target.value)}
+                          placeholder="مثال: خدمات ري، تنسيق حدائق..."
+                          className={`${inputBase} px-4`}
+                          style={{ borderColor: "#E2E8F0" }}
+                          {...focusHandlers}
+                        />
+                      </Field>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-sm font-medium text-foreground">الاسم الكامل</Label>
+              {/* ── Full name ── */}
+              <Field label="الاسم الكامل" required>
                 <div className="relative">
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input id="fullName" type="text" autoComplete="name" value={fullName}
-                    onChange={e => setFullName(e.target.value)} placeholder="محمد العمري"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base" required
-                    autoCapitalize="words" autoCorrect="off" spellCheck={false} />
+                  <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    autoComplete="name"
+                    autoCapitalize="words"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    placeholder="محمد العمري"
+                    className={`${inputBase} pr-10 pl-4`}
+                    style={{ borderColor: "#E2E8F0" }}
+                    {...focusHandlers}
+                  />
                 </div>
-              </div>
+              </Field>
 
-              {/* Username */}
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-foreground">اسم المستخدم</Label>
+              {/* ── Username ── */}
+              <Field label="اسم المستخدم" required hint="أحرف إنجليزية وأرقام وشرطة سفلية فقط">
                 <div className="relative">
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none select-none">@</span>
-                  <Input id="username" type="text" autoComplete="username" value={username}
-                    onChange={e => setUsername(e.target.value)} placeholder="m_alomari"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-right text-base font-mono" dir="ltr" required
-                    autoCapitalize="none" autoCorrect="off" spellCheck={false} />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium pointer-events-none select-none">@</span>
+                  <input
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    placeholder="m_alomari"
+                    dir="ltr"
+                    className={`${inputBase} pr-9 pl-4 font-mono`}
+                    style={{ borderColor: "#E2E8F0" }}
+                    {...focusHandlers}
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">أحرف إنجليزية وأرقام وشرطة سفلية فقط</p>
-              </div>
+              </Field>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-foreground">البريد الإلكتروني</Label>
+              {/* ── Email ── */}
+              <Field label="البريد الإلكتروني" required>
                 <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input id="email" type="email" autoComplete="email" value={email}
-                    onChange={e => setEmail(e.target.value)} placeholder="example@email.com"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-base" dir="ltr" required />
+                  <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="example@email.com"
+                    dir="ltr"
+                    className={`${inputBase} pr-10 pl-4`}
+                    style={{ borderColor: "#E2E8F0" }}
+                    {...focusHandlers}
+                  />
                 </div>
-              </div>
+              </Field>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-foreground">كلمة المرور</Label>
+              {/* ── Password ── */}
+              <Field label="كلمة المرور" required hint="8 أحرف على الأقل">
                 <div className="relative">
-                  <LockKeyhole className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input id="password" type={showPassword ? "text" : "password"}
-                    autoComplete="new-password" value={password}
-                    onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-                    className="pr-9 pl-10 h-11 rounded-xl border-border/60 bg-background/50 text-base" required
-                    autoCapitalize="none" autoCorrect="off" spellCheck={false} />
-                  <button type="button" onClick={() => setShowPassword(p => !p)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <LockKeyhole className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    type={showPass ? "text" : "password"}
+                    autoComplete="new-password"
+                    autoCapitalize="none"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className={`${inputBase} pr-10 pl-10`}
+                    style={{ borderColor: "#E2E8F0" }}
+                    {...focusHandlers}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(p => !p)}
+                    tabIndex={-1}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">8 أحرف على الأقل</p>
-              </div>
+              </Field>
 
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium text-foreground">
-                  رقم الجوال <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                  <Input id="phone" type="tel" autoComplete="tel" value={phone}
-                    onChange={e => setPhone(e.target.value)} placeholder="0501234567"
-                    className="pr-9 h-11 rounded-xl border-border/60 bg-background/50 text-base font-mono" dir="ltr" required />
-                </div>
-                <p className="text-xs text-muted-foreground">سيتم إرسال رمز تحقق لتأكيد رقم جوالك</p>
-              </div>
-
-              {error && (
-                <div role="alert" className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-                  <span className="text-base leading-none">⚠</span>
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <Button
-                type="button"
-                onClick={() => void handleSendOtp()}
-                disabled={sendingOtp || !fullName || !username || !email || !password || !phone}
-                className="w-full h-11 rounded-xl text-sm font-semibold shadow-md shadow-primary/20 transition-all mt-2"
+              {/* ── Terms & Conditions ── */}
+              <div
+                className="rounded-2xl p-4 space-y-1"
+                style={{
+                  background:   termsAccepted ? "rgba(15,123,160,0.04)" : "#F8FAFC",
+                  border:       `1.5px solid ${termsAccepted ? "rgba(15,123,160,0.3)" : "#E2E8F0"}`,
+                  transition:   "all 0.2s",
+                }}
               >
-                {sendingOtp ? (
-                  <><Loader2 className="w-4 h-4 animate-spin ml-2" />جارٍ إرسال رمز التحقق…</>
-                ) : (
-                  <><Phone className="w-4 h-4 ml-2" />إرسال رمز التحقق</>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* ─── STEP 2: OTP Verification ────────────────────────── */}
-          {step === "otp" && (
-            <form onSubmit={e => void handleVerifyAndSignup(e)} className="space-y-6" noValidate>
-              <div className="text-center space-y-2">
-                <div
-                  className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                  style={{
-                    background: "linear-gradient(135deg,#0F7BA0,#0a5a78)",
-                    boxShadow: "0 8px 24px rgba(15,123,160,0.35)",
-                  }}
-                >
-                  <ShieldCheck className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">أدخل رمز التحقق</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  تم إرسال رمز مكوّن من 6 أرقام إلى
-                  <br />
-                  <span className="font-mono font-semibold text-foreground" dir="ltr">{normalizedPhone}</span>
-                </p>
-              </div>
-
-              {success && (
-                <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{success}</span>
-                </div>
-              )}
-
-              {/* Test Mode OTP Banner */}
-              {testOtp && (
-                <div
-                  className="rounded-xl border-2 px-4 py-4 text-center space-y-1"
-                  style={{
-                    borderColor: "#f59e0b",
-                    background: "rgba(245,158,11,0.07)",
-                  }}
-                >
-                  <p className="text-xs font-semibold text-amber-700">وضع الاختبار — لا يوجد مزوّد SMS مُفعَّل</p>
-                  <p className="text-xs text-amber-600 mb-2">رمز التحقق الخاص بك:</p>
-                  <div
-                    className="text-3xl font-extrabold tracking-[0.35em] text-amber-700 font-mono select-all cursor-pointer"
-                    dir="ltr"
-                    title="انقر للنسخ"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(testOtp);
-                    }}
-                  >
-                    {testOtp}
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <div className="relative shrink-0 mt-0.5">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={e => setTermsAccepted(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div
+                      className="w-5 h-5 rounded-md flex items-center justify-center transition-all"
+                      style={{
+                        background:   termsAccepted ? "#0F7BA0" : "#fff",
+                        border:       `2px solid ${termsAccepted ? "#0F7BA0" : "#CBD5E1"}`,
+                      }}
+                    >
+                      {termsAccepted && <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                    </div>
                   </div>
-                  <p className="text-[11px] text-amber-500 mt-1">انقر على الرمز لنسخه</p>
-                </div>
-              )}
-
-              {/* OTP Boxes */}
-              <div className="flex justify-center gap-3" dir="ltr">
-                {otpInputs.map((val, idx) => (
-                  <input
-                    key={idx}
-                    ref={otpRefs[idx]}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={val}
-                    onChange={e => handleOtpInput(idx, e.target.value)}
-                    onKeyDown={e => handleOtpKeyDown(idx, e)}
-                    onPaste={idx === 0 ? handleOtpPaste : undefined}
-                    className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 bg-background transition-all outline-none focus:ring-2 focus:ring-primary/30 ${
-                      val
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border/60 text-foreground"
-                    }`}
-                    style={{ fontFeatureSettings: "'tnum'" }}
-                  />
-                ))}
+                  <span className="text-[13px] leading-relaxed text-foreground">
+                    أوافق على{" "}
+                    <Link href="/legal-terms" target="_blank"
+                      className="font-bold underline underline-offset-2 hover:opacity-80 transition-opacity"
+                      style={{ color: "#0F7BA0" }}
+                      onClick={e => e.stopPropagation()}>
+                      الشروط والأحكام
+                    </Link>
+                    {" "}و{" "}
+                    <Link href="/legal-privacy" target="_blank"
+                      className="font-bold underline underline-offset-2 hover:opacity-80 transition-opacity"
+                      style={{ color: "#0F7BA0" }}
+                      onClick={e => e.stopPropagation()}>
+                      سياسة الخصوصية
+                    </Link>
+                  </span>
+                </label>
               </div>
 
-              <p className="text-center text-xs text-muted-foreground">
-                الرمز صالح لمدة 10 دقائق
-              </p>
-
+              {/* ── Error ── */}
               {error && (
-                <div role="alert" className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+                <div role="alert" className="flex items-center gap-2 rounded-xl border px-4 py-3 text-sm"
+                  style={{ background: "#FEF2F2", borderColor: "#FECACA", color: "#DC2626" }}>
                   <span className="text-base leading-none">⚠</span>
                   <span>{error}</span>
                 </div>
               )}
 
-              <Button
+              {/* ── Submit ── */}
+              <button
                 type="submit"
-                disabled={loading || otpCode.length < 6}
-                className="w-full h-11 rounded-xl text-sm font-semibold shadow-md shadow-primary/20 transition-all"
+                disabled={loading}
+                className="w-full h-12 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: loading ? "#94A3B8" : "linear-gradient(135deg, #0B1628, #0F7BA0)", boxShadow: "0 4px 14px rgba(15,123,160,0.3)" }}
               >
                 {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin ml-2" />جارٍ إنشاء الحساب…</>
+                  <><Loader2 className="w-4 h-4 animate-spin" />جارٍ إنشاء الحساب…</>
                 ) : (
-                  <><ShieldCheck className="w-4 h-4 ml-2" />تحقق وأنشئ الحساب</>
+                  <><span>إنشاء الحساب</span><ArrowLeft className="w-4 h-4" /></>
                 )}
-              </Button>
-
-              {/* Resend + Back */}
-              <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => { setStep("form"); setError(null); setOtpInputs(["", "", "", "", "", ""]); }}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowRight className="w-3.5 h-3.5" />
-                  تعديل البيانات
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => void handleResendOtp()}
-                  disabled={cooldown > 0 || sendingOtp}
-                  className="flex items-center gap-1.5 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-primary hover:text-primary/80"
-                >
-                  {sendingOtp ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  )}
-                  {cooldown > 0 ? `إعادة الإرسال (${cooldown}ث)` : "إعادة إرسال الرمز"}
-                </button>
-              </div>
+              </button>
             </form>
-          )}
 
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            لديك حساب بالفعل؟{" "}
-            <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors">
-              تسجيل الدخول
-            </Link>
+            {/* Login link */}
+            <p className="text-center text-[13px] text-muted-foreground pt-1">
+              لديك حساب بالفعل؟{" "}
+              <Link href="/login" className="font-bold transition-colors" style={{ color: "#0F7BA0" }}>
+                تسجيل الدخول
+              </Link>
+            </p>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground/70">
+            © {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة
           </p>
         </div>
-
-        <p className="text-center text-xs text-muted-foreground/80">
-          © {new Date().getFullYear()} عقار إنسايت — جميع الحقوق محفوظة
-        </p>
       </div>
     </div>
   );

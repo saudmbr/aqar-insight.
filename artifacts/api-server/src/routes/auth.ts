@@ -342,24 +342,8 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
     return;
   }
 
-  if (!phone?.trim()) {
-    res.status(400).json({ message: "رقم الجوال مطلوب للتسجيل" });
-    return;
-  }
-
-  const normalizedPhone = normalizeSaudiPhone(phone.trim());
-  if (!normalizedPhone) {
-    res.status(400).json({ message: "يرجى إدخال رقم جوال سعودي صحيح" });
-    return;
-  }
-
-  if (req.session.otpVerifiedPhone !== normalizedPhone) {
-    res.status(400).json({
-      message: "لم يتم التحقق من رقم الجوال. يرجى إتمام خطوة التحقق أولاً",
-      requiresOtpVerification: true,
-    });
-    return;
-  }
+  /* ── Phone is optional (OTP temporarily disabled) ── */
+  const normalizedPhone = phone?.trim() ? normalizeSaudiPhone(phone.trim()) : null;
 
   try {
     const existing = await db
@@ -397,9 +381,11 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         email: email.trim().toLowerCase(),
         passwordHash,
         role: assignedRole,
-        phoneNumber: normalizedPhone,
-        phoneVerified: true,
-        phoneVerifiedAt: new Date(),
+        ...(normalizedPhone ? {
+          phoneNumber: normalizedPhone,
+          phoneVerified: true,
+          phoneVerifiedAt: new Date(),
+        } : {}),
       })
       .returning();
 
@@ -412,8 +398,6 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         status: "active",
       });
     }
-
-    req.session.otpVerifiedPhone = undefined;
 
     req.session.isAuthenticated = true;
     req.session.isAdmin = false;
