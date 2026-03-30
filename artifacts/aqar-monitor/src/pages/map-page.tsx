@@ -235,96 +235,100 @@ export default function MapPage() {
             </button>
           )}
         </div>
-        <form onSubmit={handleSearch} className="px-4 py-3 flex flex-wrap gap-3 items-end">
-          {/* المنطقة */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>المنطقة</label>
-            <select
-              value={region}
-              onChange={e => { setRegion(e.target.value); setCity(""); }}
-              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-semibold"
-              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
-            >
-              <option value="" style={{ color: "#111827" }}>كل المناطق</option>
-              {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r} style={{ color: "#111827" }}>{r}</option>)}
-            </select>
+        <form onSubmit={handleSearch} className="px-4 py-3">
+          {/* Row 1: dropdowns */}
+          <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
+            {/* المنطقة */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>المنطقة</label>
+              <select
+                value={region}
+                onChange={e => { setRegion(e.target.value); setCity(""); }}
+                className="border-2 rounded-lg px-2.5 py-0 text-sm h-9 w-full focus:outline-none focus:border-primary font-semibold appearance-none"
+                style={{ color: "#111827", background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\") no-repeat left 8px center", borderColor: "#cbd5e1", paddingLeft: "28px" }}
+              >
+                <option value="" style={{ color: "#111827" }}>كل المناطق</option>
+                {SAUDI_REGIONS_LIST.map(r => <option key={r} value={r} style={{ color: "#111827" }}>{r}</option>)}
+              </select>
+            </div>
+
+            {/* المحافظة */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>المحافظة</label>
+              <select
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                disabled={!region}
+                className="border-2 rounded-lg px-2.5 py-0 text-sm h-9 w-full focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed font-semibold appearance-none"
+                style={{ color: "#111827", background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\") no-repeat left 8px center", borderColor: "#cbd5e1", paddingLeft: "28px" }}
+              >
+                <option value="" style={{ color: "#111827" }}>{region ? "كل المحافظات" : "اختر منطقة أولاً"}</option>
+                {getMuhafazat(region).map(m => <option key={m} value={m} style={{ color: "#111827" }}>{m}</option>)}
+              </select>
+            </div>
+
+            {/* نوع العقار */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع العقار</label>
+              <select
+                value={propertyType}
+                onChange={e => setPropertyType(e.target.value)}
+                className="border-2 rounded-lg px-2.5 py-0 text-sm h-9 w-full focus:outline-none focus:border-primary font-semibold appearance-none"
+                style={{ color: "#111827", background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\") no-repeat left 8px center", borderColor: "#cbd5e1", paddingLeft: "28px" }}
+              >
+                <option value="" style={{ color: "#111827" }}>كل الأنواع</option>
+                {PROPERTY_TYPE_GROUPS.map(g => (
+                  <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
+                    {g.types.map(t => <option key={t} value={t} style={{ color: "#111827" }}>{t}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+
+            {/* نوع الإعلان */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع الإعلان</label>
+              <select
+                value={listingType}
+                onChange={e => setListingType(e.target.value)}
+                className="border-2 rounded-lg px-2.5 py-0 text-sm h-9 w-full focus:outline-none focus:border-primary font-semibold appearance-none"
+                style={{ color: "#111827", background: "#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\") no-repeat left 8px center", borderColor: "#cbd5e1", paddingLeft: "28px" }}
+              >
+                <option value="" style={{ color: "#111827" }}>الكل</option>
+                {LISTING_TYPE_GROUPS.map(g => (
+                  <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
+                    {g.types.map(t => <option key={t.value} value={t.value} style={{ color: "#111827" }}>{t.label}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* المحافظة */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>المحافظة</label>
-            <select
-              value={city}
-              onChange={e => setCity(e.target.value)}
-              disabled={!region}
-              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
-            >
-              <option value="" style={{ color: "#111827" }}>{region ? "كل المحافظات" : "اختر منطقة أولاً"}</option>
-              {getMuhafazat(region).map(m => <option key={m} value={m} style={{ color: "#111827" }}>{m}</option>)}
-            </select>
+          {/* Row 2: price range + button */}
+          <div className="flex items-end gap-3 flex-wrap">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>من (ر.س)</label>
+              <Input
+                type="number" placeholder="0" value={minPrice}
+                onChange={e => setMinPrice(e.target.value)}
+                className="h-9 w-32 text-sm border-2 font-semibold"
+                style={{ color: "#111827" }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold" style={{ color: "#111827" }}>إلى (ر.س)</label>
+              <Input
+                type="number" placeholder="بلا حد" value={maxPrice}
+                onChange={e => setMaxPrice(e.target.value)}
+                className="h-9 w-32 text-sm border-2 font-semibold"
+                style={{ color: "#111827" }}
+              />
+            </div>
+            <Button type="submit" size="sm" className="h-9 gap-2 text-sm px-5 font-bold">
+              <Search className="w-3.5 h-3.5" />
+              بحث
+            </Button>
           </div>
-
-          {/* نوع العقار */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع العقار</label>
-            <select
-              value={propertyType}
-              onChange={e => setPropertyType(e.target.value)}
-              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[130px] focus:outline-none focus:border-primary font-semibold"
-              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
-            >
-              <option value="" style={{ color: "#111827" }}>كل الأنواع</option>
-              {PROPERTY_TYPE_GROUPS.map(g => (
-                <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
-                  {g.types.map(t => <option key={t} value={t} style={{ color: "#111827" }}>{t}</option>)}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-
-          {/* نوع الإعلان */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>نوع الإعلان</label>
-            <select
-              value={listingType}
-              onChange={e => setListingType(e.target.value)}
-              className="border-2 rounded-lg px-3 py-1.5 text-sm h-9 min-w-[120px] focus:outline-none focus:border-primary font-semibold"
-              style={{ color: "#111827", background: "#fff", borderColor: "#cbd5e1" }}
-            >
-              <option value="" style={{ color: "#111827" }}>الكل</option>
-              {LISTING_TYPE_GROUPS.map(g => (
-                <optgroup key={g.label} label={`── ${g.label}`} style={{ color: "#374151" }}>
-                  {g.types.map(t => <option key={t.value} value={t.value} style={{ color: "#111827" }}>{t.label}</option>)}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-
-          {/* نطاق السعر */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>من (ر.س)</label>
-            <Input
-              type="number" placeholder="0" value={minPrice}
-              onChange={e => setMinPrice(e.target.value)}
-              className="h-9 w-28 text-sm border-2 font-semibold"
-              style={{ color: "#111827" }}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold" style={{ color: "#111827" }}>إلى (ر.س)</label>
-            <Input
-              type="number" placeholder="بلا حد" value={maxPrice}
-              onChange={e => setMaxPrice(e.target.value)}
-              className="h-9 w-28 text-sm border-2 font-semibold"
-              style={{ color: "#111827" }}
-            />
-          </div>
-
-          <Button type="submit" size="sm" className="h-9 gap-2 self-end text-sm px-5 font-bold">
-            <Search className="w-3.5 h-3.5" />
-            بحث
-          </Button>
         </form>
       </div>
 
