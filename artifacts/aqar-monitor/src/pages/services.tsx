@@ -1,4 +1,5 @@
 import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
+import { PlatformRatingWidget } from "@/components/platform-rating-widget";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout/layout";
@@ -278,6 +279,7 @@ export default function Services() {
           </div>
         )}
       </div>
+      <PlatformRatingWidget />
     </Layout>
   );
 }

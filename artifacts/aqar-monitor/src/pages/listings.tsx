@@ -1,4 +1,5 @@
-import { SAUDI_REGIONS_LIST, getMuhafazat } from "@/lib/saudi-geo";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity, ALL_AHYAA } from "@/lib/saudi-geo";
+import { PlatformRatingWidget } from "@/components/platform-rating-widget";
 import { PROPERTY_TYPE_GROUPS, PROPERTY_TYPES_FLAT } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 import { useState, useEffect, type FormEvent } from "react";
@@ -280,7 +281,27 @@ export default function Listings() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-semibold text-foreground">الحي</label>
-                  <Input placeholder="اكتب اسم الحي…" value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl font-medium" />
+                  {(() => {
+                    const ahyaa = city ? getAllAhyaaForCity(region, city) : ALL_AHYAA;
+                    const listId = "listings-ahyaa-list";
+                    return (
+                      <>
+                        <datalist id={listId}>
+                          {ahyaa.map(h => <option key={h} value={h} />)}
+                          <option value="أخرى" />
+                        </datalist>
+                        <input
+                          type="text"
+                          list={listId}
+                          placeholder={city ? "اكتب أو اختر الحي…" : "جميع الأحياء"}
+                          value={district}
+                          onChange={e => setDistrict(e.target.value)}
+                          className="h-11 rounded-xl border border-input bg-background px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                          style={{ color: "#111827" }}
+                        />
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               {/* Row 2 — نوع + غرض + سعر + غرف */}
@@ -393,6 +414,7 @@ export default function Listings() {
           </div>
         )}
       </div>
+      <PlatformRatingWidget />
     </Layout>
   );
 }

@@ -86,6 +86,7 @@ export default function MarketerDashboard() {
   // For specialties multi-select
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
   const [servedAreasText, setServedAreasText] = useState("");
+  const [customSpecialty, setCustomSpecialty] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) { navigate("/login"); return; }
@@ -303,21 +304,58 @@ export default function MarketerDashboard() {
                 <Input value={servedAreasText} onChange={e => setServedAreasText(e.target.value)} placeholder="مثال: حي الملقا، الياسمين، الرياض" className="h-10 rounded-xl" />
               </Field>
               <Field label="التخصصات">
-                <div className="flex flex-wrap gap-2">
-                  {SPECIALTIES_OPTIONS.map(s => (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {SPECIALTIES_OPTIONS.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleSpecialty(s)}
+                        className={`text-xs px-3 py-1.5 rounded-xl border transition-all font-medium ${
+                          selectedSpecialties.includes(s)
+                            ? "bg-primary text-white border-primary"
+                            : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-primary"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                    {selectedSpecialties.filter(s => !SPECIALTIES_OPTIONS.includes(s)).map(s => (
+                      <span key={s} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border bg-primary text-white border-primary">
+                        {s}
+                        <button type="button" onClick={() => toggleSpecialty(s)} className="ml-0.5 opacity-70 hover:opacity-100 font-bold">×</button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={customSpecialty}
+                      onChange={e => setCustomSpecialty(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = customSpecialty.trim();
+                          if (v && !selectedSpecialties.includes(v)) toggleSpecialty(v);
+                          setCustomSpecialty("");
+                        }
+                      }}
+                      placeholder="أضف تخصصاً مخصصاً…"
+                      className="flex-1 h-9 rounded-xl border border-input bg-background px-3 text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                      style={{ color: "#111827" }}
+                    />
                     <button
-                      key={s}
                       type="button"
-                      onClick={() => toggleSpecialty(s)}
-                      className={`text-xs px-3 py-1.5 rounded-xl border transition-all font-medium ${
-                        selectedSpecialties.includes(s)
-                          ? "bg-primary text-white border-primary"
-                          : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-primary"
-                      }`}
+                      onClick={() => {
+                        const v = customSpecialty.trim();
+                        if (v && !selectedSpecialties.includes(v)) toggleSpecialty(v);
+                        setCustomSpecialty("");
+                      }}
+                      className="h-9 px-4 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors"
                     >
-                      {s}
+                      إضافة
                     </button>
-                  ))}
+                  </div>
                 </div>
               </Field>
             </Section>

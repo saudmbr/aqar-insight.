@@ -1,4 +1,5 @@
 import { SAUDI_REGIONS_LIST } from "@/lib/saudi-geo";
+import { PlatformRatingWidget } from "@/components/platform-rating-widget";
 import { ReportDialog } from "@/components/report-dialog";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
@@ -476,6 +477,7 @@ export default function Requests() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <PlatformRatingWidget />
     </Layout>
   );
 }

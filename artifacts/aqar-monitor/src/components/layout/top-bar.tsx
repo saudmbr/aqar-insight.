@@ -26,15 +26,16 @@ const socialLinks = [
 
 export function TopBar() {
   const { toggleLang, lang } = useLang();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
   const isAr = lang === "ar";
 
   const handlePostProperty = () => {
-    if (isAuthenticated) {
-      navigate("/listings/new");
+    if (!isAuthenticated) { navigate("/login"); return; }
+    if (user?.role === "service_provider") {
+      navigate("/services/new");
     } else {
-      navigate("/login");
+      navigate("/listings/new");
     }
   };
 

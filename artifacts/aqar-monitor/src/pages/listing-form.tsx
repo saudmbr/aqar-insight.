@@ -294,30 +294,23 @@ export default function ListingForm() {
 
               {/* حي — عمود كامل */}
               <FieldGroup label="الحي" className="sm:col-span-2">
-                {getAllAhyaaForCity(form.region ?? "", form.city ?? "").length > 0 ? (
-                  <>
-                    <datalist id="form-ahyaa-list">
-                      {getAllAhyaaForCity(form.region ?? "", form.city ?? "").map(h => (
-                        <option key={h} value={h} />
-                      ))}
-                    </datalist>
-                    <input
-                      type="text"
-                      list="form-ahyaa-list"
-                      placeholder="اكتب أو اختر الحي…"
-                      value={form.district ?? ""}
-                      onChange={e => set("district", e.target.value)}
-                      className="h-12 rounded-xl border border-input bg-background px-4 text-sm font-medium w-full focus:ring-2 focus:ring-primary/20 outline-none"
-                    />
-                  </>
-                ) : (
-                  <Input
-                    placeholder="مثال: حي الملقا"
+                <>
+                  <datalist id="form-ahyaa-list">
+                    {getAllAhyaaForCity(form.region ?? "", form.city ?? "").map(h => (
+                      <option key={h} value={h} />
+                    ))}
+                    <option value="أخرى" />
+                  </datalist>
+                  <input
+                    type="text"
+                    list="form-ahyaa-list"
+                    placeholder={form.city ? "اكتب أو اختر الحي…" : "مثال: حي الملقا"}
                     value={form.district ?? ""}
                     onChange={e => set("district", e.target.value)}
-                    className="h-12 rounded-xl"
+                    className="h-12 rounded-xl border border-input bg-background px-4 text-sm font-medium w-full focus:ring-2 focus:ring-primary/20 outline-none"
+                    style={{ color: "#111827" }}
                   />
-                )}
+                </>
                 <p className="text-xs text-primary/80 mt-1.5 flex items-center gap-1">
                   <span>📍</span>
                   <span>تعبئة الحي ضرورية لظهور إعلانك في تحليلات الأحياء ومقارنة الأسعار</span>

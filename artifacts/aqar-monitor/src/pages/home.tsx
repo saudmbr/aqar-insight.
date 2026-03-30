@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import type { MapPin as MapPinItem } from "@/components/property-map";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity, ALL_AHYAA } from "@/lib/saudi-geo";
+import { PlatformRatingWidget } from "@/components/platform-rating-widget";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
@@ -247,6 +248,11 @@ const INPUT_CLS = "border border-border rounded-xl px-3 py-2.5 text-sm bg-backgr
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+
+  const handlePostProperty = () => {
+    if (!isAuthenticated) { navigate("/login"); return; }
+    navigate(user?.role === "service_provider" ? "/services/new" : "/listings/new");
+  };
 
   // Quick search state (hero bar) — منطقة → محافظة → حي
   const [quickRegion, setQuickRegion]           = useState("");
@@ -737,31 +743,30 @@ export default function Home() {
 
               {/* CTA row */}
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/listings/new">
-                  <motion.button
-                    whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(245,158,11,0.6), 0 0 0 1px rgba(245,158,11,0.5)" }}
-                    whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all"
-                    style={{
-                      background: "rgba(245,158,11,0.12)",
-                      border: "1.5px solid rgba(245,158,11,0.55)",
-                      boxShadow: "0 4px 20px rgba(245,158,11,0.30), inset 0 1px 0 rgba(255,255,255,0.08)",
-                      color: "#fbbf24",
-                      backdropFilter: "blur(8px)",
-                    }}
-                  >
-                    <PlusCircle className="w-4 h-4" style={{ filter: "drop-shadow(0 0 4px rgba(251,191,36,0.8))" }} />
-                    <span style={{
-                      background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      filter: "drop-shadow(0 0 8px rgba(245,158,11,0.5))",
-                    }}>
-                      أضف عقارك الآن
-                    </span>
-                  </motion.button>
-                </Link>
+                <motion.button
+                  onClick={handlePostProperty}
+                  whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(245,158,11,0.6), 0 0 0 1px rgba(245,158,11,0.5)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl font-black text-sm transition-all"
+                  style={{
+                    background: "rgba(245,158,11,0.12)",
+                    border: "1.5px solid rgba(245,158,11,0.55)",
+                    boxShadow: "0 4px 20px rgba(245,158,11,0.30), inset 0 1px 0 rgba(255,255,255,0.08)",
+                    color: "#fbbf24",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  <PlusCircle className="w-4 h-4" style={{ filter: "drop-shadow(0 0 4px rgba(251,191,36,0.8))" }} />
+                  <span style={{
+                    background: "linear-gradient(135deg, #fde68a, #f59e0b, #d97706)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    filter: "drop-shadow(0 0 8px rgba(245,158,11,0.5))",
+                  }}>
+                    أضف إعلانك الآن
+                  </span>
+                </motion.button>
                 <Link href="/listings">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -836,12 +841,10 @@ export default function Home() {
               </button>
             ))}
             <div className="mr-auto">
-              <Link href="/listings/new">
-                <button className="inline-flex items-center gap-2 bg-sidebar text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:opacity-90 transition-all">
-                  <PlusCircle className="w-4 h-4" />
-                  أضف إعلانك
-                </button>
-              </Link>
+              <button onClick={handlePostProperty} className="inline-flex items-center gap-2 bg-sidebar text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:opacity-90 transition-all">
+                <PlusCircle className="w-4 h-4" />
+                أضف إعلانك
+              </button>
             </div>
           </div>
         </motion.div>
@@ -890,11 +893,9 @@ export default function Home() {
                   عرض جميع الإعلانات
                 </button>
               )}
-              <Link href="/listings/new">
-                <button className="mt-1 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
-                  أضف أول إعلان
-                </button>
-              </Link>
+              <button onClick={handlePostProperty} className="mt-1 bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-primary/90 transition-all">
+                أضف أول إعلان
+              </button>
             </div>
           ) : (
             <>
@@ -1068,19 +1069,19 @@ export default function Home() {
 
         <motion.div variants={fadeUp}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/listings/new">
+            <button onClick={handlePostProperty} className="text-right">
               <div className="bg-sidebar rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(15,123,160,0.3),transparent_70%)] pointer-events-none" />
                 <div className="relative">
                   <Building2 className="w-8 h-8 mb-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                  <h3 className="font-bold text-lg mb-1.5">أضف عقارك</h3>
+                  <h3 className="font-bold text-lg mb-1.5">أضف إعلانك</h3>
                   <p className="text-[13px] text-white/80 mb-4">انشر إعلانك واعرضه على المهتمين والباحثين عن عقار</p>
                   <div className="flex items-center gap-1.5 text-[13px] font-bold text-white/90 group-hover:text-white transition-colors">
                     ابدأ الآن <ArrowLeft className="w-4 h-4" />
                   </div>
                 </div>
               </div>
-            </Link>
+            </button>
             <Link href="/marketers">
               <div className="bg-gradient-to-br from-accent/80 to-accent/50 rounded-2xl p-7 text-white cursor-pointer hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_70%)] pointer-events-none" />
@@ -1492,6 +1493,7 @@ export default function Home() {
         )}
 
       </motion.div>
+      <PlatformRatingWidget />
     </Layout>
   );
 }
