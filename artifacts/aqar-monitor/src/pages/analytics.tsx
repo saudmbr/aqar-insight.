@@ -10,8 +10,10 @@ import {
   TrendingUp, TrendingDown, Minus, BarChart3, Activity,
   Lightbulb, Scale, Target, Zap, Home, AlertCircle,
   Award, ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight,
-  MapPin, ShoppingCart, Clock, Flame,
+  MapPin, ShoppingCart, Clock, Flame, LineChart as LineChartIcon,
+  Building2, Banknote, Globe2, PieChart as PieChartIcon,
 } from "lucide-react";
+import { SAR } from "@/components/sar-amount";
 import {
   useAnalytics, useAnalyticsTrends, useAnalyticsFilterOptions,
   computeMarketDirection, computeActivityLevel,
@@ -1003,18 +1005,156 @@ export default function Analytics() {
     <Layout>
       <div className="max-w-6xl mx-auto px-4 py-8">
 
-        {/* ── Header ── */}
-        <div className="mb-7">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: `${TEAL}14`, border: `1.5px solid ${TEAL}25` }}>
-              <BarChart3 className="w-5 h-5" style={{ color: TEAL }} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-foreground tracking-tight">تحليلات السوق العقاري</h1>
-              <p className="text-[13px] text-muted-foreground mt-0.5">{totalStr}</p>
-            </div>
+        {/* ══════════════════════════════════════════════════════════════
+            ANALYTICS HERO
+        ══════════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="relative rounded-3xl overflow-hidden mb-8"
+          style={{
+            background: "linear-gradient(135deg, #060D1C 0%, #0B1E3A 45%, #0F2744 70%, #0B1628 100%)",
+            boxShadow: "0 8px 48px rgba(6,13,28,0.35), 0 2px 0 rgba(15,123,160,0.18) inset",
+          }}
+        >
+          {/* Animated background grid */}
+          <div className="absolute inset-0 opacity-[0.07]"
+            style={{ backgroundImage: "linear-gradient(rgba(15,123,160,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(15,123,160,0.8) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
+
+          {/* Glow blobs */}
+          <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full opacity-[0.12]"
+            style={{ background: "radial-gradient(circle, #0F7BA0, transparent 70%)", transform: "translate(30%, -40%)" }} />
+          <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full opacity-[0.08]"
+            style={{ background: "radial-gradient(circle, #8B5CF6, transparent 70%)", transform: "translate(-20%, 40%)" }} />
+
+          {/* Decorative chart lines (right side) */}
+          <div className="absolute inset-y-0 left-0 w-56 opacity-[0.06] pointer-events-none hidden md:block">
+            <svg viewBox="0 0 220 200" className="w-full h-full" preserveAspectRatio="none">
+              <polyline points="0,160 40,120 80,140 120,80 160,100 200,40 220,55" fill="none" stroke="#0F7BA0" strokeWidth="2" />
+              <polyline points="0,180 40,155 80,170 120,130 160,145 200,90 220,105" fill="none" stroke="#10B981" strokeWidth="1.5" />
+            </svg>
           </div>
-        </div>
+
+          {/* Content */}
+          <div className="relative px-7 pt-9 pb-7 md:px-12 md:pt-11 md:pb-9">
+
+            {/* Eyebrow badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-bold mb-5"
+              style={{ background: "rgba(15,123,160,0.22)", border: "1px solid rgba(15,123,160,0.45)", color: "rgba(255,255,255,0.9)" }}
+            >
+              <Activity className="w-3.5 h-3.5 text-cyan-300" />
+              مؤشرات السوق العقاري · عقار إنسايت
+            </motion.div>
+
+            {/* Title + description */}
+            <div className="max-w-2xl">
+              <motion.h1
+                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, type: "spring", stiffness: 200 }}
+                className="text-[2rem] md:text-[2.6rem] font-extrabold leading-[1.08] tracking-tight text-white mb-4"
+              >
+                رصد السوق العقاري السعودي
+                <br />
+                <span style={{ color: "#7DD3EA" }}>بدقة وفي الوقت الحقيقي</span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26 }}
+                className="text-[14.5px] md:text-[15.5px] leading-relaxed font-medium mb-8"
+                style={{ color: "rgba(255,255,255,0.65)" }}
+              >
+                تحليلات شاملة ومؤشرات دقيقة لأسعار العقارات عبر مناطق ومدن وأحياء المملكة العربية السعودية —
+                قارن الأسعار، تتبّع الاتجاهات، وتعرّف على فرص الاستثمار الأمثل.
+              </motion.p>
+            </div>
+
+            {/* Feature pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}
+              className="flex flex-wrap gap-2.5 mb-8"
+            >
+              {[
+                { icon: LineChartIcon,   label: "اتجاهات الأسعار الزمنية" },
+                { icon: PieChartIcon,    label: "توزيع أنواع العقارات" },
+                { icon: MapPin,          label: "تحليل جغرافي للأحياء" },
+                { icon: Lightbulb,       label: "ذكاء تحليلي استثماري" },
+              ].map(f => (
+                <div key={f.label}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[11.5px] font-semibold"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.75)" }}
+                >
+                  <f.icon className="w-3 h-3 opacity-80" />
+                  {f.label}
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Live KPI strip */}
+            {kpis && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44 }}
+                className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-6"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}
+              >
+                {[
+                  {
+                    icon: Building2,
+                    label: "إعلان نشط",
+                    value: formatNumber(kpis.totalListings),
+                    color: "#0F7BA0",
+                  },
+                  {
+                    icon: Banknote,
+                    label: "متوسط سعر المتر",
+                    value: <SAR value={kpis.avgPricePerSqm} perSqm dark />,
+                    color: "#10B981",
+                  },
+                  {
+                    icon: Activity,
+                    label: "إعلانات هذا الشهر",
+                    value: formatNumber(kpis.newLast30Days ?? 0),
+                    color: "#8B5CF6",
+                  },
+                  {
+                    icon: Globe2,
+                    label: "مناطق مُحلَّلة",
+                    value: String(insights?.byRegion?.length ?? 0),
+                    color: "#F59E0B",
+                  },
+                ].map((s, i) => (
+                  <div key={s.label} className="flex items-center gap-2.5 group/kpi">
+                    {i > 0 && <div className="hidden sm:block w-px h-7 opacity-15" style={{ background: "rgba(255,255,255,0.5)" }} />}
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover/kpi:scale-110"
+                      style={{ background: `${s.color}20`, border: `1px solid ${s.color}35` }}>
+                      <s.icon className="w-3.5 h-3.5" style={{ color: s.color }} />
+                    </div>
+                    <div>
+                      <div className="text-[1.05rem] font-extrabold text-white leading-none tabular-nums tracking-tight">{s.value}</div>
+                      <div className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{s.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+            {!kpis && loadingInsights && (
+              <div className="pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}>
+                <div className="flex gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl opacity-20 bg-white" />
+                      <div className="space-y-1.5">
+                        <div className="w-16 h-3 bg-white/20 rounded animate-pulse" />
+                        <div className="w-12 h-2.5 bg-white/10 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
 
         {/* ── Filters ── */}
         <div className="mb-5">
