@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Layout } from "@/components/layout/layout";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import {
-  Shield, Zap, Heart, TrendingUp, Building2, MapPin,
+  Shield, Zap, TrendingUp, Building2,
   Users, BarChart3, Star, CheckCircle2, Eye, Target,
-  ArrowLeft, Sparkles, Globe2, ChevronLeft, Home,
-  Map, Award, Layers, Database, BadgeCheck,
-  Telescope, Crosshair,
+  ArrowLeft, Sparkles, Globe2, Home, ChevronLeft,
+  Map, Layers, Database,
+  Telescope, Crosshair, Activity,
 } from "lucide-react";
+
+const BASE_URL = import.meta.env.BASE_URL?.replace(/\/$/, "") || "";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -181,13 +183,6 @@ const STATS = [
     glow: "rgba(15,123,160,0.4)",
   },
   {
-    value: "١٠٠٪",
-    label: "بيانات سعودية أصيلة",
-    icon: BadgeCheck,
-    gradient: "linear-gradient(135deg,#1e3a5f,#0F1C3F)",
-    glow: "rgba(15,28,63,0.5)",
-  },
-  {
     value: "مجاناً",
     label: "التسجيل والاستخدام الأساسي",
     icon: Zap,
@@ -203,44 +198,6 @@ const STATS = [
   },
 ];
 
-const VALUES = [
-  {
-    icon: Shield,
-    title: "الشفافية",
-    desc: "أسعار حقيقية من السوق، لا أرقام منتقاة أو مضخّمة. ما تراه هو ما يحدث فعلاً.",
-    gradient: "linear-gradient(135deg,#0F7BA0,#0a5a78)",
-    glow: "rgba(15,123,160,0.35)",
-    accent: "#0F7BA0",
-    bg: "linear-gradient(135deg,rgba(15,123,160,0.08),rgba(15,123,160,0.02))",
-  },
-  {
-    icon: Award,
-    title: "الموثوقية",
-    desc: "بيانات موثّقة وتحليلات يمكن الاعتماد عليها في كل قرار كبير أو صغير.",
-    gradient: "linear-gradient(135deg,#64748b,#475569)",
-    glow: "rgba(100,116,139,0.35)",
-    accent: "#94A3B8",
-    bg: "linear-gradient(135deg,rgba(148,163,184,0.08),rgba(148,163,184,0.02))",
-  },
-  {
-    icon: Layers,
-    title: "الابتكار",
-    desc: "تقنيات حديثة وأدوات ذكية نطوّرها باستمرار لجعل العقار أسهل وأذكى للجميع.",
-    gradient: "linear-gradient(135deg,#0F7BA0,#095a75)",
-    glow: "rgba(15,123,160,0.35)",
-    accent: "#0F7BA0",
-    bg: "linear-gradient(135deg,rgba(15,123,160,0.08),rgba(15,123,160,0.02))",
-  },
-  {
-    icon: Heart,
-    title: "المجتمع",
-    desc: "نبني منصة يجد فيها كل طرف — مشتري وبائع ومسوّق ومزود خدمة — ما يحتاجه بثقة وسهولة.",
-    gradient: "linear-gradient(135deg,#475569,#334155)",
-    glow: "rgba(71,85,105,0.35)",
-    accent: "#94A3B8",
-    bg: "linear-gradient(135deg,rgba(148,163,184,0.08),rgba(148,163,184,0.02))",
-  },
-];
 
 const WHY_US = [
   { icon: BarChart3,    text: "مقارنة أسعار الأحياء في ثوانٍ",                gradient: "linear-gradient(135deg,#0F7BA0,#0a5a78)", glow: "rgba(15,123,160,0.3)" },
@@ -250,6 +207,130 @@ const WHY_US = [
   { icon: Building2,    text: "منصة متكاملة للبيع والإيجار والاستثمار",         gradient: "linear-gradient(135deg,#1e3a5f,#0F1C3F)", glow: "rgba(30,58,95,0.3)"  },
   { icon: Database,     text: "بيانات موثّقة ومحدّثة باستمرار",                gradient: "linear-gradient(135deg,#64748b,#475569)", glow: "rgba(100,116,139,0.3)"},
 ];
+
+/* ─── Platform Rating Component ─────────────────────────────── */
+
+function PlatformRating() {
+  const [hovered, setHovered]   = useState(0);
+  const [selected, setSelected] = useState(0);
+  const [avg, setAvg]           = useState(0);
+  const [count, setCount]       = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading]   = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const r = await fetch(`${BASE_URL}/api/platform-rating`);
+      const d = await r.json();
+      setAvg(d.avg ?? 0);
+      setCount(d.count ?? 0);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    const saved = localStorage.getItem("platform_rating_v1");
+    if (saved) { setSelected(parseInt(saved, 10)); setSubmitted(true); }
+  }, [fetchStats]);
+
+  const handleRate = async (stars: number) => {
+    if (submitted || loading) return;
+    setLoading(true);
+    try {
+      const r = await fetch(`${BASE_URL}/api/platform-rating`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stars }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        setSelected(stars);
+        setSubmitted(true);
+        setAvg(d.avg ?? 0);
+        setCount(d.count ?? 0);
+        localStorage.setItem("platform_rating_v1", String(stars));
+      }
+    } catch {}
+    setLoading(false);
+  };
+
+  const activeStars = hovered || selected;
+
+  return (
+    <motion.div variants={fadeUp}>
+      <div
+        className="rounded-[26px] overflow-hidden text-center py-12 px-8"
+        style={{
+          background: "linear-gradient(135deg,#fff 0%,#f8fafc 100%)",
+          border: "1.5px solid #e2e8f0",
+          boxShadow: "0 8px 40px rgba(15,28,63,0.07)",
+        }}
+      >
+        <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full text-xs font-bold text-amber-700 mb-5">
+          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+          قيّم المنصة
+        </div>
+
+        <h2 className="text-2xl font-extrabold text-foreground mb-2">
+          {submitted ? "شكراً لتقييمك!" : "كيف تقيّم تجربتك مع عقار إنسايت؟"}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
+          {submitted
+            ? `أضفت تقييم ${selected} من ٥ نجوم. رأيك يساعدنا على التحسين المستمر.`
+            : "أخبرنا برأيك — اختر عدد النجوم فقط"}
+        </p>
+
+        <div className="flex items-center justify-center gap-3 mb-8">
+          {[1, 2, 3, 4, 5].map(s => (
+            <button
+              key={s}
+              onMouseEnter={() => !submitted && setHovered(s)}
+              onMouseLeave={() => !submitted && setHovered(0)}
+              onClick={() => handleRate(s)}
+              disabled={submitted || loading}
+              className="transition-all duration-150 focus:outline-none disabled:cursor-not-allowed"
+              style={{ transform: activeStars >= s ? "scale(1.18)" : "scale(1)" }}
+              aria-label={`${s} نجوم`}
+            >
+              <Star
+                className="w-11 h-11 transition-colors duration-150"
+                style={{
+                  fill: activeStars >= s ? "#FBBF24" : "#E5E7EB",
+                  color: activeStars >= s ? "#F59E0B" : "#D1D5DB",
+                  filter: activeStars >= s ? "drop-shadow(0 2px 6px rgba(251,191,36,0.5))" : "none",
+                }}
+              />
+            </button>
+          ))}
+        </div>
+
+        {count > 0 && (
+          <div className="flex items-center justify-center gap-5">
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-extrabold text-foreground" style={{ fontFeatureSettings: "'tnum'" }}>
+                {avg.toFixed(1)}
+              </span>
+              <span className="text-xs text-muted-foreground mt-0.5">متوسط التقييم</span>
+            </div>
+            <div className="w-px h-10 bg-border" />
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-extrabold text-foreground" style={{ fontFeatureSettings: "'tnum'" }}>
+                {count.toLocaleString("ar-SA")}
+              </span>
+              <span className="text-xs text-muted-foreground mt-0.5">عدد المقيّمين</span>
+            </div>
+            <div className="w-px h-10 bg-border" />
+            <div className="flex items-center gap-1">
+              {[1,2,3,4,5].map(i => (
+                <Star key={i} className="w-4 h-4" style={{ fill: i <= Math.round(avg) ? "#FBBF24" : "#E5E7EB", color: i <= Math.round(avg) ? "#F59E0B" : "#D1D5DB" }} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 /* ─── Component ──────────────────────────────────────────────── */
 
@@ -323,29 +404,86 @@ export default function About() {
                 </div>
               </div>
 
-              <div className="flex-shrink-0 w-full md:w-[360px] h-[220px] md:h-full md:min-h-[340px] relative flex items-end justify-center pb-0 overflow-hidden">
-                <div className="absolute inset-0 flex items-end">
-                  <IllustrationCity />
-                </div>
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-                  className="absolute top-8 right-6 bg-white rounded-2xl px-4 py-2 shadow-xl"
-                >
-                  <p className="text-[10px] text-muted-foreground font-medium">متوسط متر الرياض</p>
-                  <p className="text-base font-extrabold text-[#0F1C3F]">٤,٨٠٠ ر.س/م²</p>
-                </motion.div>
-                <motion.div
-                  animate={{ y: [0, 5, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1 }}
-                  className="absolute bottom-14 left-5 bg-[#0F7BA0] rounded-2xl px-3 py-2 shadow-xl"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-white" />
-                    <span className="text-xs font-bold text-white">+١٢٪ هذا الربع</span>
+              {/* Hero Illustration — floating data cards */}
+            <div className="flex-shrink-0 w-full md:w-[340px] h-[240px] md:min-h-[340px] relative flex items-center justify-center overflow-hidden">
+              {/* Background glow blob */}
+              <div className="absolute w-64 h-64 rounded-full pointer-events-none"
+                style={{ background: "radial-gradient(ellipse,rgba(15,123,160,0.18) 0%,transparent 70%)" }} />
+
+              {/* Card 1 — active listings */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="absolute top-6 right-4 rounded-2xl px-4 py-3 shadow-2xl"
+                style={{ background: "#fff", border: "1px solid rgba(15,123,160,0.15)", minWidth: 148 }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0F7BA0,#0a5a78)" }}>
+                    <Building2 className="w-3.5 h-3.5 text-white" />
                   </div>
-                </motion.div>
+                  <span className="text-[10px] font-bold text-[#94A3B8]">إعلانات نشطة</span>
+                </div>
+                <p className="text-xl font-extrabold text-[#0F1C3F] leading-none">+٢٠٠</p>
+                <div className="flex items-center gap-1 mt-1.5">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" />
+                  <span className="text-[10px] font-bold text-emerald-500">نمو مستمر</span>
+                </div>
+              </motion.div>
+
+              {/* Card 2 — marketers */}
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 0.8 }}
+                className="absolute bottom-10 right-3 rounded-2xl px-4 py-3 shadow-2xl"
+                style={{ background: "#0F1C3F", border: "1px solid rgba(15,123,160,0.3)", minWidth: 138 }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "rgba(15,123,160,0.3)" }}>
+                    <Users className="w-3.5 h-3.5 text-[#7ec8e3]" />
+                  </div>
+                  <span className="text-[10px] font-bold text-white/50">مسوّقون مسجّلون</span>
+                </div>
+                <p className="text-xl font-extrabold text-white leading-none">+٥٠</p>
+                <div className="mt-1.5 flex gap-1">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="w-5 h-5 rounded-full border-2 border-[#0F1C3F]"
+                      style={{ background: `hsl(${190 + i*15},60%,${40+i*5}%)`, marginRight: i > 1 ? -6 : 0 }} />
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Card 3 — price badge */}
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1.5 }}
+                className="absolute top-14 left-2 rounded-2xl px-3 py-2.5 shadow-xl"
+                style={{ background: "linear-gradient(135deg,#0F7BA0,#095a75)", minWidth: 120 }}
+              >
+                <p className="text-[9px] font-bold text-white/60 mb-0.5">متوسط متر الرياض</p>
+                <p className="text-sm font-extrabold text-white leading-none">٤,٨٠٠ ر.س/م²</p>
+              </motion.div>
+
+              {/* Card 4 — activity pulse */}
+              <motion.div
+                animate={{ y: [0, 4, 0] }}
+                transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 2 }}
+                className="absolute bottom-4 left-4 rounded-xl px-3 py-2 shadow-xl flex items-center gap-2"
+                style={{ background: "rgba(15,28,63,0.85)", border: "1px solid rgba(15,123,160,0.4)" }}
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-bold text-white/80">منصة نشطة</span>
+              </motion.div>
+
+              {/* Central icon */}
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg,rgba(15,123,160,0.25),rgba(15,28,63,0.5))",
+                  border: "1.5px solid rgba(15,123,160,0.3)",
+                  boxShadow: "0 12px 40px rgba(15,123,160,0.25)",
+                }}>
+                <Activity className="w-9 h-9 text-[#7ec8e3]" strokeWidth={1.5} />
               </div>
+            </div>
             </div>
           </div>
         </motion.div>
@@ -354,7 +492,7 @@ export default function About() {
             STATS ROW — Premium icon boxes
         ══════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {STATS.map((s) => (
               <motion.div
                 key={s.label}
@@ -472,45 +610,6 @@ export default function About() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════
-            VALUES — Premium icon cards
-        ══════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 px-4 py-1.5 rounded-full text-xs font-bold text-primary mb-3">
-              <Star className="w-3.5 h-3.5" />
-              ما الذي يميّزنا
-            </div>
-            <h2 className="text-2xl font-extrabold text-foreground">قيمنا الجوهرية</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {VALUES.map((v) => (
-              <motion.div
-                key={v.title}
-                variants={fadeUp}
-                className="relative rounded-[22px] p-7 border border-border/50 overflow-hidden group cursor-default hover:-translate-y-1.5 transition-all duration-300"
-                style={{
-                  background: v.bg,
-                  boxShadow: "0 4px 20px rgba(15,28,63,0.07)",
-                }}
-              >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[22px]"
-                  style={{ boxShadow: `inset 0 0 0 1.5px ${v.accent}40` }} />
-
-                <div className="mb-5">
-                  <IconBox icon={v.icon} gradient={v.gradient} glow={v.glow} size="md" />
-                </div>
-
-                <h3 className="font-extrabold text-foreground text-lg mb-2">{v.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
-
-                <div className="absolute bottom-0 left-6 right-6 h-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ background: `linear-gradient(90deg,${v.accent},transparent)` }} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════
             WHY US — Premium icon grid
         ══════════════════════════════════════════════════ */}
         <motion.div variants={fadeUp}>
@@ -553,63 +652,9 @@ export default function About() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════
-            PLATFORM REVIEWS
+            PLATFORM STAR RATING
         ══════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-full text-xs font-bold text-amber-700 mb-3">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                تقييمات المستخدمين
-              </div>
-              <h2 className="text-2xl font-extrabold text-foreground">ماذا يقول مستخدمونا</h2>
-              <p className="text-sm text-muted-foreground mt-1">تجارب حقيقية من مستخدمي عقار إنسايت</p>
-            </div>
-            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
-              <div className="flex">
-                {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />)}
-              </div>
-              <div>
-                <p className="text-lg font-extrabold text-foreground leading-none">٤.٩</p>
-                <p className="text-xs text-muted-foreground">من ٥ نجوم</p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { name: "فهد الغامدي", city: "الرياض", stars: 5, text: "منصة رائعة سهّلت علي البحث عن شقة كثيراً. عجبني خيار فلترة الأحياء وعرض الأسعار بشكل شفاف.", role: "مشتري عقار", avatar: "ف", avatarBg: "#0F7BA0" },
-              { name: "سلطان العتيبي", city: "جدة", stars: 5, text: "كمسوّق عقاري، وجدت المنصة مفيدة جداً في نشر الإعلانات والتواصل مع العملاء. الواجهة سهلة وسريعة.", role: "مسوّق عقاري", avatar: "س", avatarBg: "#0F1C3F" },
-              { name: "أحمد القحطاني", city: "الدمام", stars: 5, text: "قدّمت طلبي في سوق الطلبات وجاءتني عروض في نفس اليوم. فكرة ذكية توفّر الوقت والجهد على المشتري.", role: "باحث عن شقة", avatar: "أ", avatarBg: "#10b981" },
-              { name: "نورة السعيد", city: "الرياض", stars: 5, text: "تصميم جميل وسهل الاستخدام حتى بدون خبرة. وجدت شركة تقييم عقاري عن طريق قسم الخدمات.", role: "مستثمرة", avatar: "ن", avatarBg: "#8b5cf6" },
-              { name: "محمد الشهري", city: "مكة المكرمة", stars: 5, text: "أحسنوا في إضافة الخرائط والأحياء. الواجهة العربية ممتازة والعرض منسّق. سأتابع المنصة باستمرار.", role: "مستثمر عقاري", avatar: "م", avatarBg: "#f59e0b" },
-              { name: "عبدالله الدوسري", city: "القصيم", stars: 5, text: "استخدمت ملف المسوّق وتواصل معي عملاء من مناطق مختلفة. خدمة الواتساب المباشر توفّر كثيراً من الوقت.", role: "وسيط عقاري", avatar: "ع", avatarBg: "#0d6d8e" },
-            ].map((rev, i) => (
-              <motion.div
-                key={i}
-                variants={fadeUp}
-                className="rounded-3xl p-6 flex flex-col gap-4 group hover:shadow-lg transition-shadow duration-300"
-                style={{ background: "linear-gradient(135deg,#fff 0%,#f8fafc 100%)", border: "1.5px solid #e2e8f0", boxShadow: "0 2px 12px rgba(15,28,63,0.05)" }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shrink-0 shadow-md" style={{ background: rev.avatarBg }}>
-                    {rev.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-extrabold text-foreground text-sm truncate">{rev.name}</p>
-                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{rev.city}</span>
-                      <span className="text-xs font-semibold text-primary bg-primary/8 border border-primary/15 px-2 py-0.5 rounded-lg">{rev.role}</span>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0">
-                    {Array.from({ length: rev.stars }).map((_, j) => <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">"{rev.text}"</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        <PlatformRating />
 
         {/* ══════════════════════════════════════════════════
             CTA

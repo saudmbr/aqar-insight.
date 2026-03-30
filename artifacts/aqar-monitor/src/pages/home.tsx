@@ -22,7 +22,7 @@ import {
   Tooltip, PieChart, Pie, Cell, BarChart, Bar,
 } from "recharts";
 import type { MapPin as MapPinItem } from "@/components/property-map";
-import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity } from "@/lib/saudi-geo";
+import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity, ALL_AHYAA } from "@/lib/saudi-geo";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
@@ -31,6 +31,22 @@ const PropertyMap = lazy(() => import("@/components/property-map"));
 const BASE = () => (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
 const COLORS = ["#0F7BA0", "#0F1C3F", "#94A3B8", "#64748B", "#34D399", "#F97316", "#8B5CF6"];
+
+const REGION_COLORS = [
+  "#0F7BA0",
+  "#10B981",
+  "#F59E0B",
+  "#8B5CF6",
+  "#EF4444",
+  "#3B82F6",
+  "#EC4899",
+  "#F97316",
+  "#14B8A6",
+  "#6366F1",
+  "#84CC16",
+  "#06B6D4",
+  "#A855F7",
+];
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -313,6 +329,7 @@ export default function Home() {
   const [mapDistrict, setMapDistrict]       = useState("");
   const [mapListingType, setMapListingType] = useState("");
   const [mapPropertyType, setMapPropertyType] = useState("");
+  const [regionMetric, setRegionMetric] = useState<"count"|"avgPrice"|"avgPricePerSqm">("count");
 
   const mapHasFilters = !!(mapRegion || mapCity || mapDistrict || mapListingType || mapPropertyType);
 
@@ -638,11 +655,13 @@ export default function Home() {
                     </select>
                   </div>
 
-                  {/* الحي — قائمة + إدخال حر */}
+                  {/* الحي — جميع الأحياء */}
                   <div className="flex flex-col gap-1 flex-[2]">
                     <span className="text-[11px] font-bold text-white px-1 tracking-wider drop-shadow">الحي</span>
                     <datalist id="ahyaa-list">
-                      {ahyaaForCity.map(h => <option key={h} value={h} />)}
+                      {(quickCity ? getAllAhyaaForCity(quickRegion, quickCity) : ALL_AHYAA).map(h => (
+                        <option key={h} value={h} />
+                      ))}
                     </datalist>
                     <input
                       type="text"
@@ -652,9 +671,8 @@ export default function Home() {
                         setQuickDistrictInput(e.target.value);
                         setQuickDistrict(e.target.value);
                       }}
-                      placeholder={!quickCity ? "اختر المحافظة أولاً" : "اكتب أو اختر الحي…"}
-                      disabled={!quickCity}
-                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full placeholder:text-white/45 disabled:opacity-35 disabled:cursor-not-allowed"
+                      placeholder="اكتب أو اختر الحي…"
+                      className="bg-white/15 border border-white/20 rounded-xl px-3 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/35 w-full placeholder:text-white/45"
                       style={{ color: "white" }}
                     />
                   </div>
@@ -785,126 +803,6 @@ export default function Home() {
                 </motion.div>
               )}
             </div>
-          </div>
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════════════════
-            PLATFORM REVIEWS
-        ══════════════════════════════════════════════════════════════ */}
-        <motion.div variants={fadeUp}>
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-extrabold text-foreground flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-amber-100 flex items-center justify-center">
-                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                </div>
-                ماذا يقول مستخدمونا
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">تجارب حقيقية من مستخدمي عقار إنسايت</p>
-            </div>
-            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
-              <div className="flex">
-                {[1,2,3,4,5].map(i => <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />)}
-              </div>
-              <div>
-                <p className="text-lg font-extrabold text-foreground leading-none">٤.٩</p>
-                <p className="text-xs text-muted-foreground">من ٥ نجوم</p>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              {
-                name: "فهد الغامدي",
-                city: "الرياض",
-                stars: 5,
-                text: "منصة رائعة سهّلت علي البحث عن شقة كثيراً. عجبني خيار فلترة الأحياء وعرض الأسعار بشكل شفاف. أنصح بها بشدة.",
-                role: "مشتري عقار",
-                avatar: "ف",
-                avatarBg: "#0F7BA0",
-              },
-              {
-                name: "سلطان العتيبي",
-                city: "جدة",
-                stars: 5,
-                text: "كمسوّق عقاري، وجدت المنصة مفيدة جداً في نشر الإعلانات والتواصل مع العملاء. الواجهة سهلة وسريعة.",
-                role: "مسوّق عقاري",
-                avatar: "س",
-                avatarBg: "#0F1C3F",
-              },
-              {
-                name: "أحمد القحطاني",
-                city: "الدمام",
-                stars: 5,
-                text: "قدّمت طلبي في سوق الطلبات وجاءتني عروض في نفس اليوم. فكرة ذكية توفّر الوقت والجهد على المشتري.",
-                role: "باحث عن شقة",
-                avatar: "أ",
-                avatarBg: "#10b981",
-              },
-              {
-                name: "نورة السعيد",
-                city: "الرياض",
-                stars: 5,
-                text: "تصميم جميل وسهل الاستخدام حتى بدون خبرة. وجدت شركة تقييم عقاري عن طريق قسم الخدمات.",
-                role: "مستثمرة",
-                avatar: "ن",
-                avatarBg: "#8b5cf6",
-              },
-              {
-                name: "محمد الشهري",
-                city: "مكة المكرمة",
-                stars: 5,
-                text: "أحسنوا في إضافة الخرائط والأحياء. الواجهة العربية ممتازة والعرض منسّق. سأتابع المنصة باستمرار.",
-                role: "مستثمر عقاري",
-                avatar: "م",
-                avatarBg: "#f59e0b",
-              },
-              {
-                name: "عبدالله الدوسري",
-                city: "القصيم",
-                stars: 5,
-                text: "استخدمت ملف المسوّق وتواصل معي عملاء من مناطق مختلفة. خدمة الواتساب المباشر توفّر كثيراً من الوقت.",
-                role: "وسيط عقاري",
-                avatar: "ع",
-                avatarBg: "#0d6d8e",
-              },
-            ].map((rev, i) => (
-              <div
-                key={i}
-                className="rounded-3xl p-6 flex flex-col gap-4 group hover:shadow-lg transition-shadow duration-300"
-                style={{
-                  background: "linear-gradient(135deg,#fff 0%,#f8fafc 100%)",
-                  border: "1.5px solid #e2e8f0",
-                  boxShadow: "0 2px 12px rgba(15,28,63,0.05)",
-                }}
-              >
-                <div className="flex items-start gap-3">
-                  <div
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shrink-0 shadow-md"
-                    style={{ background: rev.avatarBg }}
-                  >
-                    {rev.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-extrabold text-foreground text-sm truncate">{rev.name}</p>
-                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />{rev.city}
-                      </span>
-                      <span className="text-xs font-semibold text-primary bg-primary/8 border border-primary/15 px-2 py-0.5 rounded-lg">
-                        {rev.role}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0">
-                    {Array.from({ length: rev.stars }).map((_, j) => (
-                      <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">"{rev.text}"</p>
-              </div>
-            ))}
           </div>
         </motion.div>
 
@@ -1484,35 +1382,108 @@ export default function Home() {
 
             {(insights?.byRegion?.length ?? 0) > 1 && (
               <Card className="rounded-2xl border-border/60 shadow-sm mt-5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-[15px]">توزيع الإعلانات والأسعار حسب المنطقة</CardTitle>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-[15px]">توزيع الإعلانات والأسعار حسب المنطقة</CardTitle>
+                      <p className="text-[12px] text-muted-foreground mt-0.5">اضغط على منطقة في الرسم لتصفح إعلاناتها</p>
+                    </div>
+                    {/* Tab switcher */}
+                    <div className="flex gap-1 p-1 rounded-xl" style={{ background: "rgba(15,123,160,0.06)", border: "1px solid rgba(15,123,160,0.12)" }}>
+                      {([
+                        { key: "count",           label: "عدد الإعلانات" },
+                        { key: "avgPrice",        label: "متوسط السعر" },
+                        { key: "avgPricePerSqm",  label: "سعر المتر" },
+                      ] as const).map(tab => (
+                        <button
+                          key={tab.key}
+                          onClick={() => setRegionMetric(tab.key)}
+                          className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200"
+                          style={regionMetric === tab.key
+                            ? { background: "#0F7BA0", color: "#fff", boxShadow: "0 2px 8px rgba(15,123,160,0.35)" }
+                            : { color: "var(--muted-foreground)" }}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[220px]" dir="ltr">
+                  <div className="h-[260px]" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={insights?.byRegion ?? []} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                        <XAxis dataKey="region" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} dy={6} interval={0} />
-                        <YAxis yAxisId="l" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                        <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false}
-                          tickFormatter={v => v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}م` : `${(v / 1000).toFixed(0)}k`} dx={6} />
-                        <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid var(--border)" }}
-                          formatter={(v: number, name: string) => [name === "count" ? `${v} إعلان` : formatCurrency(v), name === "count" ? "عدد الإعلانات" : "متوسط السعر (ر.س)"]} />
-                        <Bar yAxisId="l" dataKey="count" fill="#0F7BA0" radius={[5, 5, 0, 0]} name="count" />
-                        <Bar yAxisId="r" dataKey="avgPrice" fill="#94A3B8" radius={[5, 5, 0, 0]} name="avgPrice" />
+                      <BarChart
+                        data={(insights?.byRegion ?? []).map((r, i) => ({
+                          ...r,
+                          fill: REGION_COLORS[i % REGION_COLORS.length],
+                        }))}
+                        margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+                        onClick={(data) => {
+                          if (data?.activePayload?.[0]?.payload?.region) {
+                            window.location.href = `${BASE()}/listings?region=${encodeURIComponent(data.activePayload[0].payload.region)}`;
+                          }
+                        }}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
+                        <XAxis
+                          dataKey="region"
+                          tick={{ fontSize: 10, fill: "var(--muted-foreground)", fontFamily: "Cairo, sans-serif" }}
+                          axisLine={false} tickLine={false} dy={6} interval={0}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                          axisLine={false} tickLine={false}
+                          tickFormatter={v =>
+                            regionMetric === "count"
+                              ? `${v}`
+                              : v >= 1_000_000 ? `${(v/1_000_000).toFixed(1)}م` : v >= 1000 ? `${(v/1000).toFixed(0)}k` : `${v}`
+                          }
+                          width={50}
+                        />
+                        <Tooltip
+                          contentStyle={{ borderRadius: 12, fontSize: 12, border: "1px solid var(--border)", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+                          cursor={{ fill: "rgba(15,123,160,0.06)" }}
+                          formatter={(v: number) => [
+                            regionMetric === "count"
+                              ? `${v} إعلان`
+                              : formatCurrency(v),
+                            regionMetric === "count"
+                              ? "عدد الإعلانات"
+                              : regionMetric === "avgPrice"
+                              ? "متوسط السعر (ر.س)"
+                              : "سعر المتر (ر.س/م²)",
+                          ]}
+                          labelFormatter={(label) => `📍 ${label}`}
+                        />
+                        <Bar dataKey={regionMetric} radius={[6, 6, 0, 0]} maxBarSize={52}>
+                          {(insights?.byRegion ?? []).map((_, i) => (
+                            <Cell key={i} fill={REGION_COLORS[i % REGION_COLORS.length]} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  {/* مفتاح الألوان */}
-                  <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-border/40">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm shrink-0 inline-block" style={{ background: "#0F7BA0" }} />
-                      <span className="text-[12px] text-muted-foreground">عدد الإعلانات <span className="text-foreground/50">(محور يسار)</span></span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-sm shrink-0 inline-block" style={{ background: "#94A3B8" }} />
-                      <span className="text-[12px] text-muted-foreground">متوسط السعر <span className="text-foreground/50">(محور يمين)</span></span>
-                    </div>
+
+                  {/* Color legend — region colors */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4 pt-3 border-t border-border/40 justify-center">
+                    {(insights?.byRegion ?? []).map((r, i) => (
+                      <button
+                        key={r.region}
+                        onClick={() => window.location.href = `${BASE()}/listings?region=${encodeURIComponent(r.region)}`}
+                        className="flex items-center gap-1.5 hover:opacity-75 transition-opacity"
+                      >
+                        <span className="w-3 h-3 rounded-sm shrink-0 inline-block" style={{ background: REGION_COLORS[i % REGION_COLORS.length] }} />
+                        <span className="text-[11px] font-semibold text-muted-foreground">{r.region}</span>
+                        <span className="text-[10px] text-foreground/40">
+                          ({regionMetric === "count"
+                            ? `${r.count} إعلان`
+                            : regionMetric === "avgPrice"
+                            ? formatCurrency(r.avgPrice)
+                            : r.avgPricePerSqm > 0 ? formatCurrency(r.avgPricePerSqm) : "—"})
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

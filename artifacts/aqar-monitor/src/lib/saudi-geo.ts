@@ -687,6 +687,17 @@ export const MUHAFAZA_TO_REGION: Record<string, string> = Object.fromEntries(
   )
 );
 
+/** جميع الأحياء في المملكة مسطحة وغير مكررة */
+export const ALL_AHYAA: string[] = [
+  ...new Set(
+    Object.values(SAUDI_GEO).flatMap(region =>
+      Object.values(region).flatMap(muh =>
+        Object.values(muh).flat()
+      )
+    )
+  ),
+].sort();
+
 /** للتوافق مع الكود القديم — محافظات كل منطقة بالاسم القديم */
 export const SAUDI_REGIONS: Record<string, string[]> = Object.fromEntries(
   Object.entries(SAUDI_GEO).map(([region, muhs]) => [region, Object.keys(muhs)])

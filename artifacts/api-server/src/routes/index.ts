@@ -14,6 +14,7 @@ import adminReportsRouter from "./admin-reports";
 import marketersRouter from "./marketers";
 import storageRouter from "./storage";
 import userReportsRouter from "./user-reports";
+import platformRatingRouter from "./platform-rating";
 
 const router: IRouter = Router();
 
@@ -31,6 +32,7 @@ router.use("/admin/users", adminUsersRouter);
 router.use("/admin/reports", adminReportsRouter);
 router.use("/marketers", marketersRouter);
 router.use("/reports", userReportsRouter);
+router.use("/platform-rating", platformRatingRouter);
 router.use(storageRouter);
 
 export default router;
