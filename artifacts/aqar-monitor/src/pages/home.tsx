@@ -24,6 +24,7 @@ import {
 import type { MapPin as MapPinItem } from "@/components/property-map";
 import { SAUDI_REGIONS_LIST, getMuhafazat, getAllAhyaaForCity, ALL_AHYAA } from "@/lib/saudi-geo";
 import { PlatformRatingWidget } from "@/components/platform-rating-widget";
+import { SAR } from "@/components/sar-amount";
 import { PROPERTY_TYPE_GROUPS } from "@/lib/property-types";
 import { LISTING_TYPE_GROUPS } from "@/lib/listing-types";
 
@@ -106,8 +107,6 @@ const PROPERTY_CATEGORIES = [
   { label: "محلات",      value: "محل تجاري",     icon: "🏬" },
   { label: "استوديو",    value: "استوديو",        icon: "🛋️" },
   { label: "دوبلكس",    value: "دوبلكس",         icon: "🏘️" },
-  { label: "شاليهات",   value: "شاليه",          icon: "🌴" },
-  { label: "استراحات",  value: "استراحة",        icon: "🏕️" },
   { label: "مستودعات",  value: "مستودع",         icon: "🏭" },
   { label: "مزارع",     value: "مزرعة",          icon: "🌾" },
 ];
@@ -553,27 +552,6 @@ export default function Home() {
               }
             </motion.div>
 
-            {/* Bottom-left: live listings count */}
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-              className="absolute bottom-28 left-7 hidden xl:flex flex-col gap-1 rounded-2xl px-4 py-4 pointer-events-none w-44"
-              style={{
-                background: "rgba(255,255,255,0.10)",
-                border: "1px solid rgba(255,255,255,0.16)",
-                backdropFilter: "blur(14px)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.30)",
-              }}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                <span className="text-[10px] text-white/55 font-medium tracking-wide">إعلانات مباشرة</span>
-              </div>
-              <p className="text-3xl font-black text-white leading-none">{kpis ? formatNumber(kpis.totalListings) : "—"}</p>
-              <p className="text-[10px] text-white/50 mt-0.5">عقار متاح الآن</p>
-            </motion.div>
-
             {/* Main content */}
             <div className="relative px-6 py-14 md:px-14 md:py-16">
               {/* Eyebrow badge */}
@@ -926,6 +904,114 @@ export default function Home() {
             </>
           )}
         </motion.div>
+
+        {/* ══════════════════════════════════════════════════════════════
+            SERVICES SECTION
+        ══════════════════════════════════════════════════════════════ */}
+        {(latestServices?.length ?? 0) > 0 && (
+          <motion.div variants={fadeUp} className="mt-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-[18px] font-black text-foreground tracking-tight">أحدث مزودي الخدمات</h2>
+                <p className="text-[12.5px] text-muted-foreground mt-0.5">خدمات عقارية موثوقة من مزودين معتمدين</p>
+              </div>
+              <Link href="/services"
+                className="text-[12px] font-black px-4 py-1.5 rounded-xl transition-colors hover:opacity-75"
+                style={{ color: "#0F7BA0", background: "rgba(15,123,160,0.07)" }}>
+                عرض الكل
+              </Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+              {(latestServices ?? []).slice(0, 8).map(sp => {
+                const imgs = (() => { try { return JSON.parse(sp.portfolioImages ?? "[]") as string[]; } catch { return []; } })();
+                return (
+                  <Link key={sp.id} href={`/services/${sp.id}`}
+                    className="shrink-0 w-[240px] rounded-2xl overflow-hidden flex flex-col hover:-translate-y-0.5 transition-transform"
+                    style={{ background: "#fff", boxShadow: "0 2px 12px rgba(11,22,40,0.08)", border: "1px solid rgba(226,232,240,0.8)" }}
+                  >
+                    <div className="h-[120px] relative overflow-hidden"
+                      style={{ background: "linear-gradient(135deg, #0B1628 0%, #0F3A5C 60%, #0F7BA0 100%)" }}>
+                      {imgs[0]
+                        ? <img src={getImageSrc(imgs[0])} alt={sp.businessName} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center opacity-30">
+                            <Wrench className="w-10 h-10 text-white" />
+                          </div>
+                      }
+                      {sp.verified && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black"
+                          style={{ background: "rgba(15,123,160,0.85)", color: "#fff", backdropFilter: "blur(6px)" }}>
+                          <BadgeCheck className="w-3 h-3" /> موثوق
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 flex-1 flex flex-col gap-1.5">
+                      <p className="font-black text-[13px] text-foreground leading-tight line-clamp-1">{sp.businessName}</p>
+                      <p className="text-[11px] font-semibold px-2 py-0.5 rounded-lg w-fit"
+                        style={{ background: "rgba(15,123,160,0.07)", color: "#0F7BA0" }}>{sp.category}</p>
+                      <div className="flex items-center justify-between mt-auto pt-1.5"
+                        style={{ borderTop: "1px solid #F1F5F9" }}>
+                        <span className="text-[11px] text-muted-foreground">{sp.city}</span>
+                        {sp.startingPrice && sp.startingPrice > 0
+                          ? <span className="text-[11px] font-black" style={{ color: "#C9A84C" }}>يبدأ من <SAR value={sp.startingPrice} /></span>
+                          : <span className="text-[10px] text-muted-foreground/50">تواصل للسعر</span>
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            CUSTOMER REQUESTS SECTION
+        ══════════════════════════════════════════════════════════════ */}
+        {(latestRequests?.length ?? 0) > 0 && (
+          <motion.div variants={fadeUp} className="mt-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-[18px] font-black text-foreground tracking-tight">أحدث طلبات العملاء</h2>
+                <p className="text-[12.5px] text-muted-foreground mt-0.5">طلبات مفتوحة تبحث عن عقار أو خدمة مناسبة</p>
+              </div>
+              <Link href="/requests"
+                className="text-[12px] font-black px-4 py-1.5 rounded-xl transition-colors hover:opacity-75"
+                style={{ color: "#C9A84C", background: "rgba(201,168,76,0.08)" }}>
+                عرض الكل
+              </Link>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+              {(latestRequests ?? []).slice(0, 8).map(req => (
+                <Link key={req.id} href={`/requests/${req.id}`}
+                  className="shrink-0 w-[260px] rounded-2xl p-4 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform"
+                  style={{ background: "#fff", boxShadow: "0 2px 12px rgba(11,22,40,0.08)", border: "1px solid rgba(226,232,240,0.8)" }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-black text-[13px] text-foreground leading-snug line-clamp-2 flex-1">{req.title}</p>
+                    <span className="shrink-0 px-2 py-0.5 rounded-lg text-[10px] font-black"
+                      style={{ background: req.requestType === "buy" ? "rgba(15,123,160,0.08)" : "rgba(201,168,76,0.08)", color: req.requestType === "buy" ? "#0F7BA0" : "#B8860B" }}>
+                      {req.requestType === "buy" ? "شراء" : req.requestType === "rent" ? "إيجار" : req.requestType === "invest" ? "استثمار" : "خدمة"}
+                    </span>
+                  </div>
+                  {req.category && (
+                    <p className="text-[11px] text-muted-foreground/80 font-medium">{req.category}</p>
+                  )}
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-auto pt-2"
+                    style={{ borderTop: "1px solid #F1F5F9" }}>
+                    <MapPin className="w-3 h-3 shrink-0" style={{ color: "#0F7BA0" }} />
+                    <span className="font-medium">{req.city}{req.district ? ` / ${req.district}` : ""}</span>
+                    {(req.budgetMin || req.budgetMax) && (
+                      <>
+                        <span className="text-muted-foreground/40 mx-1">·</span>
+                        <SAR value={req.budgetMax ?? req.budgetMin} className="font-black" />
+                      </>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ══════════════════════════════════════════════════════════════
             INTERACTIVE MAP — individual property pins
@@ -1502,9 +1588,9 @@ export default function Home() {
         )}
 
       {/* ══════════════════════════════════════════════════════════════
-          SERVICES SECTION
+          SERVICES SECTION (OLD - REMOVED)
       ══════════════════════════════════════════════════════════════ */}
-      {(latestServices?.length ?? 0) > 0 && (
+      {false && (latestServices?.length ?? 0) > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

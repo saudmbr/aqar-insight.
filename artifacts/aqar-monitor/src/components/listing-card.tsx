@@ -1,7 +1,8 @@
 import { Link } from "wouter";
 import { MapPin, BedDouble, Bath, Maximize2, Verified, Star, Building2, Pencil, Trash2, Eye, TrendingUp } from "lucide-react";
-import { formatCurrency, getImageSrc } from "@/lib/utils";
+import { getImageSrc } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SAR } from "@/components/sar-amount";
 
 export interface ListingCardData {
   id: number;
@@ -245,12 +246,12 @@ export function ListingCard({ listing, canEdit, onDelete }: ListingCardProps) {
                   paddingBottom: "3px",
                   display: "block",
                 }}>
-                {formatCurrency(listing.price)}
+                <SAR value={listing.price} />
               </p>
               {listing.pricePerSqm && listing.areaSqm && (
                 <p className="text-[11.5px] text-muted-foreground font-medium mt-1 flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  المتر: {formatCurrency(listing.pricePerSqm)}
+                  المتر: <SAR value={listing.pricePerSqm} imgClassName="opacity-70" />
                 </p>
               )}
             </div>
