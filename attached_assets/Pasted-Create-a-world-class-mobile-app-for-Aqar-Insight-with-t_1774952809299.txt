@@ -1,0 +1,111 @@
+Create a world-class mobile app for Aqar Insight (عقار إنسايت) with the same premium quality, polish, usability, and trust level seen in top real estate apps like Zillow, Bayut, Property Finder, and Rightmove — but fully adapted to Aqar Insight’s own brand, product vision, and Saudi market positioning.
+
+Main objective:
+Design and build the mobile app to feel extremely premium, modern, elegant, smooth, and highly professional. The app must look and behave like a leading real estate platform, with excellent UX, clean UI, strong visual hierarchy, and advanced mobile interaction quality.
+
+Design direction:
+- Premium, modern, minimal, and highly polished
+- Confident and trustworthy real estate brand feel
+- Smart market intelligence feel, not just a listings app
+- Rich but clean interface
+- Elegant spacing and composition
+- Strong sense of quality and clarity
+- Smooth, refined, expensive-looking product experience
+
+Visual style:
+- Use the exact Aqar Insight brand identity and align all screens with the website theme
+- Deep navy / dark blue as the primary foundation
+- Teal accents for intelligence, freshness, and highlights
+- White and soft gray for readability and contrast
+- Optional subtle premium glow or luxury accent when appropriate
+- Maintain a sophisticated, calm, data-driven visual atmosphere
+- No random colors, no cheap gradients, no generic UI
+
+UI quality requirements:
+- Every screen must look professionally designed, not template-based
+- Excellent spacing between sections and components
+- Strong typography hierarchy
+- Premium cards with elegant shadows, borders, and radius
+- Modern icons consistent across the app
+- Smooth button styles and polished input fields
+- Beautiful, clean search and filter interactions
+- High-end map and listing browsing experience
+- Professional empty states, loading states, and transitions
+- Refined animations that feel subtle and premium, not distracting
+
+UX expectations:
+- The app should be extremely intuitive and smooth
+- Mobile-first navigation and structure
+- Fast access to search, map, filters, listings, saved items, and account
+- Clear call-to-action buttons
+- Thumb-friendly interactions
+- Frictionless user flow from home → search → listing details → contact / action
+- Elegant onboarding and login experience
+- Arabic-first experience with perfect RTL support and clean layout
+
+Core experience inspiration:
+The app should feel similar in quality to top global real estate apps in the following ways:
+- Clean and powerful home screen
+- Highly usable search experience
+- Premium map browsing
+- Beautiful property cards
+- Strong property details pages
+- Smart filtering
+- Trustworthy and modern account/dashboard experience
+But it must remain original to Aqar Insight and reflect its identity as a Saudi real estate intelligence platform.
+
+Screens to build with premium quality:
+- Splash screen
+- Welcome / onboarding screens
+- Home screen
+- Search screen
+- Filters screen
+- Map screen
+- Property listings screen
+- Property details screen
+- Favorites
+- Notifications
+- Login / sign up / OTP verification
+- User profile
+- Role-based dashboards
+- Support/contact
+- Policies/legal pages
+- Any existing important website page should be translated properly into mobile
+
+Aqar Insight differentiation:
+Do not make the app feel like a basic listings marketplace only.
+It must clearly communicate that Aqar Insight is a smarter platform focused on:
+- market intelligence
+- price visibility
+- neighborhood insights
+- smart decision support
+- premium real estate discovery
+
+Important design principles:
+- Preserve full consistency with the website
+- Same brand colors
+- Same luxury-tech atmosphere
+- Same product DNA
+- Same visual identity
+- Same premium standard
+- Adapt everything beautifully for mobile without making it crowded
+
+Technical expectations:
+- Build in Expo / React Native
+- Use reusable components and a clean design system
+- Maintain consistency across all screens
+- Optimize for iPhone and Android
+- Ensure responsiveness across phone sizes
+- Ensure clean Arabic typography and RTL behavior
+- Make the app feel production-ready and App Store quality
+
+Do not:
+- Do not use generic default mobile styling
+- Do not use cheap colors or inconsistent spacing
+- Do not overcrowd screens
+- Do not redesign the brand away from the website
+- Do not simplify the experience too much
+- Do not make it feel like a prototype
+
+Final result:
+The final app should feel like a top-tier, premium, trustworthy, elegant real estate mobile platform on par with the best global real estate apps in quality and polish, while being uniquely tailored to Aqar Insight’s Saudi market brand and intelligence-driven product vision.
