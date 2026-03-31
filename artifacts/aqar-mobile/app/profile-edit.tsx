@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,7 +21,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function ProfileEditScreen() {
   const insets = useSafeAreaInsets();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
 
@@ -62,8 +62,13 @@ export default function ProfileEditScreen() {
     },
   });
 
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.replace('/auth/login');
+    }
+  }, [user, isLoading]);
+
   if (!user) {
-    router.replace('/auth/login');
     return null;
   }
 

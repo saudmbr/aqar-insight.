@@ -141,6 +141,7 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>حسابي</Text>
           <View style={styles.menuGroup}>
+            <MenuItem icon="user" label="تعديل الملف الشخصي" onPress={() => router.push('/profile-edit')} color={Colors.teal} />
             <MenuItem icon="home" label="عقاراتي" badge={myListings?.length ? String(myListings.length) : undefined} onPress={() => router.push('/my-listings')} color={Colors.teal} />
             <MenuItem icon="plus-circle" label="نشر عقار جديد" onPress={() => router.push('/listing/new')} color="#10b981" />
             <MenuItem icon="inbox" label="طلباتي" onPress={() => router.push('/requests')} color={Colors.gold} />
@@ -166,13 +167,13 @@ export default function ProfileScreen() {
 
       {/* Legal & Info */}
       <View style={styles.menuSection}>
-        <Text style={styles.menuSectionTitle}>معلومات</Text>
+        <Text style={styles.menuSectionTitle}>معلومات ودعم</Text>
         <View style={styles.menuGroup}>
           <MenuItem icon="info" label="عن المنصة" onPress={() => router.push('/about')} color={Colors.teal} />
+          <MenuItem icon="headphones" label="تواصل معنا" onPress={() => router.push('/contact')} color="#10b981" />
           <MenuItem icon="shield" label="سياسة الخصوصية" onPress={() => router.push('/legal/privacy')} color="#6366f1" />
           <MenuItem icon="file-text" label="الشروط والأحكام" onPress={() => router.push('/legal/terms')} color={Colors.textSub} />
           <MenuItem icon="book-open" label="سياسة الاستخدام" onPress={() => router.push('/legal/usage')} color="#f59e0b" />
-          <MenuItem icon="bell" label="الإشعارات" onPress={() => router.push('/notifications')} color="#8b5cf6" />
         </View>
       </View>
 

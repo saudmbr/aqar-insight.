@@ -64,6 +64,8 @@ export default function RootLayout() {
               <Stack.Screen name="legal/terms" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="legal/privacy" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="legal/usage" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="profile-edit" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="contact" options={{ headerShown: false, presentation: 'card' }} />
             </Stack>
           </FavoritesProvider>
         </AuthProvider>
