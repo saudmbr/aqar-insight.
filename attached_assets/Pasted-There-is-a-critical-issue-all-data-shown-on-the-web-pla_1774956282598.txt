@@ -1,0 +1,80 @@
+There is a critical issue: all data shown on the web platform is NOT reflected in the mobile application.
+
+This includes (but is not limited to):
+
+* Listings (ads)
+* Listing images
+* Listing details (price, location, specs, etc.)
+* Interactive map data (pins, locations, clusters)
+* Analytics data
+* Marketers
+* Services
+* Customer requests
+* Any dynamic platform data
+
+The mobile app is currently NOT synchronized with the web platform data.
+
+MAIN REQUIREMENT:
+Fix this completely so that the mobile app and the web platform use the SAME data source and always stay in sync.
+
+---
+
+## REQUIRED ACTIONS
+
+1. Ensure BOTH web and mobile apps use the EXACT SAME backend API base URL.
+
+2. Ensure BOTH are connected to the SAME database (no dev vs prod mismatch).
+
+3. Remove any mock data, static JSON, or placeholder data from the mobile app.
+
+4. Verify that all mobile screens fetch live data from the backend APIs:
+
+   * /api/listings
+   * /api/map-pins
+   * /api/analytics
+   * /api/marketers
+   * /api/service-providers
+   * /api/customer-requests
+   * and all other relevant endpoints
+
+5. Ensure that:
+
+   * New listings created on web appear in mobile
+   * Updated listings reflect immediately
+   * Deleted listings are removed
+   * Images load correctly from storage
+
+6. Fix map synchronization:
+
+   * Mobile map must load the same pins as web
+   * Same filters, same coordinates, same clustering logic
+
+7. Disable or fix any caching issues:
+
+   * Clear AsyncStorage if used
+   * Ensure fresh API calls on screen load
+   * Implement proper refetch on focus (when user returns to screen)
+
+8. Ensure filters and default parameters are identical between web and mobile.
+
+9. Verify authentication/session handling:
+
+   * Same user sees same data
+   * No hidden filtering due to auth issues
+
+10. Add proper debugging:
+
+* Log API responses in mobile
+* Compare with web responses
+* Ensure identical data structure
+
+---
+
+## FINAL RESULT REQUIRED
+
+* The mobile app must be a real-time reflection of the web platform.
+* Any change on web must appear on mobile (on refresh at minimum).
+* No data mismatch is allowed.
+* No missing listings, no missing images, no missing map data.
+
+The mobile app must behave as a direct extension of the web platform, not as a separate or disconnected system.

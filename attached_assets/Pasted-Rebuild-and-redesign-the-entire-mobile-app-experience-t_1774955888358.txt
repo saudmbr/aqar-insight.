@@ -1,0 +1,161 @@
+Rebuild and redesign the entire mobile app experience to match the quality, intelligence, and power of the web platform.
+
+Goal:
+Transform the mobile app from a basic interface into a premium, data-driven, modern real estate platform.
+
+==================================================
+1) FULL UX REBUILD (CRITICAL)
+==================================================
+
+- Redesign the entire app experience from scratch (UX-wise)
+- Focus on:
+  - clarity
+  - decision-making
+  - guided experience
+
+- Each screen must answer:
+"What should the user do here?"
+
+==================================================
+2) HOME SCREEN TRANSFORMATION (VERY IMPORTANT)
+==================================================
+
+Current state: weak and list-based  
+Target: smart dashboard
+
+Add:
+
+- Smart summary at top:
+  - market status
+  - recommendations
+
+- Sections:
+  - suggested properties
+  - hot neighborhoods
+  - market insights
+  - services
+
+- Make homepage:
+  - dynamic
+  - intelligent
+  - personalized
+
+==================================================
+3) VISUAL DESIGN (PREMIUM UI)
+==================================================
+
+Upgrade entire design:
+
+- modern
+- premium
+- clean
+- high contrast
+
+Improve:
+- colors (match web)
+- typography
+- spacing
+- cards
+- buttons
+
+Make UI feel:
+"expensive and professional"
+
+==================================================
+4) FEATURE VISIBILITY (IMPORTANT)
+==================================================
+
+Expose key features clearly:
+
+- analytics
+- neighborhood comparison
+- smart insights
+- filters
+
+Do NOT hide powerful features
+
+==================================================
+5) COMPONENT REDESIGN
+==================================================
+
+Redesign:
+
+- property cards
+- buttons (CTA must be strong)
+- icons (consistent style)
+- sections
+
+Make everything:
+- clear
+- clickable
+- meaningful
+
+==================================================
+6) DATA PRESENTATION
+==================================================
+
+Transform data into insights:
+
+Instead of:
+"68/100"
+
+Show:
+"السوق قوي — نشاط مرتفع"
+
+==================================================
+7) USER FLOW
+==================================================
+
+Improve:
+
+- navigation
+- transitions
+- screen hierarchy
+
+User should move naturally without confusion
+
+==================================================
+8) EMPTY STATES
+==================================================
+
+Improve empty pages:
+
+Example:
+"لا توجد مفضلات بعد"
+
+Add:
+- illustration
+- clear action button
+
+==================================================
+9) CONSISTENCY WITH WEB
+==================================================
+
+Mobile must feel like:
+
+"Same product, optimized for mobile"
+
+Not a separate weak version
+
+==================================================
+10) FINAL RESULT
+==================================================
+
+The app must become:
+
+- visually premium
+- easy to use
+- intelligent
+- aligned with web
+- impressive from first use
+
+==================================================
+11) FINAL CHECK
+==================================================
+
+Ensure:
+
+- no broken UI
+- no weak layouts
+- no generic design
+- no placeholder feeling

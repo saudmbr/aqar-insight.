@@ -1,8 +1,10 @@
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Dimensions,
   Platform,
   Pressable,
   RefreshControl,
@@ -26,34 +28,60 @@ import {
 } from '@/constants/api';
 import { ListingCard } from '@/components/ListingCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
+import { useAuth } from '@/context/AuthContext';
 
-const QUICK_ACTIONS = [
-  { icon: 'grid', label: 'العقارات', path: '/(tabs)/listings', color: Colors.teal },
-  { icon: 'compass', label: 'اكتشف', path: '/(tabs)/discover', color: '#8b5cf6' },
-  { icon: 'users', label: 'المسوّقون', path: '/marketers', color: '#10b981' },
-  { icon: 'briefcase', label: 'الخدمات', path: '/services', color: Colors.gold },
-  { icon: 'inbox', label: 'الطلبات', path: '/requests', color: '#f59e0b' },
-  { icon: 'bar-chart-2', label: 'التحليلات', path: '/analytics', color: '#ef4444' },
-  { icon: 'layers', label: 'الأحياء', path: '/districts', color: '#0ea5e9' },
-  { icon: 'map', label: 'الخريطة', path: '/(tabs)/map', color: Colors.navy },
-  { icon: 'heart', label: 'المفضلة', path: '/(tabs)/favorites', color: '#e11d48' },
-  { icon: 'zap', label: 'رؤية 2030', path: '/future', color: '#f59e0b' },
+const { width } = Dimensions.get('window');
+
+/* ──────────── helpers ──────────── */
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'صباح الخير';
+  if (h < 17) return 'مساء النور';
+  return 'مساء الخير';
+}
+
+function getMarketInsight(score?: number): { text: string; subText: string; color: string; icon: string } {
+  if (!score) return { text: 'يتم تحليل السوق...', subText: 'البيانات قيد المعالجة', color: Colors.textMuted, icon: 'activity' };
+  if (score >= 80) return { text: 'السوق نشط جداً', subText: 'الطلب في ذروته — فرص استثمارية ممتازة', color: '#10B981', icon: 'trending-up' };
+  if (score >= 65) return { text: 'السوق قوي', subText: 'نشاط مرتفع في معظم الأحياء', color: Colors.teal, icon: 'trending-up' };
+  if (score >= 50) return { text: 'السوق متوازن', subText: 'فرص جيدة للمشترين والمستثمرين', color: Colors.gold, icon: 'minus' };
+  return { text: 'السوق هادئ', subText: 'وقت مثالي للتفاوض وشراء بأسعار مناسبة', color: '#f59e0b', icon: 'trending-down' };
+}
+
+const PROPERTY_CATEGORIES = [
+  { icon: 'home', label: 'شقة', key: 'شقة' },
+  { icon: 'home', label: 'فيلا', key: 'فيلا' },
+  { icon: 'square', label: 'أرض', key: 'أرض' },
+  { icon: 'briefcase', label: 'تجاري', key: 'عقار تجاري' },
+  { icon: 'monitor', label: 'مكتب', key: 'مكتب' },
+  { icon: 'package', label: 'مستودع', key: 'مستودع' },
+  { icon: 'layers', label: 'دوبلكس', key: 'دوبلكس' },
+  { icon: 'server', label: 'عمارة', key: 'عمارة' },
+];
+
+const MAIN_ACTIONS = [
+  { icon: 'bar-chart-2', label: 'تحليلات السوق', sub: 'رؤى وبيانات', path: '/analytics', color: Colors.teal, bg: 'rgba(15,123,160,0.12)' },
+  { icon: 'layers', label: 'مقارنة الأحياء', sub: 'خريطة حرارية', path: '/districts', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+  { icon: 'users', label: 'المسوّقون', sub: 'وكلاء معتمدون', path: '/marketers', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  { icon: 'zap', label: 'رؤية 2030', sub: 'مشاريع المستقبل', path: '/future', color: Colors.gold, bg: 'rgba(201,168,76,0.12)' },
 ];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const [activeType, setActiveType] = useState<string>('all');
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const botPad = Platform.OS === 'web' ? 34 : insets.bottom;
 
-  const { data, isLoading, refetch, isRefetching } = useQuery<ListingsResponse>({
-    queryKey: ['home-listings', activeType],
-    queryFn: () => {
-      const params = new URLSearchParams({ limit: '6', page: '1' });
-      if (activeType !== 'all') params.set('listingType', activeType);
-      return fetchListings(params);
-    },
+  /* ── Data Queries ── */
+  const { data: featData, isLoading: featLoading, refetch, isRefetching } = useQuery<ListingsResponse>({
+    queryKey: ['home-featured'],
+    queryFn: () => fetchListings(new URLSearchParams({ limit: '6', page: '1', listingType: 'sale' })),
+  });
+
+  const { data: recentData, isLoading: recentLoading } = useQuery<ListingsResponse>({
+    queryKey: ['home-recent'],
+    queryFn: () => fetchListings(new URLSearchParams({ limit: '4', page: '1' })),
   });
 
   const { data: analytics } = useQuery<AnalyticsInsights>({
@@ -64,7 +92,7 @@ export default function HomeScreen() {
 
   const { data: services } = useQuery<ServiceProvider[]>({
     queryKey: ['home-services'],
-    queryFn: () => apiFetch<ServiceProvider[]>(`${endpoints.services}?limit=3&page=1`).then((r: any) => r.data ?? r ?? []),
+    queryFn: () => apiFetch<any>(`${endpoints.services}?limit=4&page=1`).then((r: any) => r.data ?? r ?? []),
     staleTime: 1000 * 60 * 10,
   });
 
@@ -74,15 +102,11 @@ export default function HomeScreen() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: platformRating } = useQuery<any>({
-    queryKey: ['platform-rating'],
-    queryFn: () => apiFetch<any>(endpoints.platformRating),
-    staleTime: 1000 * 60 * 30,
-  });
-
-  const listings = data?.listings ?? [];
+  const featuredListings = featData?.listings ?? [];
+  const recentListings = recentData?.listings ?? [];
   const kpis = analytics?.kpis;
-  const marketScore = analytics?.marketScore;
+  const marketScore = analytics?.marketScore?.score;
+  const insight = getMarketInsight(marketScore);
 
   const handleSearch = () => {
     if (search.trim()) {
@@ -93,390 +117,441 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={{ paddingBottom: botPad + 20 }}
+      contentContainerStyle={{ paddingBottom: botPad + 30 }}
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={Colors.teal} />}
     >
-      {/* ─── Hero Header ─── */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      {/* ═══ HEADER ═══ */}
+      <LinearGradient
+        colors={[Colors.navyDark, Colors.navy, '#0D2040']}
+        style={[styles.header, { paddingTop: topPad + 14 }]}
+      >
         <View style={styles.headerTop}>
-          <Pressable onPress={() => router.push('/(tabs)/profile')} style={styles.headerIconBtn}>
-            <Feather name="user" size={20} color={Colors.white} />
+          <Pressable onPress={() => router.push('/(tabs)/profile')} style={styles.hBtn}>
+            <Feather name="user" size={19} color={Colors.white} />
           </Pressable>
-          <View style={styles.headerBrand}>
-            <Text style={styles.headerSub}>منصة العقارات السعودية</Text>
-            <Text style={styles.headerTitle}>عقار إنسايت</Text>
+          <View style={styles.brandWrap}>
+            <Text style={styles.brandSub}>منصة العقارات السعودية</Text>
+            <Text style={styles.brandTitle}>عقار إنسايت</Text>
           </View>
-          <Pressable onPress={() => router.push('/notifications')} style={styles.headerIconBtn}>
-            <Feather name="bell" size={20} color={Colors.white} />
+          <Pressable onPress={() => router.push('/notifications')} style={styles.hBtn}>
+            <Feather name="bell" size={19} color={Colors.white} />
           </Pressable>
         </View>
 
-        {/* Search */}
-        <View style={styles.searchWrap}>
-          <Pressable style={styles.searchBtn} onPress={handleSearch}>
-            <Feather name="search" size={18} color="rgba(255,255,255,0.7)" />
-          </Pressable>
+        {/* Greeting */}
+        <View style={styles.greetWrap}>
+          <Text style={styles.greetText}>
+            {getGreeting()}{user?.fullName ? `، ${user.fullName.split(' ')[0]}` : ' بك'}
+          </Text>
+          <Text style={styles.greetSub}>ابحث عن عقارك المثالي اليوم</Text>
+        </View>
+
+        {/* Search bar */}
+        <Pressable style={styles.searchBar} onPress={() => router.push('/(tabs)/listings')}>
+          <Feather name="search" size={17} color="rgba(255,255,255,0.5)" />
           <TextInput
             style={styles.searchInput}
             placeholder="ابحث: حي، مدينة، نوع عقار..."
-            placeholderTextColor="rgba(255,255,255,0.45)"
+            placeholderTextColor="rgba(255,255,255,0.4)"
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={handleSearch}
             returnKeyType="search"
             textAlign="right"
           />
-        </View>
+        </Pressable>
 
-        {/* Listing type pills */}
+        {/* Sale / Rent pills */}
         <View style={styles.pillsRow}>
-          {[{ k: 'all', l: 'الكل' }, { k: 'sale', l: 'للبيع' }, { k: 'rent', l: 'للإيجار' }].map(({ k, l }) => (
+          {[{ k: '', l: 'الكل' }, { k: 'sale', l: 'للبيع' }, { k: 'rent', l: 'للإيجار' }].map(({ k, l }) => (
             <Pressable
-              key={k}
-              style={[styles.pill, activeType === k && styles.pillActive]}
-              onPress={() => setActiveType(k)}
+              key={l}
+              style={styles.pill}
+              onPress={() => router.push({ pathname: '/(tabs)/listings', params: k ? { listingType: k } : {} })}
             >
-              <Text style={[styles.pillText, activeType === k && styles.pillTextActive]}>{l}</Text>
+              <Text style={styles.pillText}>{l}</Text>
             </Pressable>
           ))}
         </View>
-      </View>
+      </LinearGradient>
 
-      {/* ─── Market Score + KPIs ─── */}
+      {/* ═══ MARKET PULSE CARD ═══ */}
       {kpis && (
-        <View style={styles.statsRow}>
-          {marketScore && (
-            <Pressable style={styles.scoreCard} onPress={() => router.push('/analytics')}>
-              <View style={styles.scoreCircle}>
-                <Text style={styles.scoreNum}>{marketScore.score}</Text>
+        <Pressable style={styles.pulseCard} onPress={() => router.push('/analytics')}>
+          <LinearGradient
+            colors={[Colors.navyMid, '#0D2040']}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={styles.pulseGradient}
+          >
+            <View style={styles.pulseRight}>
+              <View style={styles.pulseIconWrap}>
+                <Feather name={insight.icon as any} size={20} color={insight.color} />
               </View>
-              <View>
-                <Text style={styles.scoreTitle}>مؤشر السوق</Text>
-                <Text style={styles.scoreLabel}>{marketScore.label}</Text>
+              <View style={styles.pulseTexts}>
+                <Text style={[styles.pulseMainText, { color: insight.color }]}>{insight.text}</Text>
+                <Text style={styles.pulseSubText}>{insight.subText}</Text>
               </View>
-            </Pressable>
-          )}
-          <View style={styles.kpiMini}>
-            <View style={styles.kpiMiniItem}>
-              <Text style={styles.kpiMiniValue}>{kpis.totalListings}</Text>
-              <Text style={styles.kpiMiniLabel}>عقار</Text>
             </View>
-            <View style={styles.kpiMiniDivider} />
-            <View style={styles.kpiMiniItem}>
-              <Text style={styles.kpiMiniValue}>{formatPrice(kpis.avgPrice)}</Text>
-              <Text style={styles.kpiMiniLabel}>متوسط ر</Text>
+            <View style={styles.pulseStats}>
+              <View style={styles.pulseStat}>
+                <Text style={styles.pulseStatVal}>{kpis.totalListings}</Text>
+                <Text style={styles.pulseStatLbl}>عقار</Text>
+              </View>
+              <View style={styles.pulseDivider} />
+              <View style={styles.pulseStat}>
+                <Text style={styles.pulseStatVal}>{formatPrice(kpis.avgPrice)}</Text>
+                <Text style={styles.pulseStatLbl}>متوسط ر.س</Text>
+              </View>
+              <View style={styles.pulseDivider} />
+              <View style={styles.pulseStat}>
+                <Text style={styles.pulseStatVal}>{kpis.newLast7Days}</Text>
+                <Text style={styles.pulseStatLbl}>جديد</Text>
+              </View>
             </View>
-            <View style={styles.kpiMiniDivider} />
-            <View style={styles.kpiMiniItem}>
-              <Text style={styles.kpiMiniValue}>{kpis.newLast7Days}</Text>
-              <Text style={styles.kpiMiniLabel}>جديد</Text>
+            <View style={styles.pulseLink}>
+              <Text style={styles.pulseLinkText}>عرض التحليل الكامل</Text>
+              <Feather name="arrow-left" size={12} color={Colors.teal} />
             </View>
-          </View>
-        </View>
+          </LinearGradient>
+        </Pressable>
       )}
 
-      {/* ─── Quick Actions ─── */}
+      {/* ═══ MAIN ACTIONS (2×2 GRID) ═══ */}
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>الخدمات</Text>
-        </View>
-        <View style={styles.quickGrid}>
-          {QUICK_ACTIONS.map((qa) => (
+        <View style={styles.actionsGrid}>
+          {MAIN_ACTIONS.map((a) => (
             <Pressable
-              key={qa.label}
-              style={styles.quickItem}
-              onPress={() => router.push(qa.path as any)}
+              key={a.label}
+              style={({ pressed }) => [styles.actionCard, pressed && styles.pressed]}
+              onPress={() => router.push(a.path as any)}
             >
-              <View style={[styles.quickIcon, { backgroundColor: `${qa.color}18` }]}>
-                <Feather name={qa.icon as any} size={20} color={qa.color} />
+              <View style={[styles.actionIconBg, { backgroundColor: a.bg }]}>
+                <Feather name={a.icon as any} size={22} color={a.color} />
               </View>
-              <Text style={styles.quickLabel}>{qa.label}</Text>
+              <Text style={styles.actionLabel}>{a.label}</Text>
+              <Text style={styles.actionSub}>{a.sub}</Text>
             </Pressable>
           ))}
         </View>
       </View>
 
-      {/* ─── Featured Listings ─── */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Pressable onPress={() => router.push('/(tabs)/listings')}>
-            <Text style={styles.seeAll}>عرض الكل</Text>
-          </Pressable>
-          <Text style={styles.sectionTitle}>أحدث العقارات</Text>
-        </View>
-
-        {isLoading ? (
-          <View style={styles.grid}>
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-          </View>
-        ) : listings.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <Feather name="home" size={36} color={Colors.textMuted} />
-            <Text style={styles.emptyText}>لا توجد عقارات حالياً</Text>
-          </View>
-        ) : (
-          <View style={styles.grid}>
-            {listings.map((item) => (
-              <ListingCard
-                key={item.id}
-                listing={item}
-                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
-              />
-            ))}
-          </View>
-        )}
+      {/* ═══ PROPERTY TYPE CATEGORIES ═══ */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>تصفح حسب النوع</Text>
       </View>
-
-      {/* ─── Smart Insights Preview ─── */}
-      {analytics?.smartInsights && analytics.smartInsights.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Pressable onPress={() => router.push('/analytics')}>
-              <Text style={styles.seeAll}>التحليل الكامل</Text>
-            </Pressable>
-            <Text style={styles.sectionTitle}>تحليلات ذكية</Text>
-          </View>
-          <View style={styles.insightCard}>
-            <View style={styles.insightIcon}>
-              <Feather name="cpu" size={16} color={Colors.teal} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
+        {PROPERTY_CATEGORIES.map((cat) => (
+          <Pressable
+            key={cat.key}
+            style={({ pressed }) => [styles.catCard, pressed && styles.pressed]}
+            onPress={() => router.push({ pathname: '/(tabs)/listings', params: { propertyType: cat.key } })}
+          >
+            <View style={styles.catIconWrap}>
+              <Feather name={cat.icon as any} size={18} color={Colors.teal} />
             </View>
-            <Text style={styles.insightText} numberOfLines={3}>
-              {analytics.smartInsights[0]}
-            </Text>
+            <Text style={styles.catLabel}>{cat.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* ═══ FEATURED LISTINGS CAROUSEL ═══ */}
+      <View style={styles.sectionHeaderRow}>
+        <Pressable onPress={() => router.push({ pathname: '/(tabs)/listings', params: { listingType: 'sale' } })}>
+          <Text style={styles.seeAll}>عرض الكل</Text>
+        </Pressable>
+        <Text style={styles.sectionTitle}>عقارات للبيع</Text>
+      </View>
+      {featLoading ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featScroll}>
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} variant="featured" />)}
+        </ScrollView>
+      ) : featuredListings.length === 0 ? (
+        <View style={styles.emptyInline}>
+          <Feather name="home" size={28} color={Colors.textMuted} />
+          <Text style={styles.emptyInlineText}>لا توجد عقارات حالياً</Text>
+        </View>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featScroll}>
+          {featuredListings.map((item) => (
+            <ListingCard
+              key={item.id}
+              listing={item}
+              variant="featured"
+              onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
+            />
+          ))}
+        </ScrollView>
+      )}
+
+      {/* ═══ SMART INSIGHT BANNER ═══ */}
+      {analytics?.smartInsights && analytics.smartInsights.length > 0 && (
+        <Pressable style={styles.insightBanner} onPress={() => router.push('/analytics')}>
+          <View style={styles.insightLeft}>
+            <Feather name="cpu" size={16} color={Colors.teal} />
           </View>
+          <Text style={styles.insightText} numberOfLines={2}>
+            {analytics.smartInsights[0]}
+          </Text>
+          <Feather name="arrow-left" size={14} color={Colors.teal} />
+        </Pressable>
+      )}
+
+      {/* ═══ RECENT LISTINGS GRID ═══ */}
+      <View style={styles.sectionHeaderRow}>
+        <Pressable onPress={() => router.push('/(tabs)/listings')}>
+          <Text style={styles.seeAll}>عرض الكل</Text>
+        </Pressable>
+        <Text style={styles.sectionTitle}>أحدث العقارات</Text>
+      </View>
+      {recentLoading ? (
+        <View style={styles.gridWrap}>
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+        </View>
+      ) : recentListings.length === 0 ? null : (
+        <View style={styles.gridWrap}>
+          {recentListings.map((item) => (
+            <ListingCard
+              key={item.id}
+              listing={item}
+              onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
+            />
+          ))}
         </View>
       )}
 
-      {/* ─── Services Preview ─── */}
+      {/* ═══ MORE QUICK LINKS ═══ */}
+      <View style={styles.linksRow}>
+        {[
+          { icon: 'map', label: 'الخريطة', path: '/(tabs)/map', color: Colors.navy },
+          { icon: 'grid', label: 'كل العقارات', path: '/(tabs)/listings', color: Colors.teal },
+          { icon: 'compass', label: 'استكشف', path: '/(tabs)/discover', color: '#8b5cf6' },
+          { icon: 'heart', label: 'المفضلة', path: '/(tabs)/favorites', color: '#e11d48' },
+        ].map((l) => (
+          <Pressable
+            key={l.label}
+            style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}
+            onPress={() => router.push(l.path as any)}
+          >
+            <View style={[styles.linkIcon, { backgroundColor: `${l.color}15` }]}>
+              <Feather name={l.icon as any} size={18} color={l.color} />
+            </View>
+            <Text style={styles.linkLabel}>{l.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* ═══ SERVICES PREVIEW ═══ */}
       {services && services.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <>
+          <View style={styles.sectionHeaderRow}>
             <Pressable onPress={() => router.push('/services')}>
               <Text style={styles.seeAll}>عرض الكل</Text>
             </Pressable>
             <Text style={styles.sectionTitle}>مزودو الخدمات</Text>
           </View>
-          <View style={styles.servicesRow}>
-            {services.slice(0, 3).map((s) => (
-              <Pressable key={s.id} style={styles.serviceCard} onPress={() => router.push({ pathname: '/services/[id]', params: { id: String(s.id) } })}>
-                <View style={styles.serviceIcon}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.servScroll}>
+            {services.slice(0, 4).map((s) => (
+              <Pressable
+                key={s.id}
+                style={({ pressed }) => [styles.servCard, pressed && styles.pressed]}
+                onPress={() => router.push({ pathname: '/services/[id]', params: { id: String(s.id) } })}
+              >
+                <View style={styles.servIcon}>
                   <Feather name="briefcase" size={20} color={Colors.gold} />
                 </View>
-                <Text style={styles.serviceName} numberOfLines={2}>{s.businessName}</Text>
-                <Text style={styles.serviceCity} numberOfLines={1}>{s.city}</Text>
-                {s.ratingAvg ? <Text style={styles.serviceRating}>⭐ {s.ratingAvg.toFixed(1)}</Text> : null}
+                <Text style={styles.servName} numberOfLines={2}>{s.businessName}</Text>
+                <Text style={styles.servCity}>{s.city}</Text>
+                {s.ratingAvg ? (
+                  <View style={styles.servRating}>
+                    <Feather name="star" size={10} color={Colors.gold} />
+                    <Text style={styles.servRatingText}>{s.ratingAvg.toFixed(1)}</Text>
+                  </View>
+                ) : null}
               </Pressable>
             ))}
-          </View>
-        </View>
+          </ScrollView>
+        </>
       )}
 
-      {/* ─── Open Customer Requests ─── */}
+      {/* ═══ CUSTOMER REQUESTS ═══ */}
       {recentRequests && recentRequests.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <>
+          <View style={styles.sectionHeaderRow}>
             <Pressable onPress={() => router.push('/requests')}>
               <Text style={styles.seeAll}>عرض الكل</Text>
             </Pressable>
-            <Text style={styles.sectionTitle}>أحدث طلبات العملاء</Text>
+            <Text style={styles.sectionTitle}>طلبات العملاء</Text>
           </View>
-          {recentRequests.slice(0, 3).map((r) => (
-            <Pressable key={r.id} style={styles.requestRow} onPress={() => router.push({ pathname: '/requests/[id]', params: { id: String(r.id) } })}>
-              <View style={styles.requestDot} />
-              <View style={styles.requestInfo}>
-                <Text style={styles.requestTitle} numberOfLines={1}>{r.title}</Text>
-                <Text style={styles.requestMeta}>{r.city ?? '—'} · {new Date(r.createdAt).toLocaleDateString('ar-SA')}</Text>
-              </View>
-              <Feather name="chevron-left" size={14} color={Colors.textMuted} />
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      {/* ─── CTA Banner ─── */}
-      <Pressable
-        style={styles.ctaBanner}
-        onPress={() => router.push('/requests/new')}
-      >
-        <View style={styles.ctaContent}>
-          <Text style={styles.ctaTitle}>هل تبحث عن عقار؟</Text>
-          <Text style={styles.ctaDesc}>أضف طلبك وتواصل مع المسوّقين مباشرة</Text>
-        </View>
-        <View style={styles.ctaBtn}>
-          <Text style={styles.ctaBtnText}>أضف طلبك</Text>
-          <Feather name="arrow-left" size={16} color={Colors.white} />
-        </View>
-      </Pressable>
-
-      {/* ─── Future Projects Teaser ─── */}
-      <Pressable style={styles.futureBanner} onPress={() => router.push('/future')}>
-        <Text style={styles.futureBannerEmoji}>🚀</Text>
-        <View style={styles.futureBannerContent}>
-          <Text style={styles.futureBannerTitle}>مشاريع رؤية 2030</Text>
-          <Text style={styles.futureBannerSub}>اكتشف نيوم، القدية، البحر الأحمر وغيرها</Text>
-        </View>
-        <Feather name="arrow-left" size={18} color={Colors.white} />
-      </Pressable>
-
-      {/* ─── Platform Rating ─── */}
-      {platformRating && (
-        <View style={styles.ratingBanner}>
-          <View style={styles.ratingStars}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Feather key={i} name="star" size={16} color={i < Math.round(platformRating.avgRating ?? 4.8) ? Colors.gold : Colors.border} />
+          <View style={styles.reqWrap}>
+            {recentRequests.slice(0, 3).map((r) => (
+              <Pressable
+                key={r.id}
+                style={({ pressed }) => [styles.reqCard, pressed && styles.pressed]}
+                onPress={() => router.push({ pathname: '/requests/[id]', params: { id: String(r.id) } })}
+              >
+                <View style={styles.reqDot} />
+                <View style={styles.reqInfo}>
+                  <Text style={styles.reqTitle} numberOfLines={1}>{r.title}</Text>
+                  <Text style={styles.reqMeta}>{r.city ?? '—'} · {new Date(r.createdAt).toLocaleDateString('ar-SA')}</Text>
+                </View>
+                <Feather name="chevron-left" size={14} color={Colors.textMuted} />
+              </Pressable>
             ))}
           </View>
-          <Text style={styles.ratingScore}>{platformRating.avgRating?.toFixed(1) ?? '4.8'}</Text>
-          <Text style={styles.ratingCount}>{platformRating.totalRatings ?? platformRating.count ?? 0} تقييم</Text>
-          <Text style={styles.ratingLabel}>تقييم المستخدمين لمنصة عقار إنسايت</Text>
-        </View>
+        </>
       )}
+
+      {/* ═══ CTA BANNERS ═══ */}
+      <View style={styles.ctaRow}>
+        <Pressable style={styles.ctaAdd} onPress={() => router.push('/requests/new')}>
+          <LinearGradient colors={[Colors.teal, Colors.tealDim]} style={styles.ctaGrad}>
+            <Feather name="plus-circle" size={22} color={Colors.white} />
+            <Text style={styles.ctaTitle}>أضف طلبك</Text>
+            <Text style={styles.ctaSub}>تواصل مع مسوّقين</Text>
+          </LinearGradient>
+        </Pressable>
+        <Pressable style={styles.ctaFuture} onPress={() => router.push('/future')}>
+          <LinearGradient colors={[Colors.gold, '#b5893a']} style={styles.ctaGrad}>
+            <Feather name="zap" size={22} color={Colors.white} />
+            <Text style={styles.ctaTitle}>رؤية 2030</Text>
+            <Text style={styles.ctaSub}>مشاريع المستقبل</Text>
+          </LinearGradient>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    backgroundColor: Colors.navy,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  headerIconBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerBrand: { alignItems: 'center' },
-  headerSub: { fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.white, textAlign: 'center' },
-  searchWrap: {
-    flexDirection: 'row-reverse', alignItems: 'center',
+
+  /* Header */
+  header: { paddingHorizontal: 20, paddingBottom: 28 },
+  headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
+  hBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
+  brandWrap: { alignItems: 'center' },
+  brandSub: { fontSize: 10, color: 'rgba(255,255,255,0.45)', letterSpacing: 0.5 },
+  brandTitle: { fontSize: 20, fontWeight: '900', color: Colors.white, letterSpacing: -0.3 },
+  greetWrap: { marginBottom: 16, alignItems: 'flex-end' },
+  greetText: { fontSize: 22, fontWeight: '800', color: Colors.white, textAlign: 'right' },
+  greetSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: 3 },
+  searchBar: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 16, paddingHorizontal: 14, height: 48,
-    marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', gap: 8,
+    borderRadius: 16, paddingHorizontal: 14, height: 50,
+    marginBottom: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
   },
   searchInput: { flex: 1, color: Colors.white, fontSize: 14 },
-  searchBtn: { padding: 2 },
   pillsRow: { flexDirection: 'row-reverse', gap: 8 },
   pill: {
-    paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  pillActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
-  pillText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.65)' },
-  pillTextActive: { color: Colors.white },
-  statsRow: {
-    flexDirection: 'row-reverse', paddingHorizontal: 16, paddingVertical: 12, gap: 10,
+  pillText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
+
+  /* Market Pulse Card */
+  pulseCard: { marginHorizontal: 16, marginTop: 16, marginBottom: 6, borderRadius: 22, overflow: 'hidden', shadowColor: Colors.navy, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
+  pulseGradient: { padding: 18 },
+  pulseRight: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, marginBottom: 16 },
+  pulseIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
+  pulseTexts: { flex: 1, alignItems: 'flex-end' },
+  pulseMainText: { fontSize: 18, fontWeight: '900', textAlign: 'right' },
+  pulseSubText: { fontSize: 12, color: 'rgba(255,255,255,0.55)', textAlign: 'right', marginTop: 3 },
+  pulseStats: { flexDirection: 'row-reverse', justifyContent: 'space-around', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 14, marginBottom: 12 },
+  pulseStat: { alignItems: 'center', gap: 3 },
+  pulseStatVal: { fontSize: 18, fontWeight: '900', color: Colors.white },
+  pulseStatLbl: { fontSize: 10, color: 'rgba(255,255,255,0.45)' },
+  pulseDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  pulseLink: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
+  pulseLinkText: { fontSize: 12, color: Colors.teal, fontWeight: '700' },
+
+  /* Main actions */
+  section: { paddingHorizontal: 16, marginBottom: 4, marginTop: 16 },
+  actionsGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10 },
+  actionCard: {
+    width: (width - 42) / 2,
+    backgroundColor: Colors.card, borderRadius: 18, padding: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
-  scoreCard: {
-    backgroundColor: Colors.card, borderRadius: 18, padding: 12,
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
-  },
-  scoreCircle: {
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: Colors.navy, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: Colors.teal,
-  },
-  scoreNum: { fontSize: 18, fontWeight: '900', color: Colors.white },
-  scoreTitle: { fontSize: 11, color: Colors.textMuted, textAlign: 'right' },
-  scoreLabel: { fontSize: 14, fontWeight: '800', color: Colors.teal, textAlign: 'right' },
-  kpiMini: {
-    flex: 1, backgroundColor: Colors.card, borderRadius: 18, padding: 12,
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-around',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
-  },
-  kpiMiniItem: { alignItems: 'center', gap: 2 },
-  kpiMiniValue: { fontSize: 16, fontWeight: '800', color: Colors.navy },
-  kpiMiniLabel: { fontSize: 10, color: Colors.textMuted },
-  kpiMiniDivider: { width: 1, height: 30, backgroundColor: Colors.border },
-  section: { paddingHorizontal: 16, marginBottom: 12 },
-  sectionHeader: {
-    flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14,
+  actionIconBg: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 10, alignSelf: 'flex-end' },
+  actionLabel: { fontSize: 14, fontWeight: '800', color: Colors.text, textAlign: 'right' },
+  actionSub: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginTop: 3 },
+
+  /* Section headers */
+  sectionHeaderRow: {
+    flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, marginTop: 22, marginBottom: 12,
   },
   sectionTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
   seeAll: { fontSize: 13, color: Colors.teal, fontWeight: '600' },
-  quickGrid: {
-    flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 0,
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
+
+  /* Property categories */
+  catScroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  catCard: {
+    alignItems: 'center', gap: 7,
+    backgroundColor: Colors.card, borderRadius: 16, padding: 14, width: 80,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
-  quickItem: {
-    width: '25%', alignItems: 'center', paddingVertical: 12, gap: 6,
-  },
-  quickIcon: {
-    width: 52, height: 52, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
-  },
-  quickLabel: { fontSize: 11, fontWeight: '600', color: Colors.textSub, textAlign: 'center' },
-  grid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
-  emptyWrap: { alignItems: 'center', paddingVertical: 30, gap: 10 },
-  emptyText: { fontSize: 13, color: Colors.textMuted },
-  insightCard: {
-    backgroundColor: Colors.card, borderRadius: 16, padding: 14,
-    flexDirection: 'row-reverse', gap: 10, alignItems: 'flex-start',
-    borderRightWidth: 3, borderRightColor: Colors.teal,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
-  },
-  insightIcon: {
-    width: 32, height: 32, borderRadius: 10,
-    backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-  insightText: { flex: 1, fontSize: 13, color: Colors.textSub, textAlign: 'right', lineHeight: 20 },
-  ctaBanner: {
-    marginHorizontal: 16, marginBottom: 8, backgroundColor: Colors.navy,
-    borderRadius: 20, padding: 18, flexDirection: 'row-reverse',
-    alignItems: 'center', justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  ctaContent: { flex: 1 },
-  ctaTitle: { fontSize: 16, fontWeight: '800', color: Colors.white, textAlign: 'right' },
-  ctaDesc: { fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'right', marginTop: 4 },
-  ctaBtn: {
-    backgroundColor: Colors.teal, borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 10,
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 6,
-  },
-  ctaBtnText: { color: Colors.white, fontWeight: '700', fontSize: 13 },
-  servicesRow: { flexDirection: 'row-reverse', gap: 10 },
-  serviceCard: {
-    flex: 1, backgroundColor: Colors.card, borderRadius: 14, padding: 12, alignItems: 'center', gap: 6,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
-  },
-  serviceIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: `${Colors.gold}15`, alignItems: 'center', justifyContent: 'center' },
-  serviceName: { fontSize: 11, fontWeight: '700', color: Colors.text, textAlign: 'center' },
-  serviceCity: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
-  serviceRating: { fontSize: 10, color: Colors.gold, fontWeight: '600' },
-  requestRow: {
-    backgroundColor: Colors.card, borderRadius: 12, padding: 12, marginBottom: 6,
+  catIconWrap: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center' },
+  catLabel: { fontSize: 11, fontWeight: '700', color: Colors.textSub, textAlign: 'center' },
+
+  /* Featured carousel */
+  featScroll: { paddingHorizontal: 20, paddingBottom: 4 },
+
+  /* Insight banner */
+  insightBanner: {
+    marginHorizontal: 16, marginTop: 16, marginBottom: 4,
+    backgroundColor: Colors.card, borderRadius: 14, padding: 14,
     flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 2, elevation: 1,
+    borderRightWidth: 3, borderRightColor: Colors.teal,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
   },
-  requestDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.success },
-  requestInfo: { flex: 1 },
-  requestTitle: { fontSize: 13, fontWeight: '600', color: Colors.text, textAlign: 'right' },
-  requestMeta: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginTop: 2 },
-  futureBanner: {
-    marginHorizontal: 16, marginBottom: 10, backgroundColor: Colors.gold,
-    borderRadius: 18, padding: 16, flexDirection: 'row-reverse', alignItems: 'center', gap: 12,
+  insightLeft: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  insightText: { flex: 1, fontSize: 13, color: Colors.textSub, textAlign: 'right', lineHeight: 20 },
+
+  /* Recent grid */
+  gridWrap: { paddingHorizontal: 16, flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
+  emptyInline: { alignItems: 'center', paddingVertical: 30, gap: 10 },
+  emptyInlineText: { fontSize: 13, color: Colors.textMuted },
+
+  /* More links row */
+  linksRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 8, marginTop: 20, justifyContent: 'space-between' },
+  linkBtn: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: Colors.card, borderRadius: 14, paddingVertical: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 2 },
+  linkIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  linkLabel: { fontSize: 10, fontWeight: '700', color: Colors.textSub, textAlign: 'center' },
+
+  /* Services */
+  servScroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  servCard: {
+    width: 120, backgroundColor: Colors.card, borderRadius: 16, padding: 14,
+    alignItems: 'center', gap: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
-  futureBannerEmoji: { fontSize: 28 },
-  futureBannerContent: { flex: 1 },
-  futureBannerTitle: { fontSize: 15, fontWeight: '800', color: Colors.navy },
-  futureBannerSub: { fontSize: 11, color: Colors.navyMid, marginTop: 2 },
-  ratingBanner: {
-    marginHorizontal: 16, marginBottom: 10, backgroundColor: Colors.card, borderRadius: 16,
-    padding: 14, alignItems: 'center', gap: 6,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+  servIcon: { width: 48, height: 48, borderRadius: 15, backgroundColor: 'rgba(201,168,76,0.1)', alignItems: 'center', justifyContent: 'center' },
+  servName: { fontSize: 11, fontWeight: '700', color: Colors.text, textAlign: 'center' },
+  servCity: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
+  servRating: { flexDirection: 'row-reverse', alignItems: 'center', gap: 3 },
+  servRatingText: { fontSize: 11, color: Colors.gold, fontWeight: '700' },
+
+  /* Customer requests */
+  reqWrap: { paddingHorizontal: 16, gap: 8 },
+  reqCard: {
+    backgroundColor: Colors.card, borderRadius: 14, padding: 14,
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
   },
-  ratingStars: { flexDirection: 'row-reverse', gap: 4 },
-  ratingScore: { fontSize: 28, fontWeight: '900', color: Colors.navy },
-  ratingCount: { fontSize: 12, color: Colors.textMuted },
-  ratingLabel: { fontSize: 11, color: Colors.textSub, textAlign: 'center' },
+  reqDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: Colors.success, flexShrink: 0 },
+  reqInfo: { flex: 1 },
+  reqTitle: { fontSize: 13, fontWeight: '700', color: Colors.text, textAlign: 'right' },
+  reqMeta: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginTop: 3 },
+
+  /* CTA Banners */
+  ctaRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginTop: 24 },
+  ctaAdd: { flex: 1, borderRadius: 18, overflow: 'hidden', shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
+  ctaFuture: { flex: 1, borderRadius: 18, overflow: 'hidden', shadowColor: Colors.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
+  ctaGrad: { padding: 20, alignItems: 'center', gap: 6 },
+  ctaTitle: { fontSize: 15, fontWeight: '900', color: Colors.white, textAlign: 'center' },
+  ctaSub: { fontSize: 11, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
 });

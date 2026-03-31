@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect } from 'react';
@@ -71,7 +72,7 @@ export default function ListingsScreen() {
   return (
     <View style={styles.screen}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
+      <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[styles.header, { paddingTop: topPad + 14 }]}>
         <View style={styles.headerTop}>
           <Pressable
             style={[styles.filterIconBtn, activeFiltersCount > 0 && styles.filterIconBtnActive]}
@@ -82,7 +83,7 @@ export default function ListingsScreen() {
                 <Text style={styles.filterBadgeText}>{activeFiltersCount}</Text>
               </View>
             )}
-            <Feather name="sliders" size={18} color={activeFiltersCount > 0 ? Colors.white : Colors.text} />
+            <Feather name="sliders" size={18} color={activeFiltersCount > 0 ? Colors.teal : 'rgba(255,255,255,0.8)'} />
           </Pressable>
           <Text style={styles.headerTitle}>العقارات</Text>
         </View>
@@ -174,9 +175,11 @@ export default function ListingsScreen() {
           )}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Feather name="home" size={48} color={Colors.textMuted} />
+              <View style={styles.emptyIcon}>
+                <Feather name="home" size={38} color={Colors.teal} />
+              </View>
               <Text style={styles.emptyTitle}>لا توجد عقارات</Text>
-              <Text style={styles.emptyText}>جرّب تغيير الفلتر أو البحث</Text>
+              <Text style={styles.emptyText}>جرّب تغيير الفلتر أو مصطلح البحث</Text>
               {activeFiltersCount > 0 && (
                 <Pressable style={styles.clearBtn} onPress={clearFilters}>
                   <Text style={styles.clearBtnText}>مسح الفلاتر</Text>
@@ -302,22 +305,19 @@ export default function ListingsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   header: {
-    backgroundColor: Colors.white,
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    paddingBottom: 14,
   },
-  headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: Colors.text },
+  headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: Colors.white },
   filterIconBtn: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: Colors.background,
+    width: 42, height: 42, borderRadius: 13,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     position: 'relative',
   },
-  filterIconBtnActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
+  filterIconBtnActive: { backgroundColor: 'rgba(15,123,160,0.25)', borderColor: Colors.teal },
   filterBadge: {
     position: 'absolute', top: -4, right: -4,
     width: 18, height: 18, borderRadius: 9,
@@ -326,18 +326,18 @@ const styles = StyleSheet.create({
   filterBadgeText: { fontSize: 10, fontWeight: '800', color: Colors.white },
   searchWrap: {
     flexDirection: 'row-reverse', alignItems: 'center',
-    backgroundColor: Colors.background, borderRadius: 14,
-    paddingHorizontal: 12, height: 44, marginBottom: 10, gap: 8,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14,
+    paddingHorizontal: 12, height: 46, marginBottom: 10, gap: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)',
   },
-  searchInput: { flex: 1, fontSize: 14, color: Colors.text, padding: 0 },
+  searchInput: { flex: 1, fontSize: 14, color: Colors.white, padding: 0 },
   filterRow: { gap: 8, flexDirection: 'row-reverse', marginBottom: 6 },
   chip: {
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.white,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  chipActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  chipText: { fontSize: 12, fontWeight: '600', color: Colors.textSub },
+  chipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
+  chipText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
   chipTextActive: { color: Colors.white },
   activeFilters: { gap: 8, flexDirection: 'row-reverse', marginBottom: 6 },
   activeChip: {
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.skeleton,
   },
   clearChipText: { fontSize: 11, fontWeight: '600', color: Colors.textSub },
-  count: { fontSize: 12, color: Colors.textMuted, textAlign: 'right' },
+  count: { fontSize: 12, color: 'rgba(255,255,255,0.55)', textAlign: 'right' },
   gridWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12, padding: 16 },
   listContent: { padding: 16, gap: 12 },
   row: { flexDirection: 'row-reverse', gap: 12 },
