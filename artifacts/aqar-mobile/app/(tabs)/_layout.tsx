@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 
@@ -14,14 +14,24 @@ function TabIcon({ name, focused, color }: { name: string; focused: boolean; col
   );
 }
 
+function MapTabIcon({ focused, color }: { focused: boolean; color: string }) {
+  return (
+    <View style={tabStyles.mapBtnOuter}>
+      <View style={[tabStyles.mapBtn, focused && tabStyles.mapBtnActive]}>
+        <Feather name="map-pin" size={22} color={Colors.white} />
+      </View>
+    </View>
+  );
+}
+
 export default function TabLayout() {
   const isIOS = Platform.OS === 'ios';
   const isWeb = Platform.OS === 'web';
   const isAndroid = Platform.OS === 'android';
   const insets = useSafeAreaInsets();
 
-  const tabBarHeight = isWeb ? 88 : isAndroid ? 64 + insets.bottom : 68;
-  const tabBarPaddingBottom = isWeb ? 18 : isAndroid ? insets.bottom + 6 : 10;
+  const tabBarHeight = isWeb ? 88 : isAndroid ? 64 + insets.bottom : 72;
+  const tabBarPaddingBottom = isWeb ? 18 : isAndroid ? insets.bottom + 6 : 12;
 
   return (
     <Tabs
@@ -34,14 +44,14 @@ export default function TabLayout() {
           backgroundColor: isIOS ? 'transparent' : Colors.white,
           borderTopWidth: 0.5,
           borderTopColor: Colors.border,
-          elevation: isAndroid ? 8 : 0,
+          elevation: isAndroid ? 12 : 0,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
           height: tabBarHeight,
           paddingBottom: tabBarPaddingBottom,
-          paddingTop: 6,
+          paddingTop: 8,
         },
         tabBarBackground: () =>
           isIOS ? (
@@ -72,10 +82,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="discover"
+        name="map"
         options={{
-          title: 'اكتشف',
-          tabBarIcon: ({ color, focused }) => <TabIcon name="compass" focused={focused} color={color} />,
+          title: 'الخريطة',
+          tabBarIcon: ({ color, focused }) => <MapTabIcon focused={focused} color={color} />,
+          tabBarLabel: () => null,
         }}
       />
       <Tabs.Screen
@@ -92,7 +103,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => <TabIcon name="user" focused={focused} color={color} />,
         }}
       />
-      <Tabs.Screen name="map" options={{ href: null }} />
+      <Tabs.Screen name="discover" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -107,5 +118,27 @@ const tabStyles = StyleSheet.create({
   },
   iconWrapActive: {
     backgroundColor: 'rgba(15,123,160,0.12)',
+  },
+  mapBtnOuter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  mapBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: Colors.teal,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 10,
+    marginTop: -24,
+  },
+  mapBtnActive: {
+    backgroundColor: Colors.navyDark,
   },
 });

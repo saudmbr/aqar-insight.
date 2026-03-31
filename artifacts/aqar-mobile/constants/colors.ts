@@ -9,6 +9,7 @@ export const Colors = {
   goldLight: '#E2C06A',
   white: '#FFFFFF',
   background: '#F4F6FA',
+  bg: '#F4F6FA',
   card: '#FFFFFF',
   text: '#0F1C3F',
   textSub: '#4B5563',

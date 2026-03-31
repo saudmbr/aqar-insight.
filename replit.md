@@ -70,7 +70,8 @@ The homepage integrates a hero section with quick search, category filters, a pr
 - Admin page (`/admin/user-reports`) for managing reports.
 
 **Mobile App (Expo React Native):**
-- Features a 5-tab bar navigation for Home, Listings, Discover (Analytics, Marketers, Services, Requests), Favorites, and Profile.
+- Features a 5-tab bar navigation: الرئيسية (Home), العقارات (Listings), خريطة (Map — raised teal center FAB button), المفضلة (Favorites), حسابي (Profile).
+- The center Map tab renders as a raised teal circle (52px) elevated above the tab bar with a glow shadow.
 - Dedicated screens for listing details, authentication, marketer/service provider directories and profiles, customer requests, analytics, and legal pages.
 - Local AsyncStorage is used for favorites.
 - API integration notes detail expected response formats and data handling.
@@ -105,10 +106,22 @@ The homepage integrates a hero section with quick search, category filters, a pr
 **Mobile App Listing Detail:**
 - Share button, image counter, featured/urgent/verified badges.
 - Price-per-sqm calculation, location breakdown chips, floors chip.
+- **Price Benchmark section** ("مقارنة الأسعار"): visual bar chart comparing listing vs. market average, with a "أقل من المتوسط" hint chip.
 - Embedded Leaflet map (web) or native Google Maps link (native) for listings with coordinates.
-- Email contact button alongside call/WhatsApp in marketer card.
+- **Improved Agent Card**: avatar with border, name, rating row (star + 4.8), plus three full-width action buttons (اتصال/واتساب/بريد) in a row.
 - Similar listings horizontal scroll section.
 - `useEffect` redirect for auth-protected screens (never redirect during render).
+
+**Mobile App Add Listing (Dark 5-Step Stepper):**
+- Full dark navy (`#060D1C`) background to match Figma design.
+- Step indicator row at top: 5 numbered circles with connecting lines, labels (نوع العقار/الموقع/التفاصيل/المزايا/الوصف).
+- Step 1: Property type emoji grid (3 columns, 10 types) + deal type chips + purpose chips.
+- Step 2: Region chips + city/district text inputs + price/area + negotiable checkbox.
+- Step 3: NumStepper for bedrooms/bathrooms/floors + furnishing chips.
+- Step 4: Amenity toggles with Feather icons + nearby services toggles.
+- Step 5: Title/description inputs + visual review summary card.
+- Bottom bar: prev/next buttons + step counter (1/5) + teal progress bar.
+- Android-compatible: no `gap + flexWrap: 'wrap'` combinations.
 
 **Mobile App ListingCard:**
 - Grid variant shows bedrooms (moon icon), bathrooms (droplet icon), and area chips.

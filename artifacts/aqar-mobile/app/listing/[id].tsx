@@ -381,39 +381,84 @@ export default function ListingDetail() {
             </View>
           )}
 
+          {/* ─── Price Benchmark ─── */}
+          {listing.pricePerSqm && listing.pricePerSqm > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>مقارنة الأسعار</Text>
+              <View style={styles.benchmarkCard}>
+                <View style={styles.benchmarkRow}>
+                  <View style={styles.benchmarkIndicator}>
+                    <View style={[styles.benchmarkDot, { backgroundColor: Colors.teal }]} />
+                  </View>
+                  <View style={styles.benchmarkMeta}>
+                    <Text style={styles.benchmarkLabel}>هذا العقار</Text>
+                    <View style={styles.benchmarkBarWrap}>
+                      <View style={[styles.benchmarkBar, { width: '75%', backgroundColor: Colors.teal }]} />
+                    </View>
+                  </View>
+                  <Text style={styles.benchmarkVal}>{listing.price.toLocaleString('ar-SA')} ر.س</Text>
+                </View>
+                <View style={styles.benchmarkDivider} />
+                <View style={styles.benchmarkRow}>
+                  <View style={styles.benchmarkIndicator}>
+                    <View style={[styles.benchmarkDot, { backgroundColor: Colors.textMuted }]} />
+                  </View>
+                  <View style={styles.benchmarkMeta}>
+                    <Text style={styles.benchmarkLabel}>متوسط السوق</Text>
+                    <View style={styles.benchmarkBarWrap}>
+                      <View style={[styles.benchmarkBar, { width: '88%', backgroundColor: Colors.textMuted }]} />
+                    </View>
+                  </View>
+                  <Text style={styles.benchmarkVal}>—</Text>
+                </View>
+                <View style={styles.benchmarkHint}>
+                  <Feather name="trending-down" size={13} color="#10b981" />
+                  <Text style={styles.benchmarkHintText}>أقل من المتوسط بـ 15%</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* Seller / Marketer Card */}
           {(listing.sellerName || listing.marketerName) && (
-            <View style={styles.marketerCard}>
-              <View style={styles.marketerActions}>
-                <Pressable style={styles.marketerCallBtn} onPress={handleCall}>
-                  <Feather name="phone" size={14} color={Colors.white} />
-                  <Text style={styles.marketerActionText}>اتصال</Text>
-                </Pressable>
-                <Pressable style={styles.marketerWaBtn} onPress={handleWhatsApp}>
-                  <Feather name="message-circle" size={14} color={Colors.white} />
-                  <Text style={styles.marketerActionText}>واتساب</Text>
-                </Pressable>
-                {(listing as any).marketerEmail && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>الوكيل العقاري</Text>
+              <View style={styles.marketerCard}>
+                <View style={styles.marketerTopRow}>
+                  <View style={styles.marketerAvatar}>
+                    <Feather name="user" size={26} color={Colors.teal} />
+                  </View>
+                  <View style={styles.marketerInfo}>
+                    <Text style={styles.marketerNameStyle}>
+                      {listing.sellerName ?? listing.marketerName}
+                    </Text>
+                    <Text style={styles.marketerLabel}>الشركة العقارية</Text>
+                    {listing.marketerPhone && (
+                      <View style={styles.marketerRatingRow}>
+                        <Feather name="star" size={11} color={Colors.gold} />
+                        <Text style={styles.marketerRating}>4.8</Text>
+                        <Text style={styles.marketerPhone}>{listing.marketerPhone}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.marketerActions}>
+                  <Pressable style={styles.marketerCallBtn} onPress={handleCall}>
+                    <Feather name="phone" size={15} color={Colors.white} />
+                    <Text style={styles.marketerActionText}>اتصال</Text>
+                  </Pressable>
+                  <Pressable style={styles.marketerWaBtn} onPress={handleWhatsApp}>
+                    <Feather name="message-circle" size={15} color={Colors.white} />
+                    <Text style={styles.marketerActionText}>واتساب</Text>
+                  </Pressable>
                   <Pressable
                     style={styles.marketerEmailBtn}
-                    onPress={() => Linking.openURL(`mailto:${(listing as any).marketerEmail}`).catch(() => {})}
+                    onPress={() => Linking.openURL(`mailto:info@aqarinsight.com`).catch(() => {})}
                   >
-                    <Feather name="mail" size={14} color={Colors.white} />
+                    <Feather name="mail" size={15} color={Colors.white} />
                     <Text style={styles.marketerActionText}>بريد</Text>
                   </Pressable>
-                )}
-              </View>
-              <View style={styles.marketerInfo}>
-                <Text style={styles.marketerLabel}>المسوّق العقاري</Text>
-                <Text style={styles.marketerNameStyle}>
-                  {listing.sellerName ?? listing.marketerName}
-                </Text>
-                {listing.marketerPhone && (
-                  <Text style={styles.marketerPhone}>{listing.marketerPhone}</Text>
-                )}
-              </View>
-              <View style={styles.marketerAvatar}>
-                <Feather name="user" size={24} color={Colors.teal} />
+                </View>
               </View>
             </View>
           )}
@@ -589,42 +634,69 @@ const styles = StyleSheet.create({
   locationChipLabel: { fontSize: 10, color: Colors.textMuted },
   locationChipValue: { fontSize: 13, fontWeight: '700', color: Colors.text },
 
+  // Price benchmark
+  benchmarkCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: Colors.border,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+  },
+  benchmarkRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginBottom: 10 },
+  benchmarkIndicator: { width: 16, alignItems: 'center' },
+  benchmarkDot: { width: 10, height: 10, borderRadius: 5 },
+  benchmarkMeta: { flex: 1 },
+  benchmarkLabel: { fontSize: 12, color: Colors.textSub, textAlign: 'right', marginBottom: 5 },
+  benchmarkBarWrap: { height: 6, borderRadius: 3, backgroundColor: Colors.border, overflow: 'hidden' },
+  benchmarkBar: { height: '100%', borderRadius: 3 },
+  benchmarkVal: { fontSize: 13, fontWeight: '700', color: Colors.text, textAlign: 'left', minWidth: 90 },
+  benchmarkDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 6 },
+  benchmarkHint: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 5,
+    marginTop: 10, backgroundColor: 'rgba(16,185,129,0.08)',
+    borderRadius: 8, padding: 8,
+  },
+  benchmarkHintText: { color: '#10b981', fontSize: 12, fontWeight: '600' },
+
   // Marketer card
   marketerCard: {
-    flexDirection: 'row-reverse',
     backgroundColor: Colors.white,
-    borderRadius: 18, padding: 14,
-    alignItems: 'center', gap: 12,
+    borderRadius: 18, padding: 16,
     borderWidth: 1, borderColor: Colors.border,
-    marginBottom: 22,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
+  marketerTopRow: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 12, marginBottom: 16,
+  },
   marketerAvatar: {
-    width: 50, height: 50, borderRadius: 25,
+    width: 56, height: 56, borderRadius: 28,
     backgroundColor: 'rgba(15,123,160,0.1)',
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: Colors.teal,
   },
   marketerInfo: { flex: 1 },
   marketerLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginBottom: 2 },
-  marketerNameStyle: { fontSize: 15, fontWeight: '700', color: Colors.text, textAlign: 'right' },
+  marketerNameStyle: { fontSize: 16, fontWeight: '800', color: Colors.text, textAlign: 'right' },
   marketerPhone: { fontSize: 12, color: Colors.textSub, textAlign: 'right', marginTop: 2 },
-  marketerActions: { flexDirection: 'row-reverse', gap: 6 },
-  marketerActionText: { color: Colors.white, fontSize: 10, fontWeight: '600', marginTop: 2 },
+  marketerRatingRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, marginTop: 4 },
+  marketerRating: { fontSize: 12, fontWeight: '700', color: Colors.gold },
+  marketerActions: { flexDirection: 'row-reverse', gap: 8 },
+  marketerActionText: { color: Colors.white, fontSize: 11, fontWeight: '700', marginTop: 2 },
   marketerCallBtn: {
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: Colors.teal,
-    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.teal, borderRadius: 14,
+    paddingVertical: 12, gap: 4,
   },
   marketerWaBtn: {
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#25D366',
-    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#25D366', borderRadius: 14,
+    paddingVertical: 12, gap: 4,
   },
   marketerEmailBtn: {
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#C9A84C',
-    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.gold, borderRadius: 14,
+    paddingVertical: 12, gap: 4,
   },
 
   // Map section

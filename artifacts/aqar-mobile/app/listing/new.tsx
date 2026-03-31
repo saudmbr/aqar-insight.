@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -9,7 +10,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
@@ -21,46 +21,67 @@ import { apiFetch, endpoints, SAUDI_REGIONS, PROPERTY_TYPES } from '@/constants/
 const LISTING_TYPES = [
   { value: 'sale', label: 'للبيع' },
   { value: 'rent', label: 'للإيجار' },
-  { value: 'installment', label: 'تقسيط' },
+  { value: 'monthly_rent', label: 'إيجار شهري' },
   { value: 'investment', label: 'استثمار' },
 ];
 
 const LISTING_PURPOSES = [
-  { value: 'residential', label: 'سكني' },
-  { value: 'commercial', label: 'تجاري' },
-  { value: 'industrial', label: 'صناعي' },
-  { value: 'agricultural', label: 'زراعي' },
-  { value: 'investment', label: 'استثماري' },
+  { value: 'سكني', label: 'سكني' },
+  { value: 'تجاري', label: 'تجاري' },
+  { value: 'صناعي', label: 'صناعي' },
+  { value: 'زراعي', label: 'زراعي' },
+  { value: 'استثماري', label: 'استثماري' },
 ];
 
 const FURNISHING = [
-  { value: 'furnished', label: 'مؤثّث' },
-  { value: 'unfurnished', label: 'غير مؤثّث' },
-  { value: 'semi', label: 'نصف مؤثّث' },
+  { value: 'مفروش', label: 'مفروش' },
+  { value: 'غير مفروش', label: 'غير مفروش' },
+  { value: 'نصف مفروش', label: 'نصف مفروش' },
+];
+
+const PROPERTY_TYPE_ROWS = [
+  { value: 'شقة', label: 'شقة', icon: '🏢' },
+  { value: 'فيلا', label: 'فيلا', icon: '🏡' },
+  { value: 'دوبلكس', label: 'دوبلكس', icon: '🏘️' },
+  { value: 'أرض', label: 'أرض', icon: '🗺️' },
+  { value: 'مكتب', label: 'مكتب', icon: '🏛️' },
+  { value: 'محل تجاري', label: 'محل', icon: '🏬' },
+  { value: 'مستودع', label: 'مستودع', icon: '🏭' },
+  { value: 'عمارة سكنية', label: 'عمارة', icon: '🏗️' },
+  { value: 'استوديو', label: 'استوديو', icon: '🛋️' },
+  { value: 'مزرعة', label: 'مزرعة', icon: '🌾' },
 ];
 
 const AMENITIES = [
-  { key: 'parking', label: 'موقف سيارات' },
-  { key: 'elevator', label: 'مصعد' },
-  { key: 'garden', label: 'حديقة' },
-  { key: 'pool', label: 'مسبح' },
-  { key: 'maidRoom', label: 'غرفة عاملة' },
-  { key: 'driverRoom', label: 'غرفة سائق' },
-  { key: 'ac', label: 'تكييف مركزي' },
-  { key: 'smartHome', label: 'منزل ذكي' },
-  { key: 'securitySystem', label: 'نظام أمني' },
-  { key: 'balcony', label: 'شرفة' },
-  { key: 'basement', label: 'قبو' },
-  { key: 'mortgageEligibility', label: 'مؤهّل للتمويل' },
+  { key: 'parking', label: 'موقف سيارات', icon: 'truck' },
+  { key: 'elevator', label: 'مصعد', icon: 'arrow-up' },
+  { key: 'garden', label: 'حديقة', icon: 'feather' },
+  { key: 'pool', label: 'مسبح', icon: 'droplet' },
+  { key: 'maidRoom', label: 'غرفة عاملة', icon: 'home' },
+  { key: 'driverRoom', label: 'غرفة سائق', icon: 'user' },
+  { key: 'airConditioning', label: 'تكييف مركزي', icon: 'wind' },
+  { key: 'smartHome', label: 'منزل ذكي', icon: 'cpu' },
+  { key: 'securitySystem', label: 'نظام أمني', icon: 'shield' },
+  { key: 'balcony', label: 'شرفة', icon: 'grid' },
+  { key: 'storageRoom', label: 'مستودع', icon: 'archive' },
+  { key: 'internet', label: 'إنترنت', icon: 'wifi' },
 ];
 
 const NEARBY = [
-  { key: 'nearbyMosque', label: 'مسجد' },
-  { key: 'nearbySchool', label: 'مدرسة' },
-  { key: 'nearbyHospital', label: 'مستشفى' },
-  { key: 'nearbyMall', label: 'مركز تسوق' },
-  { key: 'nearbyPark', label: 'حديقة عامة' },
-  { key: 'nearbyTransport', label: 'مواصلات' },
+  { key: 'nearbyMosques', label: 'مسجد', icon: 'map-pin' },
+  { key: 'nearbySchools', label: 'مدرسة', icon: 'book' },
+  { key: 'nearbyHospitals', label: 'مستشفى', icon: 'activity' },
+  { key: 'nearbyMalls', label: 'مركز تسوق', icon: 'shopping-bag' },
+  { key: 'nearbyParks', label: 'حديقة عامة', icon: 'sun' },
+  { key: 'nearbyTransport', label: 'مواصلات', icon: 'navigation' },
+];
+
+const STEPS = [
+  { num: 1, title: 'نوع العقار', icon: 'home' },
+  { num: 2, title: 'الموقع', icon: 'map-pin' },
+  { num: 3, title: 'التفاصيل', icon: 'info' },
+  { num: 4, title: 'المزايا', icon: 'star' },
+  { num: 5, title: 'الوصف', icon: 'edit-3' },
 ];
 
 interface FormState {
@@ -76,55 +97,30 @@ interface FormState {
   areaSqm: string;
   bedrooms: string;
   bathrooms: string;
-  livingRooms: string;
   floors: string;
-  propertyAge: string;
   furnishingStatus: string;
   negotiable: boolean;
   amenities: Record<string, boolean>;
   nearby: Record<string, boolean>;
 }
 
-const INITIAL_STATE: FormState = {
+const INITIAL: FormState = {
   title: '', description: '', propertyType: '', listingType: 'sale',
-  listingPurpose: 'residential', region: '', city: '', district: '',
-  price: '', areaSqm: '', bedrooms: '', bathrooms: '',
-  livingRooms: '', floors: '', propertyAge: '', furnishingStatus: 'unfurnished',
-  negotiable: false,
-  amenities: Object.fromEntries(AMENITIES.map((a) => [a.key, false])),
-  nearby: Object.fromEntries(NEARBY.map((n) => [n.key, false])),
+  listingPurpose: 'سكني', region: '', city: '', district: '',
+  price: '', areaSqm: '', bedrooms: '', bathrooms: '', floors: '',
+  furnishingStatus: 'غير مفروش', negotiable: false,
+  amenities: Object.fromEntries(AMENITIES.map(a => [a.key, false])),
+  nearby: Object.fromEntries(NEARBY.map(n => [n.key, false])),
 };
 
-function SectionHeader({ title, icon, color = Colors.teal }: { title: string; icon: string; color?: string }) {
-  return (
-    <View style={sStyles.secHeader}>
-      <View style={[sStyles.secIcon, { backgroundColor: `${color}18` }]}>
-        <Feather name={icon as any} size={16} color={color} />
-      </View>
-      <Text style={sStyles.secTitle}>{title}</Text>
-    </View>
-  );
-}
-
-function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
-  return (
-    <View style={sStyles.field}>
-      <Text style={sStyles.fieldLabel}>
-        {label}{required && <Text style={{ color: Colors.danger }}> *</Text>}
-      </Text>
-      {children}
-    </View>
-  );
-}
-
-function TextF({ value, onChangeText, placeholder, numeric = false, multiline = false }: any) {
+function DarkInput({ value, onChangeText, placeholder, numeric = false, multiline = false }: any) {
   return (
     <TextInput
-      style={[sStyles.input, multiline && sStyles.inputMulti]}
+      style={[s.input, multiline && s.inputMulti]}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      placeholderTextColor={Colors.textMuted}
+      placeholderTextColor="rgba(255,255,255,0.25)"
       keyboardType={numeric ? 'numeric' : 'default'}
       multiline={multiline}
       numberOfLines={multiline ? 4 : 1}
@@ -134,56 +130,132 @@ function TextF({ value, onChangeText, placeholder, numeric = false, multiline = 
   );
 }
 
-function ChipSelect({ options, value, onSelect }: { options: { value: string; label: string }[]; value: string; onSelect: (v: string) => void }) {
+function FieldLabel({ text, required }: { text: string; required?: boolean }) {
   return (
-    <View style={sStyles.chips}>
-      {options.map((opt) => (
+    <Text style={s.fieldLabel}>
+      {text}
+      {required && <Text style={{ color: '#ef4444' }}> *</Text>}
+    </Text>
+  );
+}
+
+function ChipRow({ options, value, onSelect, small }: {
+  options: { value: string; label: string; icon?: string }[];
+  value: string;
+  onSelect: (v: string) => void;
+  small?: boolean;
+}) {
+  return (
+    <View style={s.chipsWrap}>
+      {options.map(opt => (
         <Pressable
           key={opt.value}
-          style={[sStyles.chip, value === opt.value && sStyles.chipActive]}
+          style={[s.chip, value === opt.value && s.chipActive, small && s.chipSm]}
           onPress={() => onSelect(opt.value)}
         >
-          <Text style={[sStyles.chipText, value === opt.value && sStyles.chipTextActive]}>{opt.label}</Text>
+          {opt.icon && <Text style={s.chipIcon}>{opt.icon}</Text>}
+          <Text style={[s.chipText, value === opt.value && s.chipTextActive, small && s.chipTextSm]}>
+            {opt.label}
+          </Text>
         </Pressable>
       ))}
     </View>
   );
 }
 
+function NumStepper({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+  const num = parseInt(value) || 0;
+  return (
+    <View style={s.stepperWrap}>
+      <Text style={s.stepperLabel}>{label}</Text>
+      <View style={s.stepper}>
+        <Pressable
+          style={s.stepperBtn}
+          onPress={() => onChange(String(Math.max(0, num + 1)))}
+        >
+          <Feather name="plus" size={16} color={Colors.teal} />
+        </Pressable>
+        <Text style={s.stepperVal}>{num}</Text>
+        <Pressable
+          style={s.stepperBtn}
+          onPress={() => onChange(String(Math.max(0, num - 1)))}
+        >
+          <Feather name="minus" size={16} color={Colors.textMuted} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function AmenityToggle({ label, icon, checked, onToggle }: { label: string; icon: string; checked: boolean; onToggle: () => void }) {
+  return (
+    <Pressable
+      style={[s.amenity, checked && s.amenityActive]}
+      onPress={onToggle}
+    >
+      <View style={[s.amenityIcon, checked && s.amenityIconActive]}>
+        <Feather name={icon as any} size={14} color={checked ? Colors.white : Colors.textMuted} />
+      </View>
+      <Text style={[s.amenityText, checked && s.amenityTextActive]}>{label}</Text>
+      {checked && (
+        <View style={s.amenityCheck}>
+          <Feather name="check" size={10} color={Colors.white} />
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 export default function NewListingScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
-  const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  const botPad = Platform.OS === 'web' ? 34 : insets.bottom;
+
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const setField = (key: keyof FormState, value: any) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => { const n = { ...prev }; delete n[key]; return n; });
+  const set = (key: keyof FormState, value: any) => {
+    setForm(p => ({ ...p, [key]: value }));
+    setErrors(p => { const n = { ...p }; delete n[key]; return n; });
   };
 
-  const toggleAmenity = (key: string) => {
-    setForm((prev) => ({ ...prev, amenities: { ...prev.amenities, [key]: !prev.amenities[key] } }));
-  };
+  const toggleAmenity = (key: string) =>
+    setForm(p => ({ ...p, amenities: { ...p.amenities, [key]: !p.amenities[key] } }));
 
-  const toggleNearby = (key: string) => {
-    setForm((prev) => ({ ...prev, nearby: { ...prev.nearby, [key]: !prev.nearby[key] } }));
-  };
+  const toggleNearby = (key: string) =>
+    setForm(p => ({ ...p, nearby: { ...p.nearby, [key]: !p.nearby[key] } }));
 
-  const validate = () => {
+  const validateStep = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!form.title.trim()) errs.title = 'العنوان مطلوب';
-    if (!form.propertyType) errs.propertyType = 'نوع العقار مطلوب';
-    if (!form.listingType) errs.listingType = 'نوع الإعلان مطلوب';
-    if (!form.region) errs.region = 'المنطقة مطلوبة';
-    if (!form.city.trim()) errs.city = 'المدينة مطلوبة';
-    if (!form.price || isNaN(Number(form.price))) errs.price = 'السعر مطلوب';
+    if (step === 1) {
+      if (!form.propertyType) errs.propertyType = 'اختر نوع العقار';
+      if (!form.listingType) errs.listingType = 'اختر نوع الإعلان';
+    }
+    if (step === 2) {
+      if (!form.region) errs.region = 'اختر المنطقة';
+      if (!form.city.trim()) errs.city = 'أدخل المدينة';
+      if (!form.price || isNaN(Number(form.price))) errs.price = 'أدخل سعراً صحيحاً';
+    }
+    if (step === 5) {
+      if (!form.title.trim()) errs.title = 'أدخل عنوان الإعلان';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
+  const goNext = () => {
+    if (!validateStep()) return;
+    if (step < 5) setStep(s => s + 1);
+  };
+
+  const goPrev = () => {
+    if (step > 1) setStep(s => s - 1);
+  };
+
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (!validateStep()) return;
     setLoading(true);
     try {
       const body = {
@@ -199,264 +271,525 @@ export default function NewListingScreen() {
         areaSqm: form.areaSqm ? Number(form.areaSqm) : undefined,
         bedrooms: form.bedrooms ? Number(form.bedrooms) : undefined,
         bathrooms: form.bathrooms ? Number(form.bathrooms) : undefined,
-        livingRooms: form.livingRooms ? Number(form.livingRooms) : undefined,
         floors: form.floors ? Number(form.floors) : undefined,
-        propertyAge: form.propertyAge ? Number(form.propertyAge) : undefined,
         furnishingStatus: form.furnishingStatus,
         negotiable: form.negotiable,
         ...form.amenities,
         ...form.nearby,
       };
       await apiFetch(endpoints.listings, { method: 'POST', body: JSON.stringify(body) });
-      Alert.alert('تم النشر!', 'تم نشر عقارك بنجاح وسيظهر في القائمة قريباً', [
-        { text: 'عقاراتي', onPress: () => router.replace('/my-listings') },
-        { text: 'العقارات', onPress: () => router.replace('/(tabs)/listings') },
+      Alert.alert('تم النشر! 🎉', 'تم نشر إعلانك بنجاح وسيظهر في القائمة قريباً', [
+        { text: 'إعلاناتي', onPress: () => router.replace('/my-listings') },
+        { text: 'حسناً', onPress: () => router.replace('/(tabs)/listings') },
       ]);
     } catch (e: any) {
-      Alert.alert('خطأ', e.message?.includes('401') ? 'يجب تسجيل الدخول لنشر عقار' : 'حدث خطأ أثناء النشر، حاول مرة أخرى');
+      Alert.alert('خطأ', e.message?.includes('401') ? 'يجب تسجيل الدخول لنشر إعلان' : 'حدث خطأ، حاول مجدداً');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Feather name="x" size={22} color={Colors.white} />
-        </Pressable>
-        <Text style={styles.headerTitle}>نشر عقار جديد</Text>
-        <View style={{ width: 36 }} />
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-
-        {/* Core Info */}
-        <View style={styles.card}>
-          <SectionHeader title="المعلومات الأساسية" icon="home" />
-
-          <Field label="عنوان الإعلان" required>
-            <TextF value={form.title} onChangeText={(v: string) => setField('title', v)} placeholder="مثال: فيلا فاخرة في حي الياسمين" />
-            {errors.title && <Text style={styles.err}>{errors.title}</Text>}
-          </Field>
-
-          <Field label="نوع العقار" required>
-            <ChipSelect
-              options={PROPERTY_TYPES.map((t) => ({ value: t, label: t }))}
-              value={form.propertyType}
-              onSelect={(v) => setField('propertyType', v)}
-            />
-            {errors.propertyType && <Text style={styles.err}>{errors.propertyType}</Text>}
-          </Field>
-
-          <Field label="نوع الإعلان" required>
-            <ChipSelect options={LISTING_TYPES} value={form.listingType} onSelect={(v) => setField('listingType', v)} />
-          </Field>
-
-          <Field label="الغرض من الإعلان">
-            <ChipSelect options={LISTING_PURPOSES} value={form.listingPurpose} onSelect={(v) => setField('listingPurpose', v)} />
-          </Field>
-
-          <Field label="وصف العقار">
-            <TextF value={form.description} onChangeText={(v: string) => setField('description', v)} placeholder="اكتب وصفاً تفصيلياً للعقار..." multiline />
-          </Field>
+    <View style={{ flex: 1, backgroundColor: Colors.navyDark }}>
+      {/* ── Top gradient header ── */}
+      <LinearGradient
+        colors={[Colors.navyDark, '#0D1E38']}
+        style={[s.header, { paddingTop: topPad + 10 }]}
+      >
+        {/* Nav row */}
+        <View style={s.headerRow}>
+          <Pressable style={s.backBtn} onPress={() => router.back()}>
+            <Feather name="arrow-right" size={18} color={Colors.white} />
+          </Pressable>
+          <Text style={s.headerTitle}>إضافة عقار جديد</Text>
+          <Pressable style={s.backBtn} onPress={() => router.back()}>
+            <Feather name="x" size={18} color={Colors.textMuted} />
+          </Pressable>
         </View>
 
-        {/* Location & Price */}
-        <View style={styles.card}>
-          <SectionHeader title="الموقع والسعر" icon="map-pin" color="#8b5cf6" />
-
-          <Field label="المنطقة" required>
-            <ChipSelect
-              options={SAUDI_REGIONS.map((r) => ({ value: r, label: r }))}
-              value={form.region}
-              onSelect={(v) => setField('region', v)}
-            />
-            {errors.region && <Text style={styles.err}>{errors.region}</Text>}
-          </Field>
-
-          <View style={styles.row2}>
-            <Field label="المدينة *">
-              <TextF value={form.city} onChangeText={(v: string) => setField('city', v)} placeholder="الرياض" />
-              {errors.city && <Text style={styles.err}>{errors.city}</Text>}
-            </Field>
-            <Field label="الحي">
-              <TextF value={form.district} onChangeText={(v: string) => setField('district', v)} placeholder="الياسمين" />
-            </Field>
-          </View>
-
-          <Field label="السعر (ريال سعودي)" required>
-            <TextF value={form.price} onChangeText={(v: string) => setField('price', v)} placeholder="1500000" numeric />
-            {errors.price && <Text style={styles.err}>{errors.price}</Text>}
-          </Field>
-
-          <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>قابل للتفاوض</Text>
-            <Switch
-              value={form.negotiable}
-              onValueChange={(v) => setField('negotiable', v)}
-              trackColor={{ false: Colors.border, true: Colors.teal }}
-              thumbColor={Colors.white}
-            />
-          </View>
-
-          <Field label="المساحة (م²)">
-            <TextF value={form.areaSqm} onChangeText={(v: string) => setField('areaSqm', v)} placeholder="300" numeric />
-          </Field>
+        {/* Step indicator */}
+        <View style={s.stepsRow}>
+          {STEPS.map((st, idx) => {
+            const done = step > st.num;
+            const active = step === st.num;
+            return (
+              <React.Fragment key={st.num}>
+                <View style={s.stepItem}>
+                  <View style={[
+                    s.stepCircle,
+                    active && s.stepCircleActive,
+                    done && s.stepCircleDone,
+                  ]}>
+                    {done ? (
+                      <Feather name="check" size={12} color={Colors.white} />
+                    ) : (
+                      <Text style={[s.stepNum, active && s.stepNumActive]}>{st.num}</Text>
+                    )}
+                  </View>
+                  <Text style={[s.stepLabel, (active || done) && s.stepLabelActive]}>
+                    {st.title}
+                  </Text>
+                </View>
+                {idx < STEPS.length - 1 && (
+                  <View style={[s.stepLine, done && s.stepLineDone]} />
+                )}
+              </React.Fragment>
+            );
+          })}
         </View>
+      </LinearGradient>
 
-        {/* Specifications */}
-        <View style={styles.card}>
-          <SectionHeader title="المواصفات" icon="list" color={Colors.gold} />
-
-          <View style={styles.row4}>
-            {[
-              { label: 'غرف النوم', key: 'bedrooms' },
-              { label: 'دورات المياه', key: 'bathrooms' },
-              { label: 'غرف المعيشة', key: 'livingRooms' },
-              { label: 'عدد الأدوار', key: 'floors' },
-            ].map((f) => (
-              <Field key={f.key} label={f.label}>
-                <TextInput
-                  style={sStyles.smallInput}
-                  value={(form as any)[f.key]}
-                  onChangeText={(v) => setField(f.key as keyof FormState, v)}
-                  placeholder="0"
-                  placeholderTextColor={Colors.textMuted}
-                  keyboardType="numeric"
-                  textAlign="center"
-                />
-              </Field>
-            ))}
-          </View>
-
-          <View style={styles.row2}>
-            <Field label="عمر العقار (سنة)">
-              <TextF value={form.propertyAge} onChangeText={(v: string) => setField('propertyAge', v)} placeholder="0" numeric />
-            </Field>
-            <Field label="التأثيث">
-              <ChipSelect options={FURNISHING} value={form.furnishingStatus} onSelect={(v) => setField('furnishingStatus', v)} />
-            </Field>
-          </View>
-        </View>
-
-        {/* Amenities */}
-        <View style={styles.card}>
-          <SectionHeader title="المميزات والخدمات" icon="star" color="#10b981" />
-          <View style={styles.checkGrid}>
-            {AMENITIES.map((a) => (
-              <Pressable key={a.key} style={[styles.checkItem, form.amenities[a.key] && styles.checkItemActive]} onPress={() => toggleAmenity(a.key)}>
-                <Feather name={form.amenities[a.key] ? 'check-square' : 'square'} size={16} color={form.amenities[a.key] ? Colors.teal : Colors.textMuted} />
-                <Text style={[styles.checkText, form.amenities[a.key] && styles.checkTextActive]}>{a.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* Nearby */}
-        <View style={styles.card}>
-          <SectionHeader title="قريب من" icon="navigation" color="#f59e0b" />
-          <View style={styles.checkGrid}>
-            {NEARBY.map((n) => (
-              <Pressable key={n.key} style={[styles.checkItem, form.nearby[n.key] && styles.checkItemActive]} onPress={() => toggleNearby(n.key)}>
-                <Feather name={form.nearby[n.key] ? 'check-square' : 'square'} size={16} color={form.nearby[n.key] ? Colors.teal : Colors.textMuted} />
-                <Text style={[styles.checkText, form.nearby[n.key] && styles.checkTextActive]}>{n.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* Submit */}
-        <Pressable
-          style={[styles.submitBtn, loading && styles.submitDisabled]}
-          onPress={handleSubmit}
-          disabled={loading}
+      {/* ── Form content ── */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          style={s.scroll}
+          contentContainerStyle={{ padding: 18, paddingBottom: botPad + 100 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          {loading ? (
-            <ActivityIndicator color={Colors.white} />
-          ) : (
-            <>
-              <Feather name="send" size={18} color={Colors.white} />
-              <Text style={styles.submitText}>نشر الإعلان</Text>
-            </>
-          )}
-        </Pressable>
+          {/* ── STEP 1: نوع العقار ── */}
+          {step === 1 && (
+            <View>
+              <Text style={s.stepSectionTitle}>اختر نوع العقار</Text>
+              <View style={s.propTypeGrid}>
+                {PROPERTY_TYPE_ROWS.map(pt => (
+                  <Pressable
+                    key={pt.value}
+                    style={[s.propTypeCard, form.propertyType === pt.value && s.propTypeCardActive]}
+                    onPress={() => set('propertyType', pt.value)}
+                  >
+                    <Text style={s.propTypeEmoji}>{pt.icon}</Text>
+                    <Text style={[s.propTypeLabel, form.propertyType === pt.value && s.propTypeLabelActive]}>
+                      {pt.label}
+                    </Text>
+                    {form.propertyType === pt.value && (
+                      <View style={s.propTypeCheck}>
+                        <Feather name="check" size={10} color={Colors.white} />
+                      </View>
+                    )}
+                  </Pressable>
+                ))}
+              </View>
+              {errors.propertyType && <Text style={s.err}>{errors.propertyType}</Text>}
 
-        <Text style={styles.disclaimer}>
-          بالنشر، تؤكد أن جميع المعلومات صحيحة ودقيقة وتوافق على شروط الاستخدام.
-        </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+              <Text style={[s.stepSectionTitle, { marginTop: 24 }]}>نوع الصفقة</Text>
+              <View style={s.dealRow}>
+                {LISTING_TYPES.map(lt => (
+                  <Pressable
+                    key={lt.value}
+                    style={[s.dealChip, form.listingType === lt.value && s.dealChipActive]}
+                    onPress={() => set('listingType', lt.value)}
+                  >
+                    <Text style={[s.dealChipText, form.listingType === lt.value && s.dealChipTextActive]}>
+                      {lt.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={[s.stepSectionTitle, { marginTop: 24 }]}>الغرض</Text>
+              <ChipRow
+                options={LISTING_PURPOSES}
+                value={form.listingPurpose}
+                onSelect={v => set('listingPurpose', v)}
+                small
+              />
+            </View>
+          )}
+
+          {/* ── STEP 2: الموقع ── */}
+          {step === 2 && (
+            <View>
+              <Text style={s.stepSectionTitle}>المنطقة الإدارية</Text>
+              <ChipRow
+                options={SAUDI_REGIONS.map(r => ({ value: r, label: r }))}
+                value={form.region}
+                onSelect={v => set('region', v)}
+                small
+              />
+              {errors.region && <Text style={s.err}>{errors.region}</Text>}
+
+              <Text style={[s.stepSectionTitle, { marginTop: 20 }]}>المدينة والحي</Text>
+              <FieldLabel text="المدينة" required />
+              <DarkInput value={form.city} onChangeText={(v: string) => set('city', v)} placeholder="مثال: الرياض" />
+              {errors.city && <Text style={s.err}>{errors.city}</Text>}
+
+              <View style={{ height: 12 }} />
+              <FieldLabel text="الحي (اختياري)" />
+              <DarkInput value={form.district} onChangeText={(v: string) => set('district', v)} placeholder="مثال: حي الياسمين" />
+
+              <Text style={[s.stepSectionTitle, { marginTop: 20 }]}>السعر والمساحة</Text>
+              <FieldLabel text="السعر (ريال سعودي)" required />
+              <DarkInput value={form.price} onChangeText={(v: string) => set('price', v)} placeholder="1,250,000" numeric />
+              {errors.price && <Text style={s.err}>{errors.price}</Text>}
+
+              <View style={{ height: 12 }} />
+              <FieldLabel text="المساحة الإجمالية (م²)" />
+              <DarkInput value={form.areaSqm} onChangeText={(v: string) => set('areaSqm', v)} placeholder="320" numeric />
+
+              <View style={s.negotiableRow}>
+                <Pressable
+                  style={[s.negotiableBtn, form.negotiable && s.negotiableBtnActive]}
+                  onPress={() => set('negotiable', !form.negotiable)}
+                >
+                  {form.negotiable && <Feather name="check" size={12} color={Colors.white} />}
+                </Pressable>
+                <Text style={s.negotiableText}>السعر قابل للتفاوض</Text>
+              </View>
+            </View>
+          )}
+
+          {/* ── STEP 3: التفاصيل ── */}
+          {step === 3 && (
+            <View>
+              <Text style={s.stepSectionTitle}>تفاصيل العقار</Text>
+
+              <View style={s.steppersGrid}>
+                <NumStepper value={form.bedrooms} onChange={v => set('bedrooms', v)} label="غرف النوم" />
+                <NumStepper value={form.bathrooms} onChange={v => set('bathrooms', v)} label="دورات المياه" />
+                <NumStepper value={form.floors} onChange={v => set('floors', v)} label="عدد الأدوار" />
+              </View>
+
+              <Text style={[s.stepSectionTitle, { marginTop: 22 }]}>حالة الأثاث</Text>
+              <View style={s.dealRow}>
+                {FURNISHING.map(f => (
+                  <Pressable
+                    key={f.value}
+                    style={[s.dealChip, form.furnishingStatus === f.value && s.dealChipActive]}
+                    onPress={() => set('furnishingStatus', f.value)}
+                  >
+                    <Text style={[s.dealChipText, form.furnishingStatus === f.value && s.dealChipTextActive]}>
+                      {f.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ── STEP 4: المزايا ── */}
+          {step === 4 && (
+            <View>
+              <Text style={s.stepSectionTitle}>مزايا العقار</Text>
+              <View style={s.amenitiesGrid}>
+                {AMENITIES.map(am => (
+                  <AmenityToggle
+                    key={am.key}
+                    label={am.label}
+                    icon={am.icon}
+                    checked={form.amenities[am.key]}
+                    onToggle={() => toggleAmenity(am.key)}
+                  />
+                ))}
+              </View>
+
+              <Text style={[s.stepSectionTitle, { marginTop: 22 }]}>الخدمات القريبة</Text>
+              <View style={s.amenitiesGrid}>
+                {NEARBY.map(nb => (
+                  <AmenityToggle
+                    key={nb.key}
+                    label={nb.label}
+                    icon={nb.icon}
+                    checked={form.nearby[nb.key]}
+                    onToggle={() => toggleNearby(nb.key)}
+                  />
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ── STEP 5: الوصف والمراجعة ── */}
+          {step === 5 && (
+            <View>
+              <Text style={s.stepSectionTitle}>عنوان الإعلان</Text>
+              <DarkInput
+                value={form.title}
+                onChangeText={(v: string) => set('title', v)}
+                placeholder="مثال: فيلا فاخرة في حي النرجس بالرياض"
+              />
+              {errors.title && <Text style={s.err}>{errors.title}</Text>}
+
+              <Text style={[s.stepSectionTitle, { marginTop: 20 }]}>وصف العقار</Text>
+              <DarkInput
+                value={form.description}
+                onChangeText={(v: string) => set('description', v)}
+                placeholder="أضف وصفاً تفصيلياً يبرز مزايا العقار ويجذب المشترين..."
+                multiline
+              />
+
+              {/* Summary card */}
+              <View style={s.summaryCard}>
+                <Text style={s.summaryTitle}>ملخص الإعلان</Text>
+                <View style={s.summaryRow}>
+                  <Text style={s.summaryVal}>{form.propertyType || '—'}</Text>
+                  <Text style={s.summaryKey}>النوع</Text>
+                </View>
+                <View style={s.summaryRow}>
+                  <Text style={s.summaryVal}>
+                    {LISTING_TYPES.find(l => l.value === form.listingType)?.label || '—'}
+                  </Text>
+                  <Text style={s.summaryKey}>الصفقة</Text>
+                </View>
+                <View style={s.summaryRow}>
+                  <Text style={s.summaryVal}>{[form.city, form.region].filter(Boolean).join('، ') || '—'}</Text>
+                  <Text style={s.summaryKey}>الموقع</Text>
+                </View>
+                <View style={s.summaryRow}>
+                  <Text style={[s.summaryVal, { color: Colors.gold }]}>
+                    {form.price ? `${Number(form.price).toLocaleString('ar-SA')} ريال` : '—'}
+                  </Text>
+                  <Text style={s.summaryKey}>السعر</Text>
+                </View>
+                {form.bedrooms && (
+                  <View style={s.summaryRow}>
+                    <Text style={s.summaryVal}>{form.bedrooms} غرف + {form.bathrooms || '0'} حمام</Text>
+                    <Text style={s.summaryKey}>التفاصيل</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* ── Bottom navigation ── */}
+      <View style={[s.bottomNav, { paddingBottom: botPad + 12 }]}>
+        {step > 1 ? (
+          <Pressable style={s.prevBtn} onPress={goPrev}>
+            <Feather name="arrow-right" size={16} color={Colors.textMuted} />
+            <Text style={s.prevBtnText}>السابق</Text>
+          </Pressable>
+        ) : (
+          <View style={s.prevBtn} />
+        )}
+
+        <View style={s.bottomMeta}>
+          <Text style={s.stepCounter}>{step} / {STEPS.length}</Text>
+          <View style={s.progressBar}>
+            <View style={[s.progressFill, { width: `${(step / STEPS.length) * 100}%` }]} />
+          </View>
+        </View>
+
+        {step < 5 ? (
+          <Pressable style={s.nextBtn} onPress={goNext}>
+            <Text style={s.nextBtnText}>التالي</Text>
+            <Feather name="arrow-left" size={16} color={Colors.white} />
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[s.nextBtn, s.submitBtn, loading && { opacity: 0.7 }]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color={Colors.white} />
+            ) : (
+              <>
+                <Text style={s.nextBtnText}>نشر الإعلان</Text>
+                <Feather name="send" size={16} color={Colors.white} />
+              </>
+            )}
+          </Pressable>
+        )}
+      </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    backgroundColor: Colors.navy, paddingHorizontal: 20, paddingBottom: 18,
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
+const s = StyleSheet.create({
+  header: { paddingHorizontal: 18, paddingBottom: 18 },
+  headerRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20,
   },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
-  content: { padding: 16, gap: 14, paddingBottom: 32 },
-  card: {
-    backgroundColor: Colors.card, borderRadius: 20, padding: 16, gap: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+  backBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  row2: { flexDirection: 'row-reverse', gap: 10 },
-  row4: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10 },
-  err: { fontSize: 12, color: Colors.danger, textAlign: 'right', marginTop: 2 },
-  switchRow: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  switchLabel: { fontSize: 14, fontWeight: '600', color: Colors.text },
-  checkGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
-  checkItem: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 6,
-    backgroundColor: Colors.background, borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 8,
-    borderWidth: 1.5, borderColor: Colors.border,
-  },
-  checkItemActive: { borderColor: Colors.teal, backgroundColor: 'rgba(15,123,160,0.06)' },
-  checkText: { fontSize: 12, color: Colors.textSub },
-  checkTextActive: { color: Colors.teal, fontWeight: '600' },
-  submitBtn: {
-    backgroundColor: Colors.teal, borderRadius: 18, paddingVertical: 18,
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 10,
-    shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-  },
-  submitDisabled: { opacity: 0.7 },
-  submitText: { color: Colors.white, fontWeight: '800', fontSize: 17 },
-  disclaimer: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', lineHeight: 18 },
-});
+  headerTitle: { color: Colors.white, fontSize: 17, fontWeight: '800' },
 
-const sStyles = StyleSheet.create({
-  secHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginBottom: 4 },
-  secIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  secTitle: { fontSize: 15, fontWeight: '800', color: Colors.navy },
-  field: { gap: 6, flex: 1 },
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSub, textAlign: 'right' },
-  input: {
-    backgroundColor: Colors.background, borderRadius: 12,
-    paddingHorizontal: 14, height: 48,
-    borderWidth: 1.5, borderColor: Colors.border,
-    fontSize: 14, color: Colors.text,
+  /* Steps */
+  stepsRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center' },
+  stepItem: { alignItems: 'center', width: 54 },
+  stepCircle: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
   },
-  inputMulti: { height: 100, paddingTop: 12 },
-  smallInput: {
-    backgroundColor: Colors.background, borderRadius: 12,
-    paddingHorizontal: 8, height: 44,
-    borderWidth: 1.5, borderColor: Colors.border,
-    fontSize: 15, color: Colors.text, fontWeight: '700',
-    width: '100%',
+  stepCircleActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
+  stepCircleDone: { backgroundColor: '#10b981', borderColor: '#10b981' },
+  stepNum: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700' },
+  stepNumActive: { color: Colors.white },
+  stepLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '600', marginTop: 4, textAlign: 'center' },
+  stepLabelActive: { color: 'rgba(255,255,255,0.7)' },
+  stepLine: { flex: 1, height: 1.5, backgroundColor: 'rgba(255,255,255,0.1)', marginTop: 14 },
+  stepLineDone: { backgroundColor: '#10b981' },
+
+  scroll: { flex: 1 },
+
+  stepSectionTitle: {
+    color: Colors.white, fontSize: 15, fontWeight: '700', textAlign: 'right', marginBottom: 12,
   },
-  chips: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+
+  /* Property type grid */
+  propTypeGrid: {
+    flexDirection: 'row-reverse', flexWrap: 'wrap',
+  },
+  propTypeCard: {
+    width: '30%', aspectRatio: 1, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center', justifyContent: 'center', position: 'relative',
+    marginBottom: 10, marginLeft: '3.3%',
+  },
+  propTypeCardActive: {
+    backgroundColor: 'rgba(15,123,160,0.2)',
+    borderColor: Colors.teal,
+  },
+  propTypeEmoji: { fontSize: 26 },
+  propTypeLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600' },
+  propTypeLabelActive: { color: Colors.white },
+  propTypeCheck: {
+    position: 'absolute', top: 6, left: 6,
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: Colors.teal, alignItems: 'center', justifyContent: 'center',
+  },
+
+  /* Deal type */
+  dealRow: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
+  dealChip: {
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderRadius: 12, borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginLeft: 8, marginBottom: 8,
+  },
+  dealChipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
+  dealChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600' },
+  dealChipTextActive: { color: Colors.white },
+
+  /* Chips */
+  chipsWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
   chip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: Colors.background, borderWidth: 1.5, borderColor: Colors.border,
+    flexDirection: 'row-reverse', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 10, borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginLeft: 8, marginBottom: 8,
   },
-  chipActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  chipText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
+  chipActive: { backgroundColor: 'rgba(15,123,160,0.25)', borderColor: Colors.teal },
+  chipSm: { paddingHorizontal: 10, paddingVertical: 6 },
+  chipIcon: { fontSize: 13, marginLeft: 4 },
+  chipText: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600' },
   chipTextActive: { color: Colors.white },
+  chipTextSm: { fontSize: 12 },
+
+  /* Input */
+  input: {
+    height: 52, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 16, color: Colors.white,
+    fontSize: 15, marginBottom: 4,
+  },
+  inputMulti: {
+    height: 120, paddingTop: 14,
+  },
+
+  fieldLabel: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
+  err: { color: '#ef4444', fontSize: 11, textAlign: 'right', marginTop: 4, marginBottom: 4 },
+
+  /* Negotiable */
+  negotiableRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginTop: 14 },
+  negotiableBtn: {
+    width: 20, height: 20, borderRadius: 5,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',
+  },
+  negotiableBtnActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
+  negotiableText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+
+  /* Steppers */
+  steppersGrid: { flexDirection: 'row-reverse', gap: 10 },
+  stepperWrap: {
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 14, padding: 14, alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  stepperLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '600', marginBottom: 10 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  stepperBtn: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  stepperVal: { color: Colors.white, fontSize: 20, fontWeight: '800', minWidth: 24, textAlign: 'center' },
+
+  /* Amenities */
+  amenitiesGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
+  amenity: {
+    flexDirection: 'row-reverse', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderRadius: 12, borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    position: 'relative', marginLeft: 8, marginBottom: 8,
+  },
+  amenityActive: { backgroundColor: 'rgba(15,123,160,0.2)', borderColor: Colors.teal },
+  amenityIcon: {
+    width: 26, height: 26, borderRadius: 13,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  amenityIconActive: { backgroundColor: Colors.teal },
+  amenityText: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600' },
+  amenityTextActive: { color: Colors.white },
+  amenityCheck: {
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: Colors.teal,
+    alignItems: 'center', justifyContent: 'center',
+    marginRight: 2,
+  },
+
+  /* Summary */
+  summaryCard: {
+    marginTop: 20, backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  summaryTitle: { color: Colors.teal, fontSize: 13, fontWeight: '700', textAlign: 'right', marginBottom: 12 },
+  summaryRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  summaryKey: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
+  summaryVal: { color: Colors.white, fontSize: 13, fontWeight: '600' },
+
+  /* Bottom nav */
+  bottomNav: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 14,
+    backgroundColor: '#0B1628',
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
+    gap: 12,
+  },
+  prevBtn: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 12,
+    borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    minWidth: 90, justifyContent: 'center',
+  },
+  prevBtnText: { color: Colors.textMuted, fontSize: 14, fontWeight: '600' },
+  nextBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: Colors.teal, borderRadius: 14,
+    paddingVertical: 14, justifyContent: 'center',
+    shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35, shadowRadius: 10, elevation: 8,
+  },
+  submitBtn: { backgroundColor: '#10b981' },
+  nextBtnText: { color: Colors.white, fontSize: 15, fontWeight: '800' },
+  bottomMeta: { alignItems: 'center', minWidth: 60 },
+  stepCounter: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '600', marginBottom: 6 },
+  progressBar: { width: 60, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: Colors.teal, borderRadius: 2 },
 });
