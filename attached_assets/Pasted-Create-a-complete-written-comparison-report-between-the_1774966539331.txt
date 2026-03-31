@@ -1,0 +1,142 @@
+Create a complete written comparison report between the web platform and the mobile app version.
+
+Goal:
+Produce a detailed, structured, text-based document that identifies every difference, missing feature, inconsistency, UI mismatch, functionality gap, and data issue between the browser/web version and the Android mobile app.
+
+Instructions:
+1. Compare the web platform and the mobile app screen by screen, section by section, and feature by feature.
+2. Do NOT summarize briefly. I need a full written report with all details.
+3. The report must be exhaustive and include everything visible and functional.
+
+Compare the following in detail:
+
+A. General Structure
+- Main pages available on web vs mobile
+- Missing pages on mobile
+- Extra pages on mobile
+- Navigation differences
+- Menu structure differences
+- Header / footer / tab bar differences
+
+B. Homepage / Landing Experience
+- Hero section
+- Search area
+- Filters
+- Featured ads
+- Banners
+- Market indicators
+- Statistics
+- Interactive map
+- Calls to action
+- Sections order and layout
+
+C. Authentication
+- Login
+- Register
+- Forgot password
+- OTP / verification
+- Session persistence
+- Logout
+- Any authentication errors or missing flows
+
+D. Listings / Ads
+- Number of listings shown
+- Missing listing cards
+- Missing images
+- Missing ad data
+- Differences in title, price, location, category, badges, and metadata
+- Card layout differences
+- Sorting and filtering differences
+
+E. Property Details Page
+- Missing fields
+- Missing gallery/images
+- Missing map/location
+- Missing contact methods
+- Missing description/specifications
+- Missing related listings
+- Differences in sections and data order
+
+F. Search and Filters
+- Compare all filters on web vs mobile
+- Missing filters on mobile
+- Broken filters on mobile
+- Filters not affecting results correctly
+- Search bar differences
+- Location/area/neighborhood filters
+- Price/type/category filters
+- Advanced filter differences
+
+G. Maps
+- Whether the map exists on both versions
+- Missing map features on mobile
+- Marker behavior differences
+- Filter behavior on map
+- Card/map sync issues
+- Cluster, zoom, pin, and region behavior differences
+
+H. Images and Media
+- Images that appear on web but not on mobile
+- Broken image URLs
+- Placeholder images
+- Missing galleries, banners, thumbnails, icons, and media assets
+
+I. Data and Backend Rendering
+- Data that loads on web but not on mobile
+- Sections showing static/mock data instead of real data
+- API-driven features missing in mobile
+- Delayed loading or empty states
+- Any mismatch in backend integration
+
+J. User Experience and Design
+- Spacing issues
+- Alignment issues
+- Typography differences
+- Button inconsistencies
+- Broken responsive behavior
+- Poor mobile layout issues
+- Visual hierarchy issues
+- Professionalism level difference between web and mobile
+
+K. Functional Problems
+- Buttons that work on web but fail on mobile
+- Forms that fail on mobile
+- Actions that do nothing on mobile
+- Crashes, blank screens, navigation bugs
+- Loading problems
+- State/data refresh issues
+
+L. Missing Platform Features
+- Any feature existing in the web platform but missing in the mobile app
+- Any section partially implemented on mobile
+- Any important business logic not reflected in mobile
+
+Output Format:
+For each difference, provide:
+1. Section/Page Name
+2. Web Version Status
+3. Mobile Version Status
+4. Exact Difference
+5. Severity Level:
+   - Critical
+   - High
+   - Medium
+   - Low
+6. Recommended Fix
+
+Important Rules:
+- Write everything in a clean structured report
+- Do not skip small details
+- Do not generalize
+- Do not say “looks similar” unless it is truly identical
+- Treat the web platform as the source of truth
+- The mobile app must be evaluated against the web platform’s data, features, and functionality
+
+Final Requirement:
+At the end, provide:
+1. A full list of all missing features in mobile
+2. A full list of all broken features in mobile
+3. A full list of all UI/UX inconsistencies
+4. A final overall verdict on whether the mobile app is production-ready or not
+
+I need the result as a complete written document, not a short summary.

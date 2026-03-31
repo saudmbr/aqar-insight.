@@ -18,3 +18,9 @@ id = "hEQE8SMBo85-jDqwPrzIQ"
 uri = "file://platform-details.md"
 type = "text"
 title = "عقار إنسايت — التوثيق الشامل الكامل للمنصة"
+
+[[outputs]]
+id = "rcGBcz2cAv-M9_e5cJjWt"
+uri = "file://reports/aqar-insight-platform-comparison-report.md"
+type = "text"
+title = "تقرير المقارنة الشامل — عقار إنسايت (ويب vs جوال)"

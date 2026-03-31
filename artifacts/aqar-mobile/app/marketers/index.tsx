@@ -17,6 +17,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { Marketer, apiFetch, endpoints, SAUDI_REGIONS } from '@/constants/api';
 
+function parseArr(raw: any): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw === 'string') {
+    try { const p = JSON.parse(raw); return Array.isArray(p) ? p.filter(Boolean) : []; }
+    catch { return []; }
+  }
+  return [];
+}
+
 export default function MarketersScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
@@ -166,9 +176,9 @@ export default function MarketersScreen() {
                     </View>
                   )}
                 </View>
-                {m.specialties && m.specialties.length > 0 && (
+                {parseArr(m.specialties).length > 0 && (
                   <View style={styles.tagsRow}>
-                    {m.specialties.slice(0, 3).map((s, i) => (
+                    {parseArr(m.specialties).slice(0, 3).map((s, i) => (
                       <View key={i} style={styles.tag}>
                         <Text style={styles.tagText}>{s}</Text>
                       </View>
