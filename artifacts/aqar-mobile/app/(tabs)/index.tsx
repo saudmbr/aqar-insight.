@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Dimensions,
+  Image,
   Platform,
   Pressable,
   RefreshControl,
@@ -131,7 +132,11 @@ export default function HomeScreen() {
             <Feather name="user" size={19} color={Colors.white} />
           </Pressable>
           <View style={styles.brandWrap}>
-            <Text style={styles.brandSub}>منصة العقارات السعودية</Text>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.brandLogo}
+              resizeMode="contain"
+            />
             <Text style={styles.brandTitle}>عقار إنسايت</Text>
           </View>
           <Pressable onPress={() => router.push('/notifications')} style={styles.hBtn}>
@@ -423,9 +428,9 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingBottom: 28 },
   headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
   hBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
-  brandWrap: { alignItems: 'center' },
-  brandSub: { fontSize: 10, color: 'rgba(255,255,255,0.45)', letterSpacing: 0.5 },
-  brandTitle: { fontSize: 20, fontWeight: '900', color: Colors.white, letterSpacing: -0.3 },
+  brandWrap: { alignItems: 'center', flexDirection: 'row', gap: 8 },
+  brandLogo: { width: 32, height: 32 },
+  brandTitle: { fontSize: 18, fontWeight: '900', color: Colors.white, letterSpacing: -0.3 },
   greetWrap: { marginBottom: 16, alignItems: 'flex-end' },
   greetText: { fontSize: 22, fontWeight: '800', color: Colors.white, textAlign: 'right' },
   greetSub: { fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: 3 },
