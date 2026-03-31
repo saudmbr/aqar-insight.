@@ -185,7 +185,6 @@ export default function ProfileScreen() {
           <MenuItem icon="bar-chart-2" label="تحليلات السوق" onPress={() => router.push('/analytics')} color="#ef4444" />
           <MenuItem icon="map" label="الخريطة العقارية" onPress={() => router.push('/(tabs)/map')} color={Colors.navy} />
           <MenuItem icon="layers" label="تحليل الأحياء" onPress={() => router.push('/districts')} color="#0ea5e9" />
-          <MenuItem icon="zap" label="مشاريع رؤية 2030" onPress={() => router.push('/future')} color="#f59e0b" />
         </View>
       </View>
 

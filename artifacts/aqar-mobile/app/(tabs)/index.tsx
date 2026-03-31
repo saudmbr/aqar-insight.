@@ -63,7 +63,7 @@ const MAIN_ACTIONS = [
   { icon: 'bar-chart-2', label: 'تحليلات السوق', sub: 'رؤى وبيانات', path: '/analytics', color: Colors.teal, bg: 'rgba(15,123,160,0.12)' },
   { icon: 'layers', label: 'مقارنة الأحياء', sub: 'خريطة حرارية', path: '/districts', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
   { icon: 'users', label: 'المسوّقون', sub: 'وكلاء معتمدون', path: '/marketers', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-  { icon: 'zap', label: 'رؤية 2030', sub: 'مشاريع المستقبل', path: '/future', color: Colors.gold, bg: 'rgba(201,168,76,0.12)' },
+  { icon: 'inbox', label: 'طلبات العملاء', sub: 'ابحث وتواصل', path: '/requests', color: Colors.gold, bg: 'rgba(201,168,76,0.12)' },
 ];
 
 export default function HomeScreen() {
@@ -411,13 +411,6 @@ export default function HomeScreen() {
             <Text style={styles.ctaSub}>تواصل مع مسوّقين</Text>
           </LinearGradient>
         </Pressable>
-        <Pressable style={styles.ctaFuture} onPress={() => router.push('/future')}>
-          <LinearGradient colors={[Colors.gold, '#b5893a']} style={styles.ctaGrad}>
-            <Feather name="zap" size={22} color={Colors.white} />
-            <Text style={styles.ctaTitle}>رؤية 2030</Text>
-            <Text style={styles.ctaSub}>مشاريع المستقبل</Text>
-          </LinearGradient>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -550,7 +543,6 @@ const styles = StyleSheet.create({
   /* CTA Banners */
   ctaRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginTop: 24 },
   ctaAdd: { flex: 1, borderRadius: 18, overflow: 'hidden', shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
-  ctaFuture: { flex: 1, borderRadius: 18, overflow: 'hidden', shadowColor: Colors.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
   ctaGrad: { padding: 20, alignItems: 'center', gap: 6 },
   ctaTitle: { fontSize: 15, fontWeight: '900', color: Colors.white, textAlign: 'center' },
   ctaSub: { fontSize: 11, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },

@@ -61,7 +61,6 @@ export default function RootLayout() {
               <Stack.Screen name="analytics/index" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="districts" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="dashboard" options={{ headerShown: false, presentation: 'card' }} />
-              <Stack.Screen name="future" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="marketer/dashboard" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="services/dashboard" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="services/new" options={{ headerShown: false, presentation: 'modal' }} />
