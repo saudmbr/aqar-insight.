@@ -1,0 +1,92 @@
+Rebuild and upgrade the mobile application to achieve a fully professional, production-level real estate app by fixing the map, completing the filtering system, and redesigning the homepage.
+
+CRITICAL OBJECTIVE:
+The mobile app must match top real estate apps (like Zillow, Bayut) in functionality and user experience, not just visually.
+
+----------------------------------------
+1) MAP SYSTEM (HIGH PRIORITY - CRITICAL)
+----------------------------------------
+- Replace the current fake map screen with a real interactive map
+- Use react-native-maps with Google Maps
+- Ensure compatibility using EAS build (NOT Expo Go)
+- Display all property listings as markers (pins)
+- Implement marker clustering for nearby properties
+- On marker click:
+  - Show a property preview card
+- Enable full interactions:
+  - Zoom
+  - Pan
+- Sync filters with map results
+- Ensure smooth performance on Android devices
+
+IMPORTANT:
+The map must be real and interactive, not simulated or list-based.
+
+----------------------------------------
+2) ADVANCED FILTER SYSTEM
+----------------------------------------
+Upgrade filters to match web platform capabilities.
+
+Add the following filters:
+- Property size (min/max)
+- Number of rooms
+- Number of bathrooms
+- Property age
+- Property features:
+  - Pool
+  - Elevator
+  - Parking
+  - etc.
+
+Functional requirements:
+- All filters must affect API results correctly
+- Build a clean and modern filter modal UI
+- Add sorting options:
+  - Newest
+  - Price (low to high)
+  - Price (high to low)
+- Ensure filters update:
+  - Listings
+  - Map results
+
+----------------------------------------
+3) HOMEPAGE REDESIGN (UX IMPROVEMENT)
+----------------------------------------
+Redesign the mobile homepage to deliver a premium first impression.
+
+Add:
+- Hero section with background image
+- Strong headline (real estate focused)
+- Multi-field search:
+  - Location
+  - Property type
+  - Deal type
+- Featured listings section
+- Clear CTA button:
+  - "Add your listing"
+- Market insights preview section
+
+Design requirements:
+- Clean spacing
+- Strong visual hierarchy
+- Modern UI (card-based layout)
+- Mobile-first optimized
+
+----------------------------------------
+GLOBAL REQUIREMENTS
+----------------------------------------
+- Maintain full API integration (no mock data)
+- Ensure no broken features
+- Ensure consistent UI across all screens
+- Optimize performance (no lag, no duplicate API calls)
+- Ensure full functionality on Android devices
+
+----------------------------------------
+OUTPUT REQUIREMENT
+----------------------------------------
+Deliver a fully functional, production-ready mobile app with:
+- Real interactive map
+- Complete filtering system
+- Professional homepage
+- No missing features
+- No broken UI

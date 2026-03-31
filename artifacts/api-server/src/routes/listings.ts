@@ -106,6 +106,8 @@ listingsRouter.get("/", async (req: Request, res: Response) => {
         createdAt: listingsTable.createdAt,
         userId: listingsTable.userId,
         sellerName: usersTable.fullName,
+        latitude: listingsTable.latitude,
+        longitude: listingsTable.longitude,
       })
       .from(listingsTable)
       .leftJoin(usersTable, eq(listingsTable.userId, usersTable.id))

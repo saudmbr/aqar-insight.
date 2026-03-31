@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FlatList,
   Modal,
@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   View,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
@@ -20,434 +21,559 @@ import { ListingsResponse, fetchListings, SAUDI_REGIONS, PROPERTY_TYPES } from '
 import { ListingCard, CARD_WIDTH } from '@/components/ListingCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
 
-const TYPES = [
+const { height: SCREEN_H } = Dimensions.get('window');
+
+const DEAL_TYPES = [
   { key: '', label: 'الكل' },
   { key: 'sale', label: 'للبيع' },
   { key: 'rent', label: 'للإيجار' },
 ];
 
+const SORT_OPTIONS = [
+  { key: 'newest', label: 'الأحدث' },
+  { key: 'price_asc', label: 'السعر: الأقل أولاً' },
+  { key: 'price_desc', label: 'السعر: الأعلى أولاً' },
+  { key: 'area_desc', label: 'المساحة: الأكبر أولاً' },
+];
+
+const BEDROOM_OPTIONS = ['أي', '1', '2', '3', '4', '5+'];
+const BATHROOM_OPTIONS = ['أي', '1', '2', '3', '4+'];
+
+const FEATURES = [
+  { key: 'pool', label: '🏊 مسبح' },
+  { key: 'elevator', label: '🛗 مصعد' },
+  { key: 'parking', label: '🚗 موقف سيارات' },
+  { key: 'garden', label: '🌿 حديقة' },
+  { key: 'security', label: '🔒 أمن وحراسة' },
+  { key: 'gym', label: '💪 نادي رياضي' },
+];
+
+interface FilterState {
+  listingType: string;
+  propertyType: string;
+  region: string;
+  city: string;
+  minPrice: string;
+  maxPrice: string;
+  minArea: string;
+  maxArea: string;
+  bedrooms: string;
+  bathrooms: string;
+  sort: string;
+}
+
+const DEFAULT_FILTERS: FilterState = {
+  listingType: '',
+  propertyType: '',
+  region: '',
+  city: '',
+  minPrice: '',
+  maxPrice: '',
+  minArea: '',
+  maxArea: '',
+  bedrooms: '',
+  bathrooms: '',
+  sort: 'newest',
+};
+
 export default function ListingsScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ q?: string; propertyType?: string; listingType?: string }>();
-  const [search, setSearch] = useState(params.q ?? '');
-  const [listingType, setListingType] = useState(params.listingType ?? '');
-  const [propertyType, setPropertyType] = useState(params.propertyType ?? '');
-  const [region, setRegion] = useState('');
-  const [city, setCity] = useState('');
-  const [page, setPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const botPad = Platform.OS === 'web' ? 34 : insets.bottom;
 
+  const [search, setSearch] = useState(params.q ?? '');
+  const [page, setPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    ...DEFAULT_FILTERS,
+    listingType: params.listingType ?? '',
+    propertyType: params.propertyType ?? '',
+  });
+  const [draftFilters, setDraftFilters] = useState<FilterState>(filters);
+
   useEffect(() => {
-    if (params.propertyType) setPropertyType(params.propertyType);
-    if (params.listingType) setListingType(params.listingType);
+    if (params.propertyType || params.listingType) {
+      setFilters(f => ({ ...f, propertyType: params.propertyType ?? f.propertyType, listingType: params.listingType ?? f.listingType }));
+    }
   }, [params.propertyType, params.listingType]);
 
-  const activeFiltersCount = [listingType, propertyType, region, city].filter(Boolean).length;
+  const activeFiltersCount = [
+    filters.listingType,
+    filters.propertyType,
+    filters.region,
+    filters.city,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minArea,
+    filters.maxArea,
+    filters.bedrooms,
+    filters.bathrooms,
+  ].filter(Boolean).length;
+
+  const buildParams = useCallback((f: FilterState, q: string, p: number) => {
+    const params = new URLSearchParams({ limit: '20', page: String(p) });
+    if (f.listingType) params.set('listingType', f.listingType);
+    if (f.propertyType) params.set('propertyType', f.propertyType);
+    if (q) params.set('search', q);
+    if (f.region) params.set('region', f.region);
+    if (f.city) params.set('city', f.city);
+    if (f.minPrice) params.set('minPrice', f.minPrice);
+    if (f.maxPrice) params.set('maxPrice', f.maxPrice);
+    if (f.minArea) params.set('minArea', f.minArea);
+    if (f.maxArea) params.set('maxArea', f.maxArea);
+    if (f.bedrooms && f.bedrooms !== 'أي') {
+      params.set('bedrooms', f.bedrooms.replace('+', ''));
+    }
+    if (f.bathrooms && f.bathrooms !== 'أي') {
+      params.set('bathrooms', f.bathrooms.replace('+', ''));
+    }
+    if (f.sort && f.sort !== 'newest') params.set('sort', f.sort);
+    return params;
+  }, []);
 
   const { data, isLoading, isFetching } = useQuery<ListingsResponse>({
-    queryKey: ['listings', listingType, propertyType, search, page, region, city],
-    queryFn: () => {
-      const p = new URLSearchParams({ limit: '20', page: String(page) });
-      if (listingType) p.set('listingType', listingType);
-      if (propertyType) p.set('propertyType', propertyType);
-      if (search) p.set('search', search);
-      if (region) p.set('region', region);
-      if (city) p.set('city', city);
-      return fetchListings(p);
-    },
+    queryKey: ['listings-v2', filters, search, page],
+    queryFn: () => fetchListings(buildParams(filters, search, page)),
   });
 
   const listings = data?.listings ?? [];
+  const total = data?.total ?? 0;
+  const hasMore = listings.length < total;
 
-  const clearFilters = () => {
-    setListingType('');
-    setPropertyType('');
-    setRegion('');
-    setCity('');
+  const applyFilters = () => {
+    setFilters(draftFilters);
+    setPage(1);
+    setShowFilters(false);
+  };
+
+  const clearAllFilters = () => {
+    const cleared = { ...DEFAULT_FILTERS };
+    setFilters(cleared);
+    setDraftFilters(cleared);
     setSearch('');
     setPage(1);
   };
 
+  const currentSortLabel = SORT_OPTIONS.find(s => s.key === filters.sort)?.label ?? 'الأحدث';
+
   return (
     <View style={s.screen}>
-      {/* ══ HEADER ══ */}
+      {/* ═══ HEADER ═══ */}
       <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[s.header, { paddingTop: topPad + 14 }]}>
-        {/* Title row */}
         <View style={s.headerTop}>
           <Pressable
             style={[s.filterBtn, activeFiltersCount > 0 && s.filterBtnActive]}
-            onPress={() => setShowFilters(true)}
+            onPress={() => { setDraftFilters(filters); setShowFilters(true); }}
           >
-            {activeFiltersCount > 0 && (
-              <View style={s.filterDot}>
-                <Text style={s.filterDotText}>{activeFiltersCount}</Text>
-              </View>
-            )}
-            <Feather name="sliders" size={18} color={activeFiltersCount > 0 ? Colors.teal : 'rgba(255,255,255,0.8)'} />
+            <Feather name="sliders" size={16} color={activeFiltersCount > 0 ? Colors.teal : Colors.white} />
+            <Text style={[s.filterBtnText, activeFiltersCount > 0 && { color: Colors.teal }]}>
+              {activeFiltersCount > 0 ? `فلاتر (${activeFiltersCount})` : 'فلاتر'}
+            </Text>
           </Pressable>
+
           <Text style={s.headerTitle}>العقارات</Text>
+
+          <Pressable
+            style={s.sortBtn}
+            onPress={() => {
+              const next = SORT_OPTIONS[(SORT_OPTIONS.findIndex(s => s.key === filters.sort) + 1) % SORT_OPTIONS.length];
+              setFilters(f => ({ ...f, sort: next.key }));
+              setPage(1);
+            }}
+          >
+            <Feather name="bar-chart-2" size={14} color={Colors.teal} />
+            <Text style={s.sortBtnText} numberOfLines={1}>{currentSortLabel}</Text>
+          </Pressable>
         </View>
 
-        {/* Search */}
-        <View style={s.searchRow}>
-          <Feather name="search" size={15} color="rgba(255,255,255,0.45)" />
+        {/* Search bar */}
+        <View style={s.searchWrap}>
+          <Feather name="search" size={16} color="rgba(255,255,255,0.4)" style={s.searchIcon} />
           <TextInput
             style={s.searchInput}
             placeholder="ابحث عن عقار، حي، مدينة..."
             placeholderTextColor="rgba(255,255,255,0.35)"
             value={search}
-            onChangeText={(v) => { setSearch(v); setPage(1); }}
-            textAlign="right"
+            onChangeText={t => { setSearch(t); setPage(1); }}
             returnKeyType="search"
+            textAlign="right"
           />
-          {search.length > 0 && (
-            <Pressable onPress={() => setSearch('')} hitSlop={8}>
-              <Feather name="x" size={15} color="rgba(255,255,255,0.6)" />
+          {search ? (
+            <Pressable onPress={() => { setSearch(''); setPage(1); }} style={s.clearSearch}>
+              <Feather name="x" size={14} color="rgba(255,255,255,0.5)" />
+            </Pressable>
+          ) : null}
+        </View>
+
+        {/* Deal type pills */}
+        <View style={s.pillsRow}>
+          {DEAL_TYPES.map(t => (
+            <Pressable
+              key={t.key}
+              style={[s.pill, filters.listingType === t.key && s.pillActive]}
+              onPress={() => { setFilters(f => ({ ...f, listingType: t.key })); setPage(1); }}
+            >
+              <Text style={[s.pillText, filters.listingType === t.key && s.pillTextActive]}>{t.label}</Text>
+            </Pressable>
+          ))}
+          {activeFiltersCount > 0 && (
+            <Pressable style={s.clearFiltersBtn} onPress={clearAllFilters}>
+              <Text style={s.clearFiltersBtnText}>مسح الكل</Text>
             </Pressable>
           )}
         </View>
-
-        {/* Type chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.typeRow}>
-          {TYPES.map((t) => (
-            <Pressable
-              key={t.key}
-              style={[s.typeChip, listingType === t.key && s.typeChipActive]}
-              onPress={() => { setListingType(t.key); setPage(1); }}
-            >
-              <Text style={[s.typeChipText, listingType === t.key && s.typeChipTextActive]}>
-                {t.label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        {/* Active filter tags */}
-        {(propertyType || region || city) && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.activeTags}>
-            {propertyType && (
-              <Pressable style={s.activeTag} onPress={() => setPropertyType('')}>
-                <Text style={s.activeTagText}>{propertyType}</Text>
-                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
-              </Pressable>
-            )}
-            {region && (
-              <Pressable style={s.activeTag} onPress={() => setRegion('')}>
-                <Text style={s.activeTagText}>{region}</Text>
-                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
-              </Pressable>
-            )}
-            {city && (
-              <Pressable style={s.activeTag} onPress={() => setCity('')}>
-                <Text style={s.activeTagText}>{city}</Text>
-                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
-              </Pressable>
-            )}
-            <Pressable style={s.clearTag} onPress={clearFilters}>
-              <Text style={s.clearTagText}>مسح الكل</Text>
-            </Pressable>
-          </ScrollView>
-        )}
-
-        {data && (
-          <Text style={s.countText}>{data.total} عقار{isFetching ? ' ...' : ''}</Text>
-        )}
       </LinearGradient>
 
-      {/* ══ LIST ══ */}
+      {/* Results count */}
+      <View style={s.resultsMeta}>
+        <Text style={s.resultsCount}>{total} عقار</Text>
+        {activeFiltersCount > 0 && (
+          <Text style={s.resultsFiltered}> (مفلتر)</Text>
+        )}
+      </View>
+
+      {/* ═══ LISTINGS GRID ═══ */}
       {isLoading ? (
         <View style={s.skeletonGrid}>
-          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
         </View>
       ) : (
         <FlatList
+          key="listings-2col"
           data={listings}
-          keyExtractor={(item) => String(item.id)}
           numColumns={2}
-          columnWrapperStyle={s.row}
-          contentContainerStyle={[s.listContent, { paddingBottom: botPad + 24 }]}
-          showsVerticalScrollIndicator={false}
+          keyExtractor={item => String(item.id)}
+          contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: botPad + 30 }}
+          columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 12 }}
           renderItem={({ item }) => (
-            <View style={s.cardWrap}>
-              <ListingCard
-                listing={item}
-                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
-              />
+            <View style={{ width: CARD_WIDTH }}>
+              <ListingCard listing={item} onPress={() => router.push(`/listing/${item.id}`)} />
             </View>
           )}
-          ItemSeparatorComponent={() => <View style={s.itemSep} />}
+          ItemSeparatorComponent={() => null}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={s.empty}>
-              <View style={s.emptyIcon}>
-                <Feather name="home" size={36} color={Colors.teal} />
-              </View>
-              <Text style={s.emptyTitle}>لا توجد عقارات</Text>
-              <Text style={s.emptyText}>جرّب تغيير الفلتر أو مصطلح البحث</Text>
-              {activeFiltersCount > 0 && (
-                <Pressable style={s.clearBtn} onPress={clearFilters}>
-                  <Text style={s.clearBtnText}>مسح الفلاتر</Text>
-                </Pressable>
-              )}
+            <View style={s.emptyState}>
+              <Feather name="search" size={36} color={Colors.textMuted} />
+              <Text style={s.emptyTitle}>لا توجد نتائج</Text>
+              <Text style={s.emptySubtitle}>جرب تعديل الفلاتر أو مصطلح البحث</Text>
+              <Pressable style={s.emptyBtn} onPress={clearAllFilters}>
+                <Text style={s.emptyBtnText}>مسح كل الفلاتر</Text>
+              </Pressable>
             </View>
           }
-          onEndReached={() => {
-            if (data && page < Math.ceil(data.total / 20)) setPage((p) => p + 1);
-          }}
-          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            hasMore ? (
+              <Pressable
+                style={s.loadMoreBtn}
+                onPress={() => setPage(p => p + 1)}
+                disabled={isFetching}
+              >
+                <Text style={s.loadMoreText}>{isFetching ? 'جارٍ التحميل...' : 'عرض المزيد'}</Text>
+                {!isFetching && <Feather name="chevron-down" size={16} color={Colors.teal} />}
+              </Pressable>
+            ) : null
+          }
         />
       )}
 
-      {/* ══ FILTERS MODAL ══ */}
-      <Modal
-        visible={showFilters}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setShowFilters(false)}
-      >
-        <Pressable style={s.overlay} onPress={() => setShowFilters(false)}>
-          <Pressable style={[s.sheet, { paddingBottom: botPad + 20 }]} onPress={() => {}}>
-            <View style={s.sheetHandle} />
-            <View style={s.sheetHeader}>
-              <Pressable onPress={clearFilters}>
-                <Text style={s.sheetClear}>مسح الكل</Text>
-              </Pressable>
-              <Text style={s.sheetTitle}>تصفية النتائج</Text>
-              <Pressable onPress={() => setShowFilters(false)}>
-                <Feather name="x" size={22} color={Colors.text} />
-              </Pressable>
+      {/* ═══ ADVANCED FILTER MODAL ═══ */}
+      <Modal visible={showFilters} transparent animationType="slide">
+        <Pressable style={s.overlay} onPress={() => setShowFilters(false)} />
+        <View style={s.filterSheet}>
+          <View style={s.sheetHandle} />
+          <View style={s.sheetHeader}>
+            <Text style={s.sheetTitle}>الفلاتر المتقدمة</Text>
+            <Pressable onPress={() => setDraftFilters(DEFAULT_FILTERS)}>
+              <Text style={s.resetText}>إعادة تعيين</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+            {/* ── SORT ── */}
+            <Text style={s.sectionLabel}>الترتيب</Text>
+            <View style={s.chipRow}>
+              {SORT_OPTIONS.map(so => (
+                <Pressable
+                  key={so.key}
+                  style={[s.chip, draftFilters.sort === so.key && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, sort: so.key }))}
+                >
+                  <Text style={[s.chipText, draftFilters.sort === so.key && s.chipTextActive]}>{so.label}</Text>
+                </Pressable>
+              ))}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={s.filterLabel}>نوع العقار</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pillRow}>
-                {[{ key: '', label: 'الكل' }, ...PROPERTY_TYPES.map((k) => ({ key: k, label: k }))].map((t) => (
-                  <Pressable
-                    key={t.key}
-                    style={[s.pill, propertyType === t.key && s.pillActive]}
-                    onPress={() => setPropertyType(t.key)}
-                  >
-                    <Text style={[s.pillText, propertyType === t.key && s.pillTextActive]}>{t.label}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
+            {/* ── DEAL TYPE ── */}
+            <Text style={s.sectionLabel}>نوع الصفقة</Text>
+            <View style={s.chipRow}>
+              {DEAL_TYPES.map(t => (
+                <Pressable
+                  key={t.key}
+                  style={[s.chip, draftFilters.listingType === t.key && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, listingType: t.key }))}
+                >
+                  <Text style={[s.chipText, draftFilters.listingType === t.key && s.chipTextActive]}>{t.label}</Text>
+                </Pressable>
+              ))}
+            </View>
 
-              <Text style={s.filterLabel}>المنطقة</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pillRow}>
-                {[{ key: '', label: 'كل المناطق' }, ...SAUDI_REGIONS.map((r) => ({ key: r, label: r }))].map((r) => (
-                  <Pressable
-                    key={r.key}
-                    style={[s.pill, region === r.key && s.pillActive]}
-                    onPress={() => { setRegion(r.key); setCity(''); }}
-                  >
-                    <Text style={[s.pillText, region === r.key && s.pillTextActive]}>{r.label}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
+            {/* ── PROPERTY TYPE ── */}
+            <Text style={s.sectionLabel}>نوع العقار</Text>
+            <View style={s.chipRow}>
+              {(['', ...PROPERTY_TYPES]).map(pt => (
+                <Pressable
+                  key={pt}
+                  style={[s.chip, draftFilters.propertyType === pt && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, propertyType: pt }))}
+                >
+                  <Text style={[s.chipText, draftFilters.propertyType === pt && s.chipTextActive]}>{pt || 'الكل'}</Text>
+                </Pressable>
+              ))}
+            </View>
 
-              <Text style={s.filterLabel}>المدينة</Text>
-              <View style={s.cityRow}>
-                <Feather name="map-pin" size={14} color={Colors.textMuted} />
-                <TextInput
-                  style={s.cityInput}
-                  placeholder="اكتب اسم المدينة..."
-                  placeholderTextColor={Colors.textMuted}
-                  value={city}
-                  onChangeText={setCity}
-                  textAlign="right"
-                />
-                {city.length > 0 && (
-                  <Pressable onPress={() => setCity('')} hitSlop={8}>
-                    <Feather name="x" size={14} color={Colors.textMuted} />
-                  </Pressable>
-                )}
-              </View>
+            {/* ── PRICE RANGE ── */}
+            <Text style={s.sectionLabel}>نطاق السعر (ريال سعودي)</Text>
+            <View style={s.rangeRow}>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="الحد الأدنى"
+                placeholderTextColor={Colors.textMuted}
+                value={draftFilters.minPrice}
+                onChangeText={v => setDraftFilters(f => ({ ...f, minPrice: v }))}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+              <Text style={s.rangeSep}>—</Text>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="الحد الأقصى"
+                placeholderTextColor={Colors.textMuted}
+                value={draftFilters.maxPrice}
+                onChangeText={v => setDraftFilters(f => ({ ...f, maxPrice: v }))}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+            </View>
 
-              <Text style={s.filterLabel}>نوع الإعلان</Text>
-              <View style={s.typeToggle}>
-                {TYPES.map((t) => (
-                  <Pressable
-                    key={t.key}
-                    style={[s.typeToggleBtn, listingType === t.key && s.typeToggleBtnActive]}
-                    onPress={() => setListingType(t.key)}
-                  >
-                    <Text style={[s.typeToggleText, listingType === t.key && s.typeToggleTextActive]}>
-                      {t.label}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
+            {/* ── AREA RANGE ── */}
+            <Text style={s.sectionLabel}>المساحة (م²)</Text>
+            <View style={s.rangeRow}>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="الحد الأدنى"
+                placeholderTextColor={Colors.textMuted}
+                value={draftFilters.minArea}
+                onChangeText={v => setDraftFilters(f => ({ ...f, minArea: v }))}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+              <Text style={s.rangeSep}>—</Text>
+              <TextInput
+                style={s.rangeInput}
+                placeholder="الحد الأقصى"
+                placeholderTextColor={Colors.textMuted}
+                value={draftFilters.maxArea}
+                onChangeText={v => setDraftFilters(f => ({ ...f, maxArea: v }))}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+            </View>
 
-            <Pressable
-              style={s.applyBtn}
-              onPress={() => { setPage(1); setShowFilters(false); }}
-            >
-              <Text style={s.applyBtnText}>تطبيق الفلاتر</Text>
-              {activeFiltersCount > 0 && (
-                <View style={s.applyBadge}>
-                  <Text style={s.applyBadgeText}>{activeFiltersCount}</Text>
-                </View>
-              )}
-            </Pressable>
+            {/* ── BEDROOMS ── */}
+            <Text style={s.sectionLabel}>عدد غرف النوم</Text>
+            <View style={s.chipRow}>
+              {BEDROOM_OPTIONS.map(b => (
+                <Pressable
+                  key={b}
+                  style={[s.chip, s.chipSmall, (draftFilters.bedrooms === b || (!draftFilters.bedrooms && b === 'أي')) && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, bedrooms: b === 'أي' ? '' : b }))}
+                >
+                  <Text style={[s.chipText, (draftFilters.bedrooms === b || (!draftFilters.bedrooms && b === 'أي')) && s.chipTextActive]}>{b}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* ── BATHROOMS ── */}
+            <Text style={s.sectionLabel}>عدد دورات المياه</Text>
+            <View style={s.chipRow}>
+              {BATHROOM_OPTIONS.map(b => (
+                <Pressable
+                  key={b}
+                  style={[s.chip, s.chipSmall, (draftFilters.bathrooms === b || (!draftFilters.bathrooms && b === 'أي')) && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, bathrooms: b === 'أي' ? '' : b }))}
+                >
+                  <Text style={[s.chipText, (draftFilters.bathrooms === b || (!draftFilters.bathrooms && b === 'أي')) && s.chipTextActive]}>{b}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* ── CITY ── */}
+            <Text style={s.sectionLabel}>المدينة</Text>
+            <View style={s.chipRow}>
+              {[{ value: '', label: 'الكل' }, ...SAUDI_REGIONS.map(r => ({ value: r, label: r }))].slice(0, 8).map(c => (
+                <Pressable
+                  key={c.value}
+                  style={[s.chip, draftFilters.city === c.value && s.chipActive]}
+                  onPress={() => setDraftFilters(f => ({ ...f, city: c.value }))}
+                >
+                  <Text style={[s.chipText, draftFilters.city === c.value && s.chipTextActive]}>{c.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <View style={{ height: 20 }} />
+          </ScrollView>
+
+          {/* Apply button */}
+          <Pressable style={s.applyBtn} onPress={applyFilters}>
+            <Text style={s.applyBtnText}>تطبيق الفلاتر</Text>
           </Pressable>
-        </Pressable>
+        </View>
       </Modal>
     </View>
   );
 }
 
-const HORIZ_PAD = 16;
-const COL_GAP = 12;
-
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.background },
-
-  /* Header */
-  header: { paddingHorizontal: HORIZ_PAD, paddingBottom: 12 },
+  screen: { flex: 1, backgroundColor: Colors.bg },
+  header: { paddingBottom: 14 },
   headerTop: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    justifyContent: 'space-between', marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 10,
   },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: '#fff' },
   filterBtn: {
-    width: 42, height: 42, borderRadius: 13,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center', justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  filterBtnActive: { backgroundColor: 'rgba(15,123,160,0.25)' },
-  filterDot: {
-    position: 'absolute', top: -4, right: -4,
-    width: 18, height: 18, borderRadius: 9,
-    backgroundColor: Colors.teal,
-    alignItems: 'center', justifyContent: 'center',
-    zIndex: 1,
+  filterBtnActive: { backgroundColor: 'rgba(15,123,160,0.15)', borderWidth: 1, borderColor: Colors.teal },
+  filterBtnText: { color: Colors.white, fontSize: 12 },
+  headerTitle: { flex: 1, color: Colors.white, fontSize: 17, fontWeight: 'bold', textAlign: 'center' },
+  sortBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(15,123,160,0.12)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    maxWidth: 110,
   },
-  filterDotText: { fontSize: 10, fontWeight: '800', color: '#fff' },
-
-  searchRow: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14,
-    paddingHorizontal: 12, height: 46, marginBottom: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+  sortBtnText: { color: Colors.teal, fontSize: 11, flex: 1 },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    height: 42,
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#fff', marginRight: 8 },
-
-  typeRow: { paddingBottom: 4 },
-  typeChip: {
-    paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)',
-    backgroundColor: 'rgba(255,255,255,0.08)', marginLeft: 8,
-  },
-  typeChipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
-  typeChipText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
-  typeChipTextActive: { color: '#fff' },
-
-  activeTags: { paddingTop: 8, paddingBottom: 2 },
-  activeTag: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    backgroundColor: Colors.teal, paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 12, marginLeft: 6,
-  },
-  activeTagText: { fontSize: 11, fontWeight: '700', color: '#fff', marginLeft: 4 },
-  clearTag: {
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.12)', marginLeft: 6,
-  },
-  clearTagText: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.75)' },
-
-  countText: { fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: 8 },
-
-  /* Skeleton grid */
-  skeletonGrid: {
-    flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    padding: HORIZ_PAD,
-  },
-
-  /* FlatList */
-  listContent: { paddingHorizontal: HORIZ_PAD, paddingTop: 14 },
-  row: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-  },
-  cardWrap: { width: CARD_WIDTH },
-  itemSep: { height: COL_GAP },
-
-  /* Empty */
-  empty: { alignItems: 'center', paddingVertical: 60 },
-  emptyIcon: {
-    width: 88, height: 88, borderRadius: 26,
-    backgroundColor: 'rgba(15,123,160,0.1)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
-  },
-  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.text, marginBottom: 6 },
-  emptyText: { fontSize: 13, color: Colors.textMuted, textAlign: 'center', marginBottom: 16 },
-  clearBtn: {
-    backgroundColor: Colors.teal, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
-  },
-  clearBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-
-  /* Modal */
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    paddingHorizontal: 20, paddingTop: 12, maxHeight: '88%',
-  },
-  sheetHandle: {
-    width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border,
-    alignSelf: 'center', marginBottom: 16,
-  },
-  sheetHeader: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    justifyContent: 'space-between', marginBottom: 20,
-  },
-  sheetTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
-  sheetClear: { fontSize: 13, color: Colors.teal, fontWeight: '600' },
-
-  filterLabel: {
-    fontSize: 13, fontWeight: '700', color: Colors.text,
-    textAlign: 'right', marginBottom: 10, marginTop: 16,
-  },
-  pillRow: { paddingBottom: 4 },
+  searchIcon: { marginLeft: 8 },
+  searchInput: { flex: 1, color: Colors.white, fontSize: 14, textAlign: 'right' },
+  clearSearch: { padding: 4 },
+  pillsRow: { flexDirection: 'row', paddingHorizontal: 16, alignItems: 'center' },
   pill: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: Colors.background,
-    borderWidth: 1.5, borderColor: Colors.border, marginLeft: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  pillActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  pillText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
-  pillTextActive: { color: '#fff' },
-
-  cityRow: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    backgroundColor: Colors.background, borderRadius: 14,
-    paddingHorizontal: 14, height: 46,
-    borderWidth: 1, borderColor: Colors.border,
+  pillActive: { backgroundColor: 'rgba(15,123,160,0.2)', borderColor: Colors.teal },
+  pillText: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  pillTextActive: { color: Colors.teal, fontWeight: 'bold' },
+  clearFiltersBtn: { marginRight: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  clearFiltersBtnText: { color: '#ef4444', fontSize: 12 },
+  resultsMeta: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8 },
+  resultsCount: { color: Colors.textMuted, fontSize: 13 },
+  resultsFiltered: { color: Colors.teal, fontSize: 13 },
+  skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', padding: 12, gap: 12 },
+  emptyState: { alignItems: 'center', paddingTop: 60, paddingHorizontal: 24 },
+  emptyTitle: { color: Colors.text, fontSize: 18, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
+  emptySubtitle: { color: Colors.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 },
+  emptyBtn: { backgroundColor: Colors.teal, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10 },
+  emptyBtnText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
+  loadMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    marginHorizontal: 24,
+    marginTop: 4,
+    backgroundColor: 'rgba(15,123,160,0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(15,123,160,0.2)',
   },
-  cityInput: { flex: 1, fontSize: 14, color: Colors.text, marginRight: 8 },
-
-  typeToggle: { flexDirection: 'row-reverse' },
-  typeToggleBtn: {
-    flex: 1, paddingVertical: 11, borderRadius: 14,
-    backgroundColor: Colors.background, alignItems: 'center',
-    borderWidth: 1.5, borderColor: Colors.border, marginLeft: 8,
+  loadMoreText: { color: Colors.teal, fontSize: 14, fontWeight: '600' },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
+  filterSheet: {
+    backgroundColor: Colors.navy,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: SCREEN_H * 0.88,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
-  typeToggleBtnActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  typeToggleText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
-  typeToggleTextActive: { color: '#fff' },
-
+  sheetHandle: { width: 36, height: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 16 },
+  sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  sheetTitle: { color: Colors.white, fontSize: 18, fontWeight: 'bold' },
+  resetText: { color: '#ef4444', fontSize: 14 },
+  sectionLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 18, marginBottom: 10 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  chip: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  chipSmall: { paddingHorizontal: 12, paddingVertical: 6 },
+  chipActive: { backgroundColor: 'rgba(15,123,160,0.2)', borderColor: Colors.teal },
+  chipText: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  chipTextActive: { color: Colors.teal, fontWeight: 'bold' },
+  rangeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  rangeInput: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    color: Colors.white,
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    textAlign: 'right',
+  },
+  rangeSep: { color: Colors.textMuted, fontSize: 16 },
   applyBtn: {
-    marginTop: 20, backgroundColor: Colors.teal, borderRadius: 16,
-    paddingVertical: 16, flexDirection: 'row-reverse',
-    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.teal,
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 16,
   },
-  applyBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
-  applyBadge: {
-    width: 22, height: 22, borderRadius: 11,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    alignItems: 'center', justifyContent: 'center', marginRight: 8,
-  },
-  applyBadgeText: { fontSize: 11, fontWeight: '800', color: '#fff' },
+  applyBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
