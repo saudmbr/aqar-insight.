@@ -8,11 +8,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
+import { I18nManager, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/context/AuthContext';
 import { FavoritesProvider } from '@/context/FavoritesContext';
 
 SplashScreen.preventAutoHideAsync();
+
+// Allow RTL layout on native devices (iOS/Android via Expo Go)
+if (Platform.OS !== 'web') {
+  I18nManager.allowRTL(true);
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
