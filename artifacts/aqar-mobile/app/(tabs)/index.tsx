@@ -17,6 +17,8 @@ import { Colors } from '@/constants/colors';
 import {
   ListingsResponse,
   AnalyticsInsights,
+  ServiceProvider,
+  CustomerRequest,
   fetchListings,
   apiFetch,
   endpoints,
@@ -32,8 +34,10 @@ const QUICK_ACTIONS = [
   { icon: 'briefcase', label: 'الخدمات', path: '/services', color: Colors.gold },
   { icon: 'inbox', label: 'الطلبات', path: '/requests', color: '#f59e0b' },
   { icon: 'bar-chart-2', label: 'التحليلات', path: '/analytics', color: '#ef4444' },
+  { icon: 'layers', label: 'الأحياء', path: '/districts', color: '#0ea5e9' },
   { icon: 'map', label: 'الخريطة', path: '/(tabs)/map', color: Colors.navy },
   { icon: 'heart', label: 'المفضلة', path: '/(tabs)/favorites', color: '#e11d48' },
+  { icon: 'zap', label: 'رؤية 2030', path: '/future', color: '#f59e0b' },
 ];
 
 export default function HomeScreen() {
@@ -56,6 +60,24 @@ export default function HomeScreen() {
     queryKey: ['analytics-home'],
     queryFn: () => apiFetch<AnalyticsInsights>(endpoints.analyticsInsights),
     staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: services } = useQuery<ServiceProvider[]>({
+    queryKey: ['home-services'],
+    queryFn: () => apiFetch<ServiceProvider[]>(`${endpoints.services}?limit=3&page=1`).then((r: any) => r.data ?? r ?? []),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: recentRequests } = useQuery<CustomerRequest[]>({
+    queryKey: ['home-requests'],
+    queryFn: () => apiFetch<any>(endpoints.requests + '?limit=3&status=open').then((r: any) => r.data ?? r ?? []),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: platformRating } = useQuery<any>({
+    queryKey: ['platform-rating'],
+    queryFn: () => apiFetch<any>(endpoints.platformRating),
+    staleTime: 1000 * 60 * 30,
   });
 
   const listings = data?.listings ?? [];
@@ -226,6 +248,52 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {/* ─── Services Preview ─── */}
+      {services && services.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Pressable onPress={() => router.push('/services')}>
+              <Text style={styles.seeAll}>عرض الكل</Text>
+            </Pressable>
+            <Text style={styles.sectionTitle}>مزودو الخدمات</Text>
+          </View>
+          <View style={styles.servicesRow}>
+            {services.slice(0, 3).map((s) => (
+              <Pressable key={s.id} style={styles.serviceCard} onPress={() => router.push({ pathname: '/services/[id]', params: { id: String(s.id) } })}>
+                <View style={styles.serviceIcon}>
+                  <Feather name="briefcase" size={20} color={Colors.gold} />
+                </View>
+                <Text style={styles.serviceName} numberOfLines={2}>{s.businessName}</Text>
+                <Text style={styles.serviceCity} numberOfLines={1}>{s.city}</Text>
+                {s.ratingAvg ? <Text style={styles.serviceRating}>⭐ {s.ratingAvg.toFixed(1)}</Text> : null}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* ─── Open Customer Requests ─── */}
+      {recentRequests && recentRequests.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Pressable onPress={() => router.push('/requests')}>
+              <Text style={styles.seeAll}>عرض الكل</Text>
+            </Pressable>
+            <Text style={styles.sectionTitle}>أحدث طلبات العملاء</Text>
+          </View>
+          {recentRequests.slice(0, 3).map((r) => (
+            <Pressable key={r.id} style={styles.requestRow} onPress={() => router.push({ pathname: '/requests/[id]', params: { id: String(r.id) } })}>
+              <View style={styles.requestDot} />
+              <View style={styles.requestInfo}>
+                <Text style={styles.requestTitle} numberOfLines={1}>{r.title}</Text>
+                <Text style={styles.requestMeta}>{r.city ?? '—'} · {new Date(r.createdAt).toLocaleDateString('ar-SA')}</Text>
+              </View>
+              <Feather name="chevron-left" size={14} color={Colors.textMuted} />
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       {/* ─── CTA Banner ─── */}
       <Pressable
         style={styles.ctaBanner}
@@ -240,6 +308,30 @@ export default function HomeScreen() {
           <Feather name="arrow-left" size={16} color={Colors.white} />
         </View>
       </Pressable>
+
+      {/* ─── Future Projects Teaser ─── */}
+      <Pressable style={styles.futureBanner} onPress={() => router.push('/future')}>
+        <Text style={styles.futureBannerEmoji}>🚀</Text>
+        <View style={styles.futureBannerContent}>
+          <Text style={styles.futureBannerTitle}>مشاريع رؤية 2030</Text>
+          <Text style={styles.futureBannerSub}>اكتشف نيوم، القدية، البحر الأحمر وغيرها</Text>
+        </View>
+        <Feather name="arrow-left" size={18} color={Colors.white} />
+      </Pressable>
+
+      {/* ─── Platform Rating ─── */}
+      {platformRating && (
+        <View style={styles.ratingBanner}>
+          <View style={styles.ratingStars}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Feather key={i} name="star" size={16} color={i < Math.round(platformRating.avgRating ?? 4.8) ? Colors.gold : Colors.border} />
+            ))}
+          </View>
+          <Text style={styles.ratingScore}>{platformRating.avgRating?.toFixed(1) ?? '4.8'}</Text>
+          <Text style={styles.ratingCount}>{platformRating.totalRatings ?? platformRating.count ?? 0} تقييم</Text>
+          <Text style={styles.ratingLabel}>تقييم المستخدمين لمنصة عقار إنسايت</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -352,4 +444,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse', alignItems: 'center', gap: 6,
   },
   ctaBtnText: { color: Colors.white, fontWeight: '700', fontSize: 13 },
+  servicesRow: { flexDirection: 'row-reverse', gap: 10 },
+  serviceCard: {
+    flex: 1, backgroundColor: Colors.card, borderRadius: 14, padding: 12, alignItems: 'center', gap: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+  },
+  serviceIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: `${Colors.gold}15`, alignItems: 'center', justifyContent: 'center' },
+  serviceName: { fontSize: 11, fontWeight: '700', color: Colors.text, textAlign: 'center' },
+  serviceCity: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
+  serviceRating: { fontSize: 10, color: Colors.gold, fontWeight: '600' },
+  requestRow: {
+    backgroundColor: Colors.card, borderRadius: 12, padding: 12, marginBottom: 6,
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 2, elevation: 1,
+  },
+  requestDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.success },
+  requestInfo: { flex: 1 },
+  requestTitle: { fontSize: 13, fontWeight: '600', color: Colors.text, textAlign: 'right' },
+  requestMeta: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginTop: 2 },
+  futureBanner: {
+    marginHorizontal: 16, marginBottom: 10, backgroundColor: Colors.gold,
+    borderRadius: 18, padding: 16, flexDirection: 'row-reverse', alignItems: 'center', gap: 12,
+  },
+  futureBannerEmoji: { fontSize: 28 },
+  futureBannerContent: { flex: 1 },
+  futureBannerTitle: { fontSize: 15, fontWeight: '800', color: Colors.navy },
+  futureBannerSub: { fontSize: 11, color: Colors.navyMid, marginTop: 2 },
+  ratingBanner: {
+    marginHorizontal: 16, marginBottom: 10, backgroundColor: Colors.card, borderRadius: 16,
+    padding: 14, alignItems: 'center', gap: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+  },
+  ratingStars: { flexDirection: 'row-reverse', gap: 4 },
+  ratingScore: { fontSize: 28, fontWeight: '900', color: Colors.navy },
+  ratingCount: { fontSize: 12, color: Colors.textMuted },
+  ratingLabel: { fontSize: 11, color: Colors.textSub, textAlign: 'center' },
 });

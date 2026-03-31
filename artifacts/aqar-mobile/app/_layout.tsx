@@ -56,8 +56,15 @@ export default function RootLayout() {
               <Stack.Screen name="services/index" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="services/[id]" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="requests/index" options={{ headerShown: false, presentation: 'card' }} />
-              <Stack.Screen name="requests/new" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="requests/[id]" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="requests/new" options={{ headerShown: false, presentation: 'modal' }} />
               <Stack.Screen name="analytics/index" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="districts" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="dashboard" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="future" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="marketer/dashboard" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="services/dashboard" options={{ headerShown: false, presentation: 'card' }} />
+              <Stack.Screen name="services/new" options={{ headerShown: false, presentation: 'modal' }} />
               <Stack.Screen name="my-listings" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="notifications" options={{ headerShown: false, presentation: 'card' }} />
               <Stack.Screen name="about" options={{ headerShown: false, presentation: 'card' }} />

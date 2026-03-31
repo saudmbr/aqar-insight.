@@ -107,7 +107,7 @@ export default function ListingsScreen() {
         </View>
 
         {/* Type Filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow} inverted>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
           {TYPES.map((t) => (
             <Pressable
               key={t.key}
@@ -123,7 +123,7 @@ export default function ListingsScreen() {
 
         {/* Active filter chips */}
         {(propertyType || region || city) && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFilters} inverted>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFilters}>
             {propertyType && (
               <Pressable style={styles.activeChip} onPress={() => setPropertyType('')}>
                 <Text style={styles.activeChipText}>{propertyType}</Text>

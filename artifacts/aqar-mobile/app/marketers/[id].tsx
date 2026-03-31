@@ -188,7 +188,7 @@ export default function MarketerProfileScreen() {
           <FlatList
             data={listings}
             keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => <ListingCard listing={item} variant="grid" />}
+            renderItem={({ item }) => <ListingCard listing={item} onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })} />}
             numColumns={2}
             columnWrapperStyle={{ gap: 12, marginBottom: 12 }}
             scrollEnabled={false}

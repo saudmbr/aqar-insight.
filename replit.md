@@ -83,9 +83,23 @@ The homepage integrates a hero section with quick search, category filters, a pr
 - `checkSession()` in `AuthContext` verifies session with server on startup.
 - RTL approach: manual `flexDirection: 'row-reverse'` and `textAlign: 'right'` everywhere. Do NOT add `dir="rtl"` at HTML level (causes double-flip).
 
-**Mobile App New Screens:**
-- `profile-edit.tsx`: Full profile editing with `PUT /api/auth/profile`.
-- `contact.tsx`: Contact channels (email, WhatsApp, Twitter) and message form with working hours display.
+**Mobile App Screens (38 total, full feature parity):**
+- `(tabs)/index.tsx`: Home with hero, KPIs, quick actions (10 items), listings, services preview, requests preview, Vision 2030 teaser, platform rating
+- `(tabs)/listings.tsx`: Full listings with filters (type, property, region, city) and pagination
+- `(tabs)/discover.tsx`: Discovery with advanced filter UI
+- `(tabs)/map.tsx`: Map screen with region selector and listing list
+- `(tabs)/favorites.tsx`: Favorites grid (FavoritesContext)
+- `(tabs)/profile.tsx`: Profile with role-aware sections (marketer, service provider dashboards)
+- `dashboard.tsx`: 4-tab user dashboard (overview, my listings with CRUD, favorites, my requests)
+- `marketer/dashboard.tsx`: Marketer 2-tab dashboard (profile edit, listings)
+- `services/dashboard.tsx`: Service provider 2-tab dashboard (profile edit, portfolio)
+- `services/new.tsx`: Register new service form
+- `districts.tsx`: Districts heat map + side-by-side comparison with city filter
+- `future.tsx`: Vision 2030 projects (6 megaprojects)
+- `requests/[id].tsx`: Request detail with contact actions (WhatsApp/phone)
+- `auth/reset-password.tsx`: Reset password with token verification
+- `profile-edit.tsx`: Full profile editing with `PUT /api/auth/profile`
+- `contact.tsx`: Contact channels (email, WhatsApp, Twitter) and message form
 
 **Mobile App Listing Detail:**
 - Share button, image counter, featured/urgent/verified badges.

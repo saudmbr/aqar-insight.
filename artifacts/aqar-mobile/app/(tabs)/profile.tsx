@@ -141,12 +141,33 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>حسابي</Text>
           <View style={styles.menuGroup}>
+            <MenuItem icon="layout" label="لوحة التحكم" onPress={() => router.push('/dashboard')} color={Colors.navy} />
             <MenuItem icon="user" label="تعديل الملف الشخصي" onPress={() => router.push('/profile-edit')} color={Colors.teal} />
             <MenuItem icon="home" label="عقاراتي" badge={myListings?.length ? String(myListings.length) : undefined} onPress={() => router.push('/my-listings')} color={Colors.teal} />
             <MenuItem icon="plus-circle" label="نشر عقار جديد" onPress={() => router.push('/listing/new')} color="#10b981" />
             <MenuItem icon="inbox" label="طلباتي" onPress={() => router.push('/requests')} color={Colors.gold} />
             <MenuItem icon="heart" label="المفضلة" badge={favorites.length > 0 ? String(favorites.length) : undefined} onPress={() => router.push('/(tabs)/favorites')} color="#e11d48" />
             <MenuItem icon="bell" label="الإشعارات" onPress={() => router.push('/notifications')} color="#8b5cf6" />
+          </View>
+        </View>
+      )}
+
+      {/* Role-specific dashboards */}
+      {user?.role === 'real_estate_marketer' && (
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>أدوات المسوّق</Text>
+          <View style={styles.menuGroup}>
+            <MenuItem icon="award" label="لوحة المسوّق العقاري" onPress={() => router.push('/marketer/dashboard')} color="#7C3AED" />
+          </View>
+        </View>
+      )}
+
+      {user?.role === 'service_provider' && (
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>أدوات الخدمة</Text>
+          <View style={styles.menuGroup}>
+            <MenuItem icon="briefcase" label="لوحة مزود الخدمة" onPress={() => router.push('/services/dashboard')} color={Colors.gold} />
+            <MenuItem icon="plus-circle" label="تسجيل خدمة جديدة" onPress={() => router.push('/services/new')} color={Colors.gold} />
           </View>
         </View>
       )}
@@ -162,6 +183,8 @@ export default function ProfileScreen() {
           <MenuItem icon="inbox" label="طلبات العملاء" onPress={() => router.push('/requests')} color="#f59e0b" />
           <MenuItem icon="bar-chart-2" label="تحليلات السوق" onPress={() => router.push('/analytics')} color="#ef4444" />
           <MenuItem icon="map" label="الخريطة العقارية" onPress={() => router.push('/(tabs)/map')} color={Colors.navy} />
+          <MenuItem icon="layers" label="تحليل الأحياء" onPress={() => router.push('/districts')} color="#0ea5e9" />
+          <MenuItem icon="zap" label="مشاريع رؤية 2030" onPress={() => router.push('/future')} color="#f59e0b" />
         </View>
       </View>
 

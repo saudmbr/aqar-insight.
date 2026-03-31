@@ -1,0 +1,465 @@
+Use the attached full platform specification file as the single source of truth and convert the ENTIRE Aqar Insight platform into a complete, production-grade mobile application using Expo / React Native, with absolute feature parity with the web platform.
+
+MISSION-CRITICAL OBJECTIVE:
+The mobile app must reflect EVERYTHING that exists in the platform specification file — pages, sections, components, workflows, business rules, filters, analytics, APIs, states, roles, permissions, dashboards, forms, legal pages, interactions, and data behavior — with ZERO omissions.
+
+NON-NEGOTIABLE RULES:
+
+* Do not skip any page.
+* Do not skip any section inside any page.
+* Do not skip any field in any form.
+* Do not skip any API integration.
+* Do not skip any user role or permission.
+* Do not simplify any feature unless mobile UX absolutely requires a layout change.
+* If a web feature cannot appear exactly the same visually on mobile, adapt it professionally for mobile while preserving the exact same logic, content, and value.
+* The specification file is the source of truth. The app must be built directly from it, not from assumptions.
+* No placeholder screens.
+* No dummy data unless strictly necessary for a temporary fallback.
+* No generic mobile styling.
+* No incomplete flows.
+* No partial migration.
+
+PHASE 1 — FULL SPEC AUDIT AND EXTRACTION
+Before building anything, read the attached platform specification file completely and extract every single item into a mobile implementation checklist.
+
+Create an internal migration matrix that maps:
+
+* Web page -> Mobile screen(s)
+* Web component -> Mobile component
+* Web flow -> Mobile flow
+* Web filter -> Mobile filter UI
+* Web analytics block -> Mobile analytics block
+* Web form field -> Mobile form field
+* Web API -> Mobile service method
+* Web role/permission -> Mobile access control rule
+
+Do not proceed to implementation until this mapping is complete.
+
+PHASE 2 — MANDATORY FEATURE PARITY CHECKLIST
+The mobile app must include all of the following from the specification file, without omission:
+
+1. CORE PLATFORM STRUCTURE
+
+* Home page
+* Listings page
+* Listing details page
+* Add listing
+* Edit listing
+* Interactive map
+* Analytics
+* Districts comparison
+* Marketers directory
+* Marketer profile
+* Services marketplace
+* Service provider profile
+* Customer requests page
+* Add request
+* Dashboard
+* Account settings
+* My listings
+* Marketer dashboard
+* Service provider dashboard
+* Add service
+* Login
+* Signup
+* Forgot password
+* Reset password
+* About page
+* Future projects page
+* Terms page
+* Privacy page
+* Usage policy page
+* 404 / fallback handling where relevant in mobile
+* Any hidden, nested, or secondary route described in the specification file
+
+2. HOME SCREEN PARITY
+   Reflect all home-page sections from the specification:
+
+* Hero section adapted for mobile
+* Search entry experience
+* Quick property type filters
+* Listings preview
+* Analytics / KPI panel
+* Map preview or entry point
+* Services preview
+* Customer requests preview
+* Platform rating block
+* Guest CTA
+* Logged-in user greeting
+* Any conditional rendering based on auth state
+
+3. LISTINGS EXPERIENCE PARITY
+   Reflect the full listings page with:
+
+* Search bar
+* All filters
+* Sorting
+* Active filters count
+* Clear filters
+* Results count
+* Listing cards
+* Empty results state
+* Paging / pagination or infinite loading
+* Same listing metadata shown on web
+* Same badges
+* Same key information hierarchy
+
+4. LISTING DETAILS PARITY
+   Reflect full listing details with:
+
+* Image gallery
+* Title
+* Location
+* Price
+* Price per square meter
+* Badges
+* View count
+* Favorite button
+* Share button
+* Report button
+* Full specs
+* Building details
+* Internal amenities
+* Nearby amenities
+* Documents section
+* Seller notes if present
+* Map location
+* Benchmark / market pricing comparison
+* Marketer section if linked
+* Sticky or clear contact actions
+* Similar listings
+
+5. FORMS PARITY — ABSOLUTE FIELD COMPLETENESS
+   Every form in the specification must be fully reflected on mobile, field by field, including:
+
+* Add listing
+* Edit listing
+* Add request
+* Add service
+* Account update
+* Password change
+* Marketer profile edit
+* Service provider profile edit
+* Historical data forms if mobile admin support is included
+
+All listing fields must be implemented, including:
+
+* Basic info
+* Price and area
+* Region / city / markaz / district / sub-district
+* Map-based location selection
+* Room specs
+* Building specs
+* Internal amenities
+* Nearby amenities
+* Documents
+* Badges
+* Media
+* Contact info
+* Internal notes
+* Any derived/calculated fields like price per sqm
+
+Do not drop any field from the specification file.
+
+6. ANALYTICS PARITY
+   Reflect the analytics experience in mobile with professional adaptation, including:
+
+* Market index
+* Price trends
+* Supply and demand
+* District comparison
+* AI / smart insights
+* Shared filters
+* KPI cards
+* Charts
+* Tables where needed
+* Recommendation logic
+* Market health score
+* Benchmark logic
+* District opportunity / watch / expensive classification
+
+If visual translation is needed, redesign layout for mobile only, not the logic.
+
+7. MAP PARITY
+   Reflect the interactive map experience with:
+
+* Full-screen map
+* Pins
+* Filters overlay
+* Marker clustering if supported
+* Pin popup / bottom sheet detail preview
+* Listing detail entry from map
+* Sale vs rent color logic
+* Reset filters
+* Empty area state
+
+8. DIRECTORIES AND MARKETPLACE PARITY
+   Reflect all directory/marketplace sections:
+
+* Marketers directory
+* Marketer profile
+* Services marketplace
+* Service provider profile
+* Customer requests page
+* Request detail flow if applicable
+* All filters
+* Cards
+* Ratings
+* Contact actions
+* Profile media
+* Related content
+
+9. DASHBOARD PARITY
+   Reflect all dashboard experiences:
+
+* User dashboard
+* My listings
+* Favorites
+* My requests
+* Marketer dashboard
+* Service provider dashboard
+* Listing status changes
+* Archive / activate / sold / rented flows
+* Any counts, summary cards, and actions from the web spec
+
+10. AUTHENTICATION AND ACCOUNT PARITY
+    Reflect full auth/account logic:
+
+* Login
+* Signup
+* Forgot password
+* Reset password
+* Session persistence
+* Me endpoint handling
+* Role-aware redirects
+* Account settings
+* Change password
+* Auth state rendering across the app
+
+11. LEGAL / ABOUT / FUTURE PAGES PARITY
+    Reflect all informational pages:
+
+* About
+* Future projects
+* Terms
+* Privacy
+* Usage policy
+
+These must not be omitted just because they are “static.”
+
+12. DATA MODEL / API PARITY
+    Use the documented APIs as the exact integration contract.
+    Implement service modules for:
+
+* auth
+* listings
+* analytics
+* districts
+* properties
+* marketers
+* service providers
+* customer requests
+* favorites
+* platform rating
+* admin users if needed
+* user reports
+* storage
+* health checks
+
+Every API endpoint documented in the specification should be represented in the mobile app where relevant.
+
+13. ROLES AND PERMISSIONS PARITY
+    Reflect the exact role structure:
+
+* admin
+* user
+* real_estate_marketer
+* service_provider
+
+Implement role-aware access and UI visibility.
+No user should see actions/screens that conflict with their role rules.
+
+PHASE 3 — MOBILE APP ARCHITECTURE
+Build using:
+
+* Expo
+* React Native
+* Expo Router
+* NativeWind
+* Clean reusable architecture
+
+Use a scalable folder structure such as:
+
+* app/
+* components/
+* features/
+* services/
+* hooks/
+* store/
+* constants/
+* utils/
+* types/
+
+Recommended route structure:
+
+* tabs for the main product areas
+* stack routes for detail pages and forms
+* role-aware navigation where necessary
+
+PHASE 4 — MOBILE DESIGN SYSTEM
+Extract the design language from the platform specification and keep the brand identical in spirit:
+
+* Navy / teal / gold / light background palette
+* Cairo typography
+* Premium cards
+* Elegant spacing
+* Rounded corners
+* Modern shadows
+* Refined hierarchy
+* Clean RTL Arabic layout
+* Calm, premium, data-smart aesthetic
+
+The mobile UI must feel like the official mobile extension of the same brand, not a separate product.
+
+MANDATORY DESIGN REQUIREMENTS:
+
+* Same visual identity as the website
+* Same information hierarchy where possible
+* Same premium atmosphere
+* No cheap gradients
+* No inconsistent colors
+* No rough spacing
+* No default unstyled controls
+* No “developer UI” feel
+
+PHASE 5 — MOBILE UX ADAPTATION
+Adapt for mobile professionally while preserving functionality:
+
+* Bottom tabs for major sections
+* Stack navigation for detail screens and forms
+* Bottom sheets for filters where appropriate
+* Swipeable galleries
+* Pull-to-refresh where useful
+* Infinite scrolling where useful
+* Clear mobile call-to-actions
+* Thumb-friendly spacing and targets
+* Clean Arabic RTL alignment
+* Proper keyboard handling for forms
+* Safe area support
+* Responsive behavior across phone sizes
+
+PHASE 6 — COMPONENT COMPLETENESS
+Build a reusable component system for all recurring blocks, including:
+
+* Buttons
+* Inputs
+* Selects / dropdown-like selectors
+* Chips / pills
+* Cards
+* KPI cards
+* Listing cards
+* Directory cards
+* Request cards
+* Analytics widgets
+* Chart wrappers
+* Section headers
+* Loading skeletons
+* Empty states
+* Error states
+* Modals / sheets
+* Image pickers and galleries
+* Contact action blocks
+* Favorite / share / report controls
+
+PHASE 7 — STATE COMPLETENESS
+For every screen and every network-driven block, implement:
+
+* Loading state
+* Empty state
+* Error state
+* Retry action where relevant
+* Offline-friendly handling if possible
+
+No screen should exist without state handling.
+
+PHASE 8 — MEDIA AND STORAGE PARITY
+Reflect the upload flows from the specification:
+
+* Image uploads
+* Preview before upload
+* Reordering images
+* Deleting single images
+* Video support if documented
+* Presigned URL upload flow
+* Cloud storage compatibility
+
+PHASE 9 — SEARCH, FILTERS, SORTING, AND RESULTS LOGIC
+Carry over all searchable and filterable behaviors from web:
+
+* Text search
+* Region
+* City
+* District
+* Markaz if applicable
+* Property type
+* Listing type
+* Price ranges
+* Bedrooms
+* Sorting logic
+* Active filters count
+* Reset filters
+* Contextual result states
+
+Do not reduce filter depth unless absolutely impossible; preserve functional equivalence.
+
+PHASE 10 — ANALYTICS AND SMART LOGIC
+Carry over all smart logic described in the spec:
+
+* Price per sqm
+* Market benchmark comparison
+* Market health score
+* AI recommendation states
+* District opportunity classifications
+* Historical comparisons
+* Trend calculations
+* Any smart labeling
+
+PHASE 11 — QUALITY CONTROL: ZERO-OMISSION AUDIT
+Before considering the app complete, perform a strict audit against the specification file.
+
+Create and verify:
+
+* A screen-by-screen parity checklist
+* A feature-by-feature parity checklist
+* A form-field parity checklist
+* An API parity checklist
+* A role/permission parity checklist
+
+Do not mark the app complete until all items are covered.
+
+PHASE 12 — FINAL DELIVERABLE REQUIREMENTS
+The final output must be:
+
+* A fully working Expo mobile app
+* Production-grade
+* Visually premium
+* Fully RTL Arabic
+* Feature-complete relative to the specification file
+* Cleanly structured and scalable
+* Ready for Android and iOS build pipelines
+* Ready for QA testing
+
+MANDATORY FINAL REPORT:
+After implementation, produce a structured completion report that includes:
+
+1. All screens implemented
+2. All features implemented
+3. All APIs connected
+4. Any items adapted for mobile layout
+5. Any unavoidable gaps, if any
+6. Explicit confirmation that no specification point was intentionally skipped
+
+IMPORTANT:
+This task is not to create a simplified mobile MVP.
+This task is to translate the full platform into a complete mobile product.
+The attached specification file must be reflected in the app in full depth and with professional mobile execution.
