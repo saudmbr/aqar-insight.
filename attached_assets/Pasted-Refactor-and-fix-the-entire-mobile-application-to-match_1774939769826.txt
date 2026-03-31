@@ -1,0 +1,221 @@
+Refactor and fix the entire mobile application to match the web platform in functionality, data, UI/UX, and performance.
+
+Goal:
+Make the mobile app fully consistent with the web platform, production-ready, visually polished, and fully functional with no broken features.
+
+==================================================
+1) CRITICAL ISSUES — AUTHENTICATION (HIGH PRIORITY)
+==================================================
+
+- Fix login issues completely
+- Ensure users can:
+  - register
+  - login
+  - logout
+  - stay logged in
+
+- Ensure authentication is properly connected to backend
+- Handle:
+  - token storage (secure)
+  - session persistence
+  - error handling (clear messages)
+
+- Fix:
+  - inability to login
+  - failed sessions
+  - broken authentication flows
+
+==================================================
+2) DATA SYNC WITH WEB PLATFORM
+==================================================
+
+- Ensure ALL data shown in mobile matches web platform:
+
+Must include:
+- listings (ads)
+- services
+- users
+- analytics
+- filters
+- categories
+- neighborhoods
+
+- Fix any mismatch between:
+  - web data
+  - mobile data
+
+- Mobile must always reflect real backend data (not static or outdated)
+
+==================================================
+3) FEATURE PARITY (WEB = MOBILE)
+==================================================
+
+Ensure mobile app includes ALL core features available on web:
+
+- property listings
+- service listings
+- search and filters
+- map
+- analytics (if supported)
+- neighborhood comparison
+- user profiles
+- posting listings/services
+- saved items (if exists)
+
+Fix missing or partially implemented features.
+
+==================================================
+4) UI / UX COMPLETE REDESIGN (CRITICAL)
+==================================================
+
+Redesign the entire mobile UI to be:
+
+- premium
+- clean
+- modern
+- smooth
+- easy to use
+- optimized for mobile
+
+Fix:
+- broken layouts
+- bad spacing
+- inconsistent design
+- poor readability
+- alignment issues
+
+Improve:
+- typography
+- colors (match web brand)
+- button design
+- card design
+- spacing
+- navigation
+
+==================================================
+5) RESPONSIVENESS & LAYOUT FIXES
+==================================================
+
+- Fix all layout issues across devices:
+  - small screens
+  - large phones
+
+- Ensure:
+  - no overflow
+  - no cut elements
+  - proper padding
+  - consistent margins
+
+==================================================
+6) NAVIGATION & FLOW
+==================================================
+
+- Improve navigation structure:
+  - bottom navigation (if used)
+  - screen transitions
+  - back navigation
+
+- Ensure logical flow:
+  - login → home
+  - search → results
+  - listing → details
+
+==================================================
+7) PERFORMANCE OPTIMIZATION
+==================================================
+
+- Improve:
+  - loading speed
+  - screen transitions
+  - API calls efficiency
+
+- Add:
+  - loading states
+  - skeleton screens (if possible)
+
+- Avoid:
+  - unnecessary re-renders
+  - heavy components
+
+==================================================
+8) ERROR HANDLING
+==================================================
+
+- Fix all silent failures
+
+- Add clear messages:
+  - login errors
+  - network issues
+  - empty data
+
+- Ensure user always understands what is happening
+
+==================================================
+9) DESIGN CONSISTENCY WITH WEB
+==================================================
+
+- Mobile must visually match:
+  - colors
+  - typography
+  - branding
+  - component style
+
+- It should feel like:
+  "same platform, different device"
+
+==================================================
+10) CLEANUP & CODE QUALITY
+==================================================
+
+- Remove:
+  - unused code
+  - duplicate components
+  - temporary fixes
+
+- Refactor:
+  - structure
+  - state management
+  - API handling
+
+==================================================
+11) TESTING (VERY IMPORTANT)
+==================================================
+
+Test all flows:
+
+- register
+- login
+- browsing listings
+- search
+- filters
+- map
+- posting content
+
+Ensure:
+- no crashes
+- no broken flows
+
+==================================================
+12) FINAL RESULT
+==================================================
+
+The mobile app must be:
+
+- fully functional
+- stable
+- fast
+- visually premium
+- consistent with web
+- ready for real users
+
+==================================================
+13) FINAL DELIVERABLE
+==================================================
+
+Provide:
+
+- list of fixed issues
+- list of improved features
+- what was redesigned
+- confirmation that mobile now matches web
+- confirmation login works 100%

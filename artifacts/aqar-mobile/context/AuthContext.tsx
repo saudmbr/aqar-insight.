@@ -5,16 +5,30 @@ import { User, apiFetch, endpoints } from '@/constants/api';
 interface AuthState {
   user: User | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (u: User) => void;
 }
 
-interface RegisterData {
+export interface RegisterData {
   username: string;
   email: string;
   password: string;
   fullName: string;
+  userType?: string;
+}
+
+// Map the flat server response ({userId, username, fullName, role}) → User
+function parseServerUser(data: Record<string, any>): User {
+  return {
+    id: data.userId ?? data.id ?? 0,
+    username: data.username ?? '',
+    fullName: data.fullName ?? undefined,
+    email: data.email ?? undefined,
+    role: data.role ?? 'user',
+    phone: data.phoneNumber ?? undefined,
+  };
 }
 
 const AuthContext = createContext<AuthState>({
@@ -23,6 +37,7 @@ const AuthContext = createContext<AuthState>({
   login: async () => {},
   register: async () => {},
   logout: async () => {},
+  updateUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -35,34 +50,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkSession = async () => {
     try {
+      // Restore from local cache first for instant UI
       const stored = await AsyncStorage.getItem('aqar_user');
       if (stored) {
-        const parsed = JSON.parse(stored) as User;
-        setUser(parsed);
+        setUser(JSON.parse(stored) as User);
+      }
+
+      // Then verify session with server (handles cookie expiry)
+      const serverData = await apiFetch<Record<string, any>>(endpoints.me);
+      if (serverData?.isAuthenticated) {
+        const u = parseServerUser(serverData);
+        setUser(u);
+        await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
+      } else {
+        setUser(null);
+        await AsyncStorage.removeItem('aqar_user');
       }
     } catch {
-      // ignore
+      // Server unreachable or 401 → clear local session
+      setUser(null);
+      await AsyncStorage.removeItem('aqar_user');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = useCallback(async (username: string, password: string) => {
-    const data = await apiFetch<{ user: User }>(endpoints.login, {
+  const login = useCallback(async (identifier: string, password: string) => {
+    // Server expects "identifier" (not "username")
+    const data = await apiFetch<Record<string, any>>(endpoints.login, {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ identifier, password }),
     });
-    setUser(data.user);
-    await AsyncStorage.setItem('aqar_user', JSON.stringify(data.user));
+    const u = parseServerUser(data);
+    setUser(u);
+    await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
   }, []);
 
   const register = useCallback(async (regData: RegisterData) => {
-    const data = await apiFetch<{ user: User }>(endpoints.register, {
+    // Server expects "userType" (not "role")
+    const data = await apiFetch<Record<string, any>>(endpoints.register, {
       method: 'POST',
-      body: JSON.stringify(regData),
+      body: JSON.stringify({
+        fullName: regData.fullName,
+        username: regData.username,
+        email: regData.email,
+        password: regData.password,
+        userType: regData.userType,
+      }),
     });
-    setUser(data.user);
-    await AsyncStorage.setItem('aqar_user', JSON.stringify(data.user));
+    const u = parseServerUser(data);
+    setUser(u);
+    await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
   }, []);
 
   const logout = useCallback(async () => {
@@ -75,8 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.removeItem('aqar_user');
   }, []);
 
+  const updateUser = useCallback((u: User) => {
+    setUser(u);
+    AsyncStorage.setItem('aqar_user', JSON.stringify(u)).catch(() => {});
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

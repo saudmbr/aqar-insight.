@@ -38,7 +38,7 @@ export default function LoginScreen() {
       await login(username.trim(), password);
       router.replace('/(tabs)');
     } catch (e: any) {
-      setError(e.message?.includes('401') ? 'اسم المستخدم أو كلمة المرور غير صحيحة' : 'حدث خطأ، حاول مرة أخرى');
+      setError(e.message && !e.message.startsWith('HTTP') ? e.message : 'حدث خطأ في الاتصال، حاول مرة أخرى');
     } finally {
       setLoading(false);
     }

@@ -73,11 +73,11 @@ export default function RegisterScreen() {
         username: username.trim(),
         email: email.trim(),
         password,
-        role: accountType,
+        userType: accountType,
       });
       router.replace('/(tabs)');
     } catch (e: any) {
-      setError(e.message?.includes('409') ? 'اسم المستخدم أو البريد مستخدم بالفعل' : 'حدث خطأ، حاول مرة أخرى');
+      setError(e.message && !e.message.startsWith('HTTP') ? e.message : 'حدث خطأ، حاول مرة أخرى');
     } finally {
       setLoading(false);
     }

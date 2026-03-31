@@ -238,8 +238,14 @@ export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T
     ...options,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `HTTP ${res.status}`);
+    let msg = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.message) msg = body.message;
+    } catch {
+      try { msg = (await res.text()) || msg; } catch { /* ignore */ }
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
