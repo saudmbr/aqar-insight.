@@ -1,0 +1,103 @@
+Analyze the web platform (NOT the mobile app) and generate a complete, highly detailed UI/UX design specification that can be used to design a professional mobile application in Figma.
+
+IMPORTANT:
+- Treat the web platform as the source of truth
+- Ignore the current mobile app limitations
+- The goal is to redesign the mobile app based on the FULL capabilities of the web platform
+
+----------------------------------------
+1) FULL FEATURE EXTRACTION (FROM WEB)
+----------------------------------------
+Extract and document ALL features from the web platform, including:
+
+- Homepage structure (hero, search, sections, banners)
+- Property listings and browsing
+- Advanced filtering system (all filter fields)
+- Property details page (all sections and data)
+- Interactive map behavior
+- Market analytics and indicators
+- District comparison features
+- Services marketplace
+- Requests marketplace
+- Marketer profiles and dashboards
+- User account features
+- Add listing flow
+- Any additional tools or insights
+
+----------------------------------------
+2) SCREEN-BY-SCREEN MOBILE DESIGN (BASED ON WEB)
+----------------------------------------
+Design a mobile-first version of ALL web features.
+
+For EACH screen:
+- Define layout structure (top / middle / bottom)
+- Define UI components
+- Define interaction behavior
+- Define navigation flow
+- Adapt complex web features into mobile-friendly UI
+
+Screens must include:
+- Home
+- Listings
+- Filters
+- Map
+- Property details
+- Favorites
+- Add listing
+- Profile
+- Analytics
+- Any additional web features
+
+----------------------------------------
+3) ADVANCED UI COMPONENT BREAKDOWN
+----------------------------------------
+Describe in detail:
+
+- Property cards
+- Search bar
+- Filter modal (all fields from web)
+- Map UI (pins, clustering, preview cards)
+- Buttons and CTAs
+- Navigation (bottom tabs, headers)
+- Forms (add listing)
+
+----------------------------------------
+4) DESIGN SYSTEM (PREMIUM LEVEL)
+----------------------------------------
+Define:
+
+- Color palette (navy, teal, gold, neutrals)
+- Typography (Arabic RTL optimized)
+- Spacing system
+- Border radius
+- Shadows and elevation
+- Icon style
+- Card design patterns
+
+Style must be:
+- Premium
+- Minimal
+- Modern
+- Data-driven
+- Similar to Zillow / Bayut / Airbnb quality
+
+----------------------------------------
+5) UX IMPROVEMENT (VERY IMPORTANT)
+----------------------------------------
+- Identify weaknesses in the web UX
+- Suggest improvements specifically for mobile
+- Simplify complex flows
+- Improve clarity and usability
+- Ensure fast and intuitive navigation
+
+----------------------------------------
+6) FINAL OUTPUT FORMAT
+----------------------------------------
+- Structured document
+- No code
+- No summaries
+- Full detailed design specification
+- Written as if it will be used directly inside Figma
+
+GOAL:
+Produce a complete, production-level mobile app design specification based entirely on the web platform’s full functionality, optimized for mobile UX.

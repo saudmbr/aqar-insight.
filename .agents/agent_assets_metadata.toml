@@ -24,3 +24,9 @@ id = "rcGBcz2cAv-M9_e5cJjWt"
 uri = "file://reports/aqar-insight-platform-comparison-report.md"
 type = "text"
 title = "تقرير المقارنة الشامل — عقار إنسايت (ويب vs جوال)"
+
+[[outputs]]
+id = "8O7JJx1Mu7x-ZigQEsTFc"
+uri = "file://aqar-insight-mobile-design-spec.md"
+type = "text"
+title = "مواصفات تصميم تطبيق عقار إنسايت للجوال (Figma-Ready)"
