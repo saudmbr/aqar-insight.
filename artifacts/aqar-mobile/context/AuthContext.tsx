@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { User, apiFetch, endpoints } from '@/constants/api';
+import { clearCookie } from '@/constants/httpClient';
 
 interface AuthState {
   user: User | null;
@@ -19,7 +20,6 @@ export interface RegisterData {
   userType?: string;
 }
 
-// Map the flat server response ({userId, username, fullName, role}) → User
 function parseServerUser(data: Record<string, any>): User {
   return {
     id: data.userId ?? data.id ?? 0,
@@ -50,13 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkSession = async () => {
     try {
-      // Restore from local cache first for instant UI
       const stored = await AsyncStorage.getItem('aqar_user');
       if (stored) {
         setUser(JSON.parse(stored) as User);
       }
 
-      // Then verify session with server (handles cookie expiry)
       const serverData = await apiFetch<Record<string, any>>(endpoints.me);
       if (serverData?.isAuthenticated) {
         const u = parseServerUser(serverData);
@@ -65,9 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null);
         await AsyncStorage.removeItem('aqar_user');
+        await clearCookie();
       }
     } catch {
-      // Server unreachable or 401 → clear local session
       setUser(null);
       await AsyncStorage.removeItem('aqar_user');
     } finally {
@@ -76,19 +74,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = useCallback(async (identifier: string, password: string) => {
-    // Server expects "identifier" (not "username")
-    const data = await apiFetch<Record<string, any>>(endpoints.login, {
+    await apiFetch<Record<string, any>>(endpoints.login, {
       method: 'POST',
       body: JSON.stringify({ identifier, password }),
     });
-    const u = parseServerUser(data);
+    const meData = await apiFetch<Record<string, any>>(endpoints.me);
+    const u = parseServerUser(meData?.isAuthenticated ? meData : { username: identifier, role: 'user' });
     setUser(u);
     await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
   }, []);
 
   const register = useCallback(async (regData: RegisterData) => {
-    // Server expects "userType" (not "role")
-    const data = await apiFetch<Record<string, any>>(endpoints.register, {
+    await apiFetch<Record<string, any>>(endpoints.register, {
       method: 'POST',
       body: JSON.stringify({
         fullName: regData.fullName,
@@ -98,7 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userType: regData.userType,
       }),
     });
-    const u = parseServerUser(data);
+    const meData = await apiFetch<Record<string, any>>(endpoints.me);
+    const u = parseServerUser(meData?.isAuthenticated ? meData : { username: regData.username, role: 'user' });
     setUser(u);
     await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
   }, []);
@@ -106,11 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await apiFetch(endpoints.logout, { method: 'POST' });
-    } catch {
-      // ignore
-    }
+    } catch {}
     setUser(null);
     await AsyncStorage.removeItem('aqar_user');
+    await clearCookie();
   }, []);
 
   const updateUser = useCallback((u: User) => {

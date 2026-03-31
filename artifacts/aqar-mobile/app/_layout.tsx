@@ -7,6 +7,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { I18nManager, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,7 +16,6 @@ import { FavoritesProvider } from '@/context/FavoritesContext';
 
 SplashScreen.preventAutoHideAsync();
 
-// Allow RTL layout on native devices (iOS/Android via Expo Go)
 if (Platform.OS !== 'web') {
   I18nManager.allowRTL(true);
 }
@@ -43,6 +43,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="light" backgroundColor={Platform.OS === 'android' ? '#0B1628' : undefined} />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <FavoritesProvider>

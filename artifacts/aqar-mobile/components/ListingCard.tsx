@@ -23,10 +23,17 @@ interface Props {
   variant?: 'grid' | 'horizontal' | 'featured';
 }
 
+function parseImages(raw: string[] | string | null | undefined): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
 function ListingCardComponent({ listing, onPress, variant = 'grid' }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const fav = isFavorite(listing.id);
-  const imageUrl = Array.isArray(listing.images) ? listing.images[0] : undefined;
+  const images = parseImages(listing.images as any);
+  const imageUrl = images[0];
   const typeColor = listing.listingType === 'rent' ? Colors.gold : Colors.teal;
   const typeLabel = listingTypeLabel[listing.listingType] || listing.listingType;
 

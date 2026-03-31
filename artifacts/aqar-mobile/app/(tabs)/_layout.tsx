@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 
 function TabIcon({ name, focused, color }: { name: string; focused: boolean; color: string }) {
@@ -16,6 +17,11 @@ function TabIcon({ name, focused, color }: { name: string; focused: boolean; col
 export default function TabLayout() {
   const isIOS = Platform.OS === 'ios';
   const isWeb = Platform.OS === 'web';
+  const isAndroid = Platform.OS === 'android';
+  const insets = useSafeAreaInsets();
+
+  const tabBarHeight = isWeb ? 88 : isAndroid ? 64 + insets.bottom : 68;
+  const tabBarPaddingBottom = isWeb ? 18 : isAndroid ? insets.bottom + 6 : 10;
 
   return (
     <Tabs
@@ -28,9 +34,13 @@ export default function TabLayout() {
           backgroundColor: isIOS ? 'transparent' : Colors.white,
           borderTopWidth: 0.5,
           borderTopColor: Colors.border,
-          elevation: 0,
-          height: isWeb ? 88 : 68,
-          paddingBottom: isWeb ? 18 : 10,
+          elevation: isAndroid ? 8 : 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+          height: tabBarHeight,
+          paddingBottom: tabBarPaddingBottom,
           paddingTop: 6,
         },
         tabBarBackground: () =>

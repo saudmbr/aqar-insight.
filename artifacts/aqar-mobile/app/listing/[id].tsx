@@ -113,7 +113,12 @@ export default function ListingDetail() {
     );
   }
 
-  const images = listing.images ?? [];
+  const rawImgs = listing.images as any;
+  const images: string[] = Array.isArray(rawImgs)
+    ? rawImgs
+    : typeof rawImgs === 'string'
+      ? (() => { try { return JSON.parse(rawImgs); } catch { return []; } })()
+      : [];
   const currentImage = images[imgIndex];
   const typeLabel = listingTypeLabel[listing.listingType] ?? listing.listingType;
   const isRent = listing.listingType === 'rent';

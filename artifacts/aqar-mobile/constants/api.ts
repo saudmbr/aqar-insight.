@@ -1,11 +1,6 @@
-import { Platform } from 'react-native';
+import client, { API_BASE } from './httpClient';
 
-const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
-export const API_BASE = DOMAIN
-  ? `https://${DOMAIN}`
-  : Platform.OS === 'web'
-  ? ''
-  : 'https://24f6cca2-97a5-4cb7-90fe-09117eb86dda-00-2llx3yzs7zv0w.picard.replit.dev';
+export { API_BASE };
 
 export const endpoints = {
   listings: `${API_BASE}/api/listings`,
@@ -245,22 +240,24 @@ export function formatNumber(n: number): string {
 }
 
 export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try {
-      const body = await res.json();
-      if (body?.message) msg = body.message;
-    } catch {
-      try { msg = (await res.text()) || msg; } catch { /* ignore */ }
-    }
+  const method = (options?.method ?? 'GET') as string;
+  const body = options?.body as string | undefined;
+  try {
+    const res = await client.request<T>({
+      url,
+      method,
+      data: body ? JSON.parse(body) : undefined,
+      headers: options?.headers as Record<string, string> | undefined,
+    });
+    return res.data;
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      'حدث خطأ في الاتصال';
     throw new Error(msg);
   }
-  return res.json();
 }
 
 export async function fetchListings(params: URLSearchParams): Promise<ListingsResponse> {
