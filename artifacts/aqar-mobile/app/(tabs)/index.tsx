@@ -56,6 +56,15 @@ const QUICK_ACTIONS = [
   { icon: 'layers', label: 'الأحياء', path: '/districts', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
   { icon: 'users', label: 'المسوّقون', path: '/marketers', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
   { icon: 'file-text', label: 'الطلبات', path: '/requests', color: Colors.gold, bg: 'rgba(201,168,76,0.12)' },
+  { icon: 'database', label: 'السجلات', path: '/records', color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+  { icon: 'zap', label: 'المستقبل', path: '/future', color: '#ec4899', bg: 'rgba(236,72,153,0.12)' },
+];
+
+const WHY_CARDS = [
+  { id: 1, icon: 'shield', color: '#10b981', bg: 'rgba(16,185,129,0.12)', title: 'بيانات موثّقة', desc: 'إعلانات مراجعة ومعلومات شفافة عن كل عقار' },
+  { id: 2, icon: 'map-pin', color: Colors.teal, bg: 'rgba(15,123,160,0.12)', title: 'خريطة تفاعلية', desc: 'تصفح العقارات على خريطة حية مع تفاصيل دقيقة' },
+  { id: 3, icon: 'bar-chart-2', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', title: 'تحليلات السوق', desc: 'مؤشرات وتقارير اقتصادية لاتخاذ قرارات أفضل' },
+  { id: 4, icon: 'users', color: Colors.gold, bg: 'rgba(201,168,76,0.12)', title: 'مسوّقون معتمدون', desc: 'تواصل مباشر مع أفضل المسوّقين العقاريين في المملكة' },
 ];
 
 function getMarketLabel(score?: number): { text: string; color: string; icon: string } {
@@ -383,6 +392,25 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* ════════════════ لماذا نحن ════════════════ */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View />
+          <Text style={styles.sectionTitle}>لماذا عقار إنسايت؟</Text>
+        </View>
+        <View style={styles.whyGrid}>
+          {WHY_CARDS.map(card => (
+            <View key={card.id} style={styles.whyCard}>
+              <View style={[styles.whyIconWrap, { backgroundColor: card.bg }]}>
+                <Feather name={card.icon as any} size={20} color={card.color} />
+              </View>
+              <Text style={styles.whyTitle}>{card.title}</Text>
+              <Text style={styles.whyDesc}>{card.desc}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
       {/* ════════════════ ADD LISTING CTA ════════════════ */}
       <View style={styles.ctaSection}>
         <LinearGradient
@@ -569,6 +597,27 @@ const styles = StyleSheet.create({
   },
   actionIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   actionLabel: { fontSize: 13, fontWeight: 'bold' },
+
+  /* ── WHY US ── */
+  whyGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, justifyContent: 'space-between' },
+  whyCard: {
+    width: (W - 48) / 2,
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  whyIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  whyTitle: { fontSize: 13, fontWeight: 'bold', color: Colors.text, textAlign: 'center', marginBottom: 4 },
+  whyDesc: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', lineHeight: 16 },
 
   /* ── CTA ── */
   ctaSection: { marginHorizontal: 16, marginTop: 24 },

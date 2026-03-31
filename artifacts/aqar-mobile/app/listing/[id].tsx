@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Alert,
   Dimensions,
@@ -21,6 +21,48 @@ import { Colors } from '@/constants/colors';
 import { Listing, apiFetch, endpoints, formatPrice, listingTypeLabel } from '@/constants/api';
 import { useFavorites } from '@/context/FavoritesContext';
 import { ListingCard } from '@/components/ListingCard';
+
+function injectLeafletCSS() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('leaflet-css-detail')) return;
+  const link = document.createElement('link');
+  link.id = 'leaflet-css-detail';
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+  const style = document.createElement('style');
+  style.id = 'leaflet-css-detail-style';
+  style.textContent = `.leaflet-detail-map { width: 100%; height: 100%; } .leaflet-tile-pane { filter: brightness(0.9) saturate(0.8); }`;
+  document.head.appendChild(style);
+}
+
+function MiniMap({ latitude, longitude, title }: { latitude: number; longitude: number; title: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+
+  useEffect(() => {
+    injectLeafletCSS();
+    let mounted = true;
+    const init = async () => {
+      const L = (await import('leaflet')).default;
+      if (!mounted || !containerRef.current || mapRef.current) return;
+      const map = L.map(containerRef.current, { center: [latitude, longitude], zoom: 14, zoomControl: true, attributionControl: false, dragging: true, scrollWheelZoom: false });
+      mapRef.current = map;
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:#0F7BA0;border:3px solid #fff;border-radius:50%;width:20px;height:20px;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>`,
+        iconAnchor: [10, 10],
+      });
+      L.marker([latitude, longitude], { icon }).bindPopup(`<div style="direction:rtl;font-family:Arial;font-size:13px;font-weight:bold;color:#0B1628;padding:4px">${title}</div>`, { maxWidth: 200 }).addTo(map).openPopup();
+    };
+    init().catch(() => {});
+    return () => { mounted = false; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
+  }, [latitude, longitude]);
+
+  if (Platform.OS !== 'web') return null;
+  return <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: 14 }} />;
+}
 
 const { width } = Dimensions.get('window');
 
@@ -235,22 +277,12 @@ export default function ListingDetail() {
           )}
 
           {/* Location */}
-          <Pressable
-            style={styles.locationRow}
-            onPress={() => {
-              if (listing.latitude && listing.longitude) {
-                router.push({ pathname: '/(tabs)/map', params: { lat: String(listing.latitude), lng: String(listing.longitude) } });
-              }
-            }}
-          >
+          <View style={styles.locationRow}>
             <Feather name="map-pin" size={14} color={Colors.teal} />
             <Text style={styles.location}>
               {[listing.district, listing.city, listing.region].filter(Boolean).join(' ← ')}
             </Text>
-            {listing.latitude && listing.longitude && (
-              <Feather name="external-link" size={12} color={Colors.teal} />
-            )}
-          </Pressable>
+          </View>
 
           {/* Details Grid */}
           <View style={styles.detailsGrid}>
@@ -309,16 +341,67 @@ export default function ListingDetail() {
             </View>
           )}
 
+          {/* ─── Embedded Map ─── */}
+          {listing.latitude && listing.longitude && (
+            <View style={styles.section}>
+              <View style={styles.mapSectionHeader}>
+                <Text style={styles.sectionTitle}>موقع العقار</Text>
+                <Pressable
+                  style={styles.openMapBtn}
+                  onPress={() => {
+                    const url = Platform.OS === 'ios'
+                      ? `maps://?ll=${listing.latitude},${listing.longitude}&q=${encodeURIComponent(listing.title)}`
+                      : `https://maps.google.com/?q=${listing.latitude},${listing.longitude}`;
+                    Linking.openURL(url).catch(() => {});
+                  }}
+                >
+                  <Feather name="external-link" size={13} color={Colors.teal} />
+                  <Text style={styles.openMapBtnText}>فتح الخريطة</Text>
+                </Pressable>
+              </View>
+              <View style={styles.mapContainer}>
+                {Platform.OS === 'web' ? (
+                  <MiniMap latitude={listing.latitude} longitude={listing.longitude} title={listing.title} />
+                ) : (
+                  <Pressable
+                    style={styles.mapNativePlaceholder}
+                    onPress={() => {
+                      const url = `https://maps.google.com/?q=${listing.latitude},${listing.longitude}`;
+                      Linking.openURL(url).catch(() => {});
+                    }}
+                  >
+                    <Feather name="map-pin" size={32} color={Colors.teal} />
+                    <Text style={styles.mapNativeText}>اضغط لعرض الموقع على الخريطة</Text>
+                    <Text style={styles.mapNativeCoords}>
+                      {listing.latitude.toFixed(5)}, {listing.longitude.toFixed(5)}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          )}
+
           {/* Seller / Marketer Card */}
           {(listing.sellerName || listing.marketerName) && (
             <View style={styles.marketerCard}>
-              <View style={styles.marketerLeft}>
+              <View style={styles.marketerActions}>
                 <Pressable style={styles.marketerCallBtn} onPress={handleCall}>
-                  <Feather name="phone" size={16} color={Colors.white} />
+                  <Feather name="phone" size={14} color={Colors.white} />
+                  <Text style={styles.marketerActionText}>اتصال</Text>
                 </Pressable>
                 <Pressable style={styles.marketerWaBtn} onPress={handleWhatsApp}>
-                  <Feather name="message-circle" size={16} color={Colors.white} />
+                  <Feather name="message-circle" size={14} color={Colors.white} />
+                  <Text style={styles.marketerActionText}>واتساب</Text>
                 </Pressable>
+                {(listing as any).marketerEmail && (
+                  <Pressable
+                    style={styles.marketerEmailBtn}
+                    onPress={() => Linking.openURL(`mailto:${(listing as any).marketerEmail}`).catch(() => {})}
+                  >
+                    <Feather name="mail" size={14} color={Colors.white} />
+                    <Text style={styles.marketerActionText}>بريد</Text>
+                  </Pressable>
+                )}
               </View>
               <View style={styles.marketerInfo}>
                 <Text style={styles.marketerLabel}>المسوّق العقاري</Text>
@@ -526,17 +609,39 @@ const styles = StyleSheet.create({
   marketerLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginBottom: 2 },
   marketerNameStyle: { fontSize: 15, fontWeight: '700', color: Colors.text, textAlign: 'right' },
   marketerPhone: { fontSize: 12, color: Colors.textSub, textAlign: 'right', marginTop: 2 },
-  marketerLeft: { flexDirection: 'row-reverse', gap: 8 },
+  marketerActions: { flexDirection: 'row-reverse', gap: 6 },
+  marketerActionText: { color: Colors.white, fontSize: 10, fontWeight: '600', marginTop: 2 },
   marketerCallBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: Colors.teal,
     alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.teal,
+    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
   },
   marketerWaBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#25D366',
     alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#25D366',
+    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
   },
+  marketerEmailBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#C9A84C',
+    borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, minWidth: 50,
+  },
+
+  // Map section
+  mapSectionHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  openMapBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
+  openMapBtnText: { color: Colors.teal, fontSize: 13, fontWeight: '600' },
+  mapContainer: {
+    height: 200, borderRadius: 14, overflow: 'hidden',
+    backgroundColor: '#e8f0f8',
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  mapNativePlaceholder: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: 'rgba(15,123,160,0.07)',
+  },
+  mapNativeText: { color: Colors.text, fontSize: 14, fontWeight: '600' },
+  mapNativeCoords: { color: Colors.textMuted, fontSize: 11 },
 
   // Similar listings
   similarContent: { gap: 10, paddingRight: 4, flexDirection: 'row-reverse' },

@@ -95,7 +95,8 @@ The homepage integrates a hero section with quick search, category filters, a pr
 - `services/dashboard.tsx`: Service provider 2-tab dashboard (profile edit, portfolio)
 - `services/new.tsx`: Register new service form
 - `districts.tsx`: Districts heat map + side-by-side comparison with city filter
-- `future.tsx`: Vision 2030 projects (6 megaprojects)
+- `future.tsx`: Future projects page (المشاريع المستقبلية) — roadmap timeline + 5 upcoming modules with CTA
+- `records.tsx`: Property records/Sijilat page — filterable table (city, type, deal, status) with pagination
 - `requests/[id].tsx`: Request detail with contact actions (WhatsApp/phone)
 - `auth/reset-password.tsx`: Reset password with token verification
 - `profile-edit.tsx`: Full profile editing with `PUT /api/auth/profile`
@@ -104,9 +105,21 @@ The homepage integrates a hero section with quick search, category filters, a pr
 **Mobile App Listing Detail:**
 - Share button, image counter, featured/urgent/verified badges.
 - Price-per-sqm calculation, location breakdown chips, floors chip.
-- Inline call/WhatsApp buttons in marketer card.
+- Embedded Leaflet map (web) or native Google Maps link (native) for listings with coordinates.
+- Email contact button alongside call/WhatsApp in marketer card.
 - Similar listings horizontal scroll section.
 - `useEffect` redirect for auth-protected screens (never redirect during render).
+
+**Mobile App ListingCard:**
+- Grid variant shows bedrooms (moon icon), bathrooms (droplet icon), and area chips.
+- Horizontal variant also shows all three detail chips.
+
+**Mobile App Listings Filters:**
+- Advanced filter modal includes: sort, deal type, property type, price range, area range, bedrooms, bathrooms, city chips, and a free-text district (حي) input field.
+
+**Mobile App Homepage:**
+- "لماذا نحن" (Why Us) section with 4 cards: بيانات موثّقة, خريطة تفاعلية, تحليلات السوق, مسوّقون معتمدون.
+- Quick Actions grid includes السجلات (/records) and المستقبل (/future) links.
 
 ## External Dependencies
 

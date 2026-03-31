@@ -53,6 +53,7 @@ interface FilterState {
   propertyType: string;
   region: string;
   city: string;
+  district: string;
   minPrice: string;
   maxPrice: string;
   minArea: string;
@@ -67,6 +68,7 @@ const DEFAULT_FILTERS: FilterState = {
   propertyType: '',
   region: '',
   city: '',
+  district: '',
   minPrice: '',
   maxPrice: '',
   minArea: '',
@@ -103,6 +105,7 @@ export default function ListingsScreen() {
     filters.propertyType,
     filters.region,
     filters.city,
+    filters.district,
     filters.minPrice,
     filters.maxPrice,
     filters.minArea,
@@ -118,6 +121,7 @@ export default function ListingsScreen() {
     if (q) params.set('search', q);
     if (f.region) params.set('region', f.region);
     if (f.city) params.set('city', f.city);
+    if (f.district) params.set('district', f.district);
     if (f.minPrice) params.set('minPrice', f.minPrice);
     if (f.maxPrice) params.set('maxPrice', f.maxPrice);
     if (f.minArea) params.set('minArea', f.minArea);
@@ -423,6 +427,17 @@ export default function ListingsScreen() {
               ))}
             </View>
 
+            {/* ── DISTRICT ── */}
+            <Text style={s.sectionLabel}>الحي / المنطقة</Text>
+            <TextInput
+              style={s.districtInput}
+              placeholder="اكتب اسم الحي..."
+              placeholderTextColor="rgba(255,255,255,0.25)"
+              value={draftFilters.district}
+              onChangeText={v => setDraftFilters(f => ({ ...f, district: v }))}
+              textAlign="right"
+            />
+
             <View style={{ height: 20 }} />
           </ScrollView>
 
@@ -565,6 +580,17 @@ const s = StyleSheet.create({
     fontSize: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    textAlign: 'right',
+  },
+  districtInput: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    color: Colors.white,
+    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     textAlign: 'right',
   },
   rangeSep: { color: Colors.textMuted, fontSize: 16 },

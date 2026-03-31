@@ -176,11 +176,18 @@ function ListingCardComponent({ listing, onPress, variant = 'grid' }: Props) {
             {listing.district || listing.city || '—'}
           </Text>
         </View>
-        {(listing.bedrooms != null || listing.areaSqm != null) && (
+        {(listing.bedrooms != null || listing.bathrooms != null || listing.areaSqm != null) && (
           <View style={grid.details}>
             {listing.bedrooms != null && (
               <View style={grid.detailChip}>
-                <Text style={grid.detailText}>{listing.bedrooms} غرف</Text>
+                <Feather name="moon" size={9} color={Colors.teal} />
+                <Text style={grid.detailText}> {listing.bedrooms}</Text>
+              </View>
+            )}
+            {listing.bathrooms != null && (
+              <View style={grid.detailChip}>
+                <Feather name="droplet" size={9} color={Colors.textMuted} />
+                <Text style={grid.detailText}> {listing.bathrooms}</Text>
               </View>
             )}
             {listing.areaSqm != null && (
@@ -322,6 +329,8 @@ const grid = StyleSheet.create({
   loc: { fontSize: 10, color: Colors.textMuted, flex: 1, textAlign: 'right', marginRight: 3 },
   details: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
   detailChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.background,
     paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6,
     marginLeft: 4, marginBottom: 2,
