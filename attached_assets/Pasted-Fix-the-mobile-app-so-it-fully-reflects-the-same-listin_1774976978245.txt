@@ -1,0 +1,71 @@
+Fix the mobile app so it fully reflects the same listings, ads, images, and listing details shown on the web platform.
+
+IMPORTANT:
+The web platform is the source of truth.
+The mobile app must display the exact same property ads and data as the web app.
+
+Tasks:
+
+1. Use the exact same backend source as the web app
+- Verify that mobile and web use the same API base URL
+- Verify that both use the same database/environment
+- Remove any mock, static, or test listing data from mobile
+
+2. Match the web listing query logic exactly
+- Compare the web request used to fetch listings
+- Compare the mobile request used to fetch listings
+- Ensure the same filters, parameters, pagination, sort, and status rules are applied
+- Make mobile fetch all active published listings exactly like web
+
+3. Log and compare raw API responses
+- Print the raw listing response on web and mobile
+- Compare listing count
+- Compare IDs
+- Compare missing ads
+- Identify why some listings appear on web but not mobile
+
+4. Fix data mapping on mobile
+- Ensure all listing fields are parsed correctly:
+  - id
+  - title
+  - price
+  - location
+  - district
+  - city
+  - images
+  - bedrooms
+  - bathrooms
+  - area
+  - property type
+  - deal type
+  - featured flag
+  - status
+- Handle null values safely
+- Parse JSON arrays correctly for images and features
+
+5. Fix image rendering
+- Ensure mobile uses the same image URLs as web
+- Ensure images render even if array/object format differs
+- Add fallback image handling
+
+6. Fix listing details sync
+- When opening a property on mobile, it must show the same details as web
+- Match description, specs, map data, marketer info, and status
+
+7. Fix refresh and state management
+- Ensure listings refetch correctly on screen load
+- Remove stale cache issues
+- Ensure updated or newly added ads appear on mobile immediately
+
+8. Add debugging output
+Return a structured debugging report in chat with:
+- web listings endpoint
+- mobile listings endpoint
+- web listing count
+- mobile listing count
+- missing listing IDs
+- reason for mismatch
+- exact fix applied
+
+Goal:
+The mobile app must mirror the web listings completely and reliably.
