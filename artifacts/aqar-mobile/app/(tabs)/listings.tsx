@@ -90,11 +90,11 @@ export default function ListingsScreen() {
 
         {/* Search */}
         <View style={styles.searchWrap}>
-          <Feather name="search" size={16} color={Colors.textMuted} />
+          <Feather name="search" size={16} color="rgba(255,255,255,0.5)" />
           <TextInput
             style={styles.searchInput}
             placeholder="ابحث عن عقار، حي، مدينة..."
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor="rgba(255,255,255,0.4)"
             value={search}
             onChangeText={(v) => { setSearch(v); setPage(1); }}
             textAlign="right"
@@ -102,7 +102,7 @@ export default function ListingsScreen() {
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch('')} hitSlop={8}>
-              <Feather name="x" size={16} color={Colors.textMuted} />
+              <Feather name="x" size={16} color="rgba(255,255,255,0.6)" />
             </Pressable>
           )}
         </View>
@@ -152,7 +152,7 @@ export default function ListingsScreen() {
         {data && (
           <Text style={styles.count}>{data.total} عقار {isFetching && '...'}</Text>
         )}
-      </View>
+      </LinearGradient>
 
       {/* List */}
       {isLoading ? (
@@ -354,14 +354,20 @@ const styles = StyleSheet.create({
   gridWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12, padding: 16 },
   listContent: { padding: 16, gap: 12 },
   row: { flexDirection: 'row-reverse', gap: 12 },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 10 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.text },
-  emptyText: { fontSize: 13, color: Colors.textMuted },
-  clearBtn: {
-    marginTop: 8, backgroundColor: Colors.teal,
-    paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12,
+  empty: { alignItems: 'center', paddingVertical: 60, gap: 12 },
+  emptyIcon: {
+    width: 90, height: 90, borderRadius: 28,
+    backgroundColor: 'rgba(15,123,160,0.1)',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
   },
-  clearBtnText: { color: Colors.white, fontWeight: '700' },
+  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
+  emptyText: { fontSize: 13, color: Colors.textMuted, textAlign: 'center' },
+  clearBtn: {
+    marginTop: 4, backgroundColor: Colors.teal,
+    paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
+  },
+  clearBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: Colors.white, borderTopLeftRadius: 28, borderTopRightRadius: 28,

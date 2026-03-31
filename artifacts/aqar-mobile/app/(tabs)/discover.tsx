@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React from 'react';
@@ -69,10 +70,11 @@ export default function DiscoverScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
-        <Text style={styles.headerSub}>اكتشف سوق العقار السعودي</Text>
-        <Text style={styles.headerTitle}>التحليلات والمجتمع</Text>
-      </View>
+      <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[styles.header, { paddingTop: topPad + 16 }]}>
+        <Feather name="compass" size={22} color={Colors.teal} style={{ alignSelf: 'flex-end' }} />
+        <Text style={styles.headerTitle}>اكتشف السوق</Text>
+        <Text style={styles.headerSub}>تحليلات ورؤى سوق العقار السعودي</Text>
+      </LinearGradient>
 
       {/* ─── Market Score Card ─── */}
       {marketScore && (
@@ -325,14 +327,13 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   header: {
-    backgroundColor: Colors.navy,
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 22,
+    alignItems: 'flex-end',
+    gap: 4,
   },
-  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.55)', textAlign: 'right', marginBottom: 2 },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: Colors.white, textAlign: 'right' },
+  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'right' },
+  headerTitle: { fontSize: 24, fontWeight: '900', color: Colors.white, textAlign: 'right' },
   scoreCard: {
     margin: 16, backgroundColor: Colors.card, borderRadius: 20,
     padding: 16, flexDirection: 'row-reverse', alignItems: 'center',

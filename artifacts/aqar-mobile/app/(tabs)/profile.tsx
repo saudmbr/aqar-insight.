@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React from 'react';
@@ -81,7 +82,7 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[styles.header, { paddingTop: topPad + 16 }]}>
         {user ? (
           <>
             <View style={styles.avatar}>
@@ -102,7 +103,7 @@ export default function ProfileScreen() {
             <Text style={styles.guestSub}>سجّل دخولك للاستمتاع بكل المميزات</Text>
           </>
         )}
-      </View>
+      </LinearGradient>
 
       {/* Stats */}
       <View style={styles.statsRow}>
@@ -216,9 +217,8 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   header: {
-    backgroundColor: Colors.navy, paddingHorizontal: 20, paddingBottom: 32,
+    paddingHorizontal: 20, paddingBottom: 34,
     alignItems: 'center', gap: 8,
-    borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
   },
   avatar: {
     width: 80, height: 80, borderRadius: 40,
