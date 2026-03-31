@@ -410,11 +410,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     paddingHorizontal: 14, alignItems: 'center',
   },
-  navRight: { flexDirection: 'row-reverse', gap: 8 },
+  navRight: { flexDirection: 'row-reverse' },
   navBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', marginLeft: 8,
   },
   imgCounter: {
     position: 'absolute', bottom: 60, left: 16,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   // Badges
   badgesRow: {
     position: 'absolute', top: 14, right: 14,
-    flexDirection: 'row-reverse', gap: 6, flexWrap: 'wrap', maxWidth: '70%',
+    flexDirection: 'row-reverse', flexWrap: 'wrap', maxWidth: '70%',
   },
   typeBadge: {
     backgroundColor: Colors.teal,
@@ -477,13 +477,14 @@ const styles = StyleSheet.create({
   location: { fontSize: 13, color: Colors.textSub, textAlign: 'right', flex: 1 },
 
   // Details grid
-  detailsGrid: { flexDirection: 'row-reverse', gap: 10, marginBottom: 20, flexWrap: 'wrap' },
+  detailsGrid: { flexDirection: 'row-reverse', marginBottom: 20, flexWrap: 'wrap', justifyContent: 'space-between' },
   detailBox: {
-    flex: 1, minWidth: 70,
+    width: '30%', minWidth: 70,
     backgroundColor: Colors.card, borderRadius: 16, padding: 14,
-    alignItems: 'center', gap: 4,
+    alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    marginBottom: 10,
   },
   detailNum: { fontSize: 18, fontWeight: '800', color: Colors.navy },
   detailLabel: { fontSize: 11, color: Colors.textMuted },
@@ -494,12 +495,13 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, color: Colors.textSub, lineHeight: 22, textAlign: 'right' },
 
   // Location details
-  locationDetails: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+  locationDetails: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
   locationChip: {
     backgroundColor: Colors.card,
-    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, gap: 2,
+    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
     alignItems: 'center',
     borderWidth: 1, borderColor: Colors.border,
+    marginLeft: 8, marginBottom: 8,
   },
   locationChipLabel: { fontSize: 10, color: Colors.textMuted },
   locationChipValue: { fontSize: 13, fontWeight: '700', color: Colors.text },

@@ -316,11 +316,12 @@ export default function HomeScreen() {
       ) : recentListings.length === 0 ? null : (
         <View style={styles.gridWrap}>
           {recentListings.map((item) => (
-            <ListingCard
-              key={item.id}
-              listing={item}
-              onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
-            />
+            <View key={item.id} style={{ marginBottom: 12 }}>
+              <ListingCard
+                listing={item}
+                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
+              />
+            </View>
           ))}
         </View>
       )}
@@ -451,25 +452,26 @@ const styles = StyleSheet.create({
   /* Market Pulse Card */
   pulseCard: { marginHorizontal: 16, marginTop: 16, marginBottom: 6, borderRadius: 22, overflow: 'hidden', shadowColor: Colors.navy, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 8 },
   pulseGradient: { padding: 18 },
-  pulseRight: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, marginBottom: 16 },
-  pulseIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
+  pulseRight: { flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 16 },
+  pulseIconWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginLeft: 12 },
   pulseTexts: { flex: 1, alignItems: 'flex-end' },
   pulseMainText: { fontSize: 18, fontWeight: '900', textAlign: 'right' },
   pulseSubText: { fontSize: 12, color: 'rgba(255,255,255,0.55)', textAlign: 'right', marginTop: 3 },
   pulseStats: { flexDirection: 'row-reverse', justifyContent: 'space-around', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 14, marginBottom: 12 },
-  pulseStat: { alignItems: 'center', gap: 3 },
+  pulseStat: { alignItems: 'center' },
   pulseStatVal: { fontSize: 18, fontWeight: '900', color: Colors.white },
-  pulseStatLbl: { fontSize: 10, color: 'rgba(255,255,255,0.45)' },
+  pulseStatLbl: { fontSize: 10, color: 'rgba(255,255,255,0.45)', marginTop: 3 },
   pulseDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-  pulseLink: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
+  pulseLink: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-end' },
   pulseLinkText: { fontSize: 12, color: Colors.teal, fontWeight: '700' },
 
   /* Main actions */
   section: { paddingHorizontal: 16, marginBottom: 4, marginTop: 16 },
-  actionsGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10 },
+  actionsGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'space-between' },
   actionCard: {
     width: (width - 42) / 2,
     backgroundColor: Colors.card, borderRadius: 18, padding: 16,
+    marginBottom: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
   actionIconBg: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 10, alignSelf: 'flex-end' },
@@ -486,13 +488,14 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 
   /* Property categories */
-  catScroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  catScroll: { paddingHorizontal: 16, paddingBottom: 4 },
   catCard: {
-    alignItems: 'center', gap: 7,
+    alignItems: 'center',
     backgroundColor: Colors.card, borderRadius: 16, padding: 14, width: 80,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    marginRight: 10,
   },
-  catIconWrap: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center' },
+  catIconWrap: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 7 },
   catLabel: { fontSize: 11, fontWeight: '700', color: Colors.textSub, textAlign: 'center' },
 
   /* Featured carousel */
@@ -502,53 +505,54 @@ const styles = StyleSheet.create({
   insightBanner: {
     marginHorizontal: 16, marginTop: 16, marginBottom: 4,
     backgroundColor: Colors.card, borderRadius: 14, padding: 14,
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
+    flexDirection: 'row-reverse', alignItems: 'center',
     borderRightWidth: 3, borderRightColor: Colors.teal,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
   },
-  insightLeft: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  insightLeft: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(15,123,160,0.1)', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: 10 },
   insightText: { flex: 1, fontSize: 13, color: Colors.textSub, textAlign: 'right', lineHeight: 20 },
 
   /* Recent grid */
-  gridWrap: { paddingHorizontal: 16, flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
-  emptyInline: { alignItems: 'center', paddingVertical: 30, gap: 10 },
+  gridWrap: { paddingHorizontal: 16, flexDirection: 'row-reverse', flexWrap: 'wrap', justifyContent: 'space-between' },
+  emptyInline: { alignItems: 'center', paddingVertical: 30 },
   emptyInlineText: { fontSize: 13, color: Colors.textMuted },
 
   /* More links row */
-  linksRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 8, marginTop: 20, justifyContent: 'space-between' },
-  linkBtn: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: Colors.card, borderRadius: 14, paddingVertical: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 2 },
-  linkIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  linksRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, marginTop: 20, justifyContent: 'space-between' },
+  linkBtn: { flex: 1, alignItems: 'center', backgroundColor: Colors.card, borderRadius: 14, paddingVertical: 14, marginLeft: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 2 },
+  linkIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   linkLabel: { fontSize: 10, fontWeight: '700', color: Colors.textSub, textAlign: 'center' },
 
   /* Services */
-  servScroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  servScroll: { paddingHorizontal: 16, paddingBottom: 4 },
   servCard: {
     width: 120, backgroundColor: Colors.card, borderRadius: 16, padding: 14,
-    alignItems: 'center', gap: 6,
+    alignItems: 'center', marginRight: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
-  servIcon: { width: 48, height: 48, borderRadius: 15, backgroundColor: 'rgba(201,168,76,0.1)', alignItems: 'center', justifyContent: 'center' },
-  servName: { fontSize: 11, fontWeight: '700', color: Colors.text, textAlign: 'center' },
-  servCity: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
-  servRating: { flexDirection: 'row-reverse', alignItems: 'center', gap: 3 },
-  servRatingText: { fontSize: 11, color: Colors.gold, fontWeight: '700' },
+  servIcon: { width: 48, height: 48, borderRadius: 15, backgroundColor: 'rgba(201,168,76,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  servName: { fontSize: 11, fontWeight: '700', color: Colors.text, textAlign: 'center', marginBottom: 3 },
+  servCity: { fontSize: 10, color: Colors.textMuted, textAlign: 'center', marginBottom: 3 },
+  servRating: { flexDirection: 'row-reverse', alignItems: 'center' },
+  servRatingText: { fontSize: 11, color: Colors.gold, fontWeight: '700', marginRight: 3 },
 
   /* Customer requests */
-  reqWrap: { paddingHorizontal: 16, gap: 8 },
+  reqWrap: { paddingHorizontal: 16 },
   reqCard: {
     backgroundColor: Colors.card, borderRadius: 14, padding: 14,
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
+    flexDirection: 'row-reverse', alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
+    marginBottom: 8,
   },
-  reqDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: Colors.success, flexShrink: 0 },
-  reqInfo: { flex: 1 },
+  reqDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: Colors.success, flexShrink: 0, marginLeft: 10 },
+  reqInfo: { flex: 1, marginLeft: 10 },
   reqTitle: { fontSize: 13, fontWeight: '700', color: Colors.text, textAlign: 'right' },
   reqMeta: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginTop: 3 },
 
   /* CTA Banners */
-  ctaRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginTop: 24 },
+  ctaRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, marginTop: 24 },
   ctaAdd: { flex: 1, borderRadius: 18, overflow: 'hidden', shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6 },
-  ctaGrad: { padding: 20, alignItems: 'center', gap: 6 },
+  ctaGrad: { padding: 20, alignItems: 'center' },
   ctaTitle: { fontSize: 15, fontWeight: '900', color: Colors.white, textAlign: 'center' },
   ctaSub: { fontSize: 11, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
 });

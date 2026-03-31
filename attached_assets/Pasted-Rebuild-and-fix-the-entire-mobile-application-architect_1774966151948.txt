@@ -1,0 +1,62 @@
+Rebuild and fix the entire mobile application architecture to ensure full functionality and production-level quality.
+
+Critical Requirements:
+
+1. API Integration (MANDATORY)
+- Connect ALL app data dynamically to backend APIs (no static or mock data)
+- Ensure endpoints are correctly configured (base URL, headers, tokens)
+- Implement proper error handling for all API calls
+- Use Axios with a centralized API service layer
+
+2. Authentication System (FIX COMPLETELY)
+- Implement full login/register flow
+- Store tokens securely (AsyncStorage or SecureStore)
+- Maintain session persistence
+- Handle token expiration and auto-login
+- Prevent blank screens if auth fails
+
+3. Data Rendering (ADS, IMAGES, LISTINGS)
+- Fix image loading issues (ensure correct URLs + HTTPS support)
+- Add loading states (skeleton or spinner)
+- Handle empty states gracefully
+- Ensure ads and listings display instantly after API response
+
+4. State Management
+- Implement global state (Context API or Zustand)
+- Avoid prop drilling
+- Ensure data consistency across screens
+
+5. Navigation System
+- Use React Navigation properly
+- Implement stack + tab navigation
+- Ensure smooth transitions between screens
+
+6. UI/UX (PROFESSIONAL LEVEL)
+- Fix spacing, alignment, and responsiveness
+- Use consistent typography and colors
+- Optimize for mobile-first layout
+- Ensure no broken layouts on different screen sizes
+
+7. Performance Optimization
+- Lazy load images
+- Optimize API calls (no duplicate requests)
+- Add caching where needed
+
+8. Error Handling (VERY IMPORTANT)
+- Show user-friendly error messages
+- Handle network failures gracefully
+- Add fallback UI for all critical components
+
+9. Testing Requirements
+- App must:
+  - Successfully login/logout
+  - Load ads and images correctly
+  - Display property data without delay
+  - Work without crashes on Android
+
+10. Output Requirement
+- Deliver a fully functional, clean, production-ready mobile app
+- No placeholders, no missing features, no broken UI
+
+IMPORTANT:
+The mobile app must match the platform functionality (not design), and must work as a standalone production app.

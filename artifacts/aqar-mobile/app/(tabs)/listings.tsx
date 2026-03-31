@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { ListingsResponse, fetchListings, SAUDI_REGIONS, PROPERTY_TYPES } from '@/constants/api';
-import { ListingCard } from '@/components/ListingCard';
+import { ListingCard, CARD_WIDTH } from '@/components/ListingCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
 
 const TYPES = [
@@ -28,9 +28,9 @@ const TYPES = [
 
 export default function ListingsScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ q?: string; propertyType?: string }>();
+  const params = useLocalSearchParams<{ q?: string; propertyType?: string; listingType?: string }>();
   const [search, setSearch] = useState(params.q ?? '');
-  const [listingType, setListingType] = useState('');
+  const [listingType, setListingType] = useState(params.listingType ?? '');
   const [propertyType, setPropertyType] = useState(params.propertyType ?? '');
   const [region, setRegion] = useState('');
   const [city, setCity] = useState('');
@@ -41,7 +41,8 @@ export default function ListingsScreen() {
 
   useEffect(() => {
     if (params.propertyType) setPropertyType(params.propertyType);
-  }, [params.propertyType]);
+    if (params.listingType) setListingType(params.listingType);
+  }, [params.propertyType, params.listingType]);
 
   const activeFiltersCount = [listingType, propertyType, region, city].filter(Boolean).length;
 
@@ -70,31 +71,32 @@ export default function ListingsScreen() {
   };
 
   return (
-    <View style={styles.screen}>
-      {/* Header */}
-      <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[styles.header, { paddingTop: topPad + 14 }]}>
-        <View style={styles.headerTop}>
+    <View style={s.screen}>
+      {/* ══ HEADER ══ */}
+      <LinearGradient colors={[Colors.navyDark, Colors.navy]} style={[s.header, { paddingTop: topPad + 14 }]}>
+        {/* Title row */}
+        <View style={s.headerTop}>
           <Pressable
-            style={[styles.filterIconBtn, activeFiltersCount > 0 && styles.filterIconBtnActive]}
+            style={[s.filterBtn, activeFiltersCount > 0 && s.filterBtnActive]}
             onPress={() => setShowFilters(true)}
           >
             {activeFiltersCount > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{activeFiltersCount}</Text>
+              <View style={s.filterDot}>
+                <Text style={s.filterDotText}>{activeFiltersCount}</Text>
               </View>
             )}
             <Feather name="sliders" size={18} color={activeFiltersCount > 0 ? Colors.teal : 'rgba(255,255,255,0.8)'} />
           </Pressable>
-          <Text style={styles.headerTitle}>العقارات</Text>
+          <Text style={s.headerTitle}>العقارات</Text>
         </View>
 
         {/* Search */}
-        <View style={styles.searchWrap}>
-          <Feather name="search" size={16} color="rgba(255,255,255,0.5)" />
+        <View style={s.searchRow}>
+          <Feather name="search" size={15} color="rgba(255,255,255,0.45)" />
           <TextInput
-            style={styles.searchInput}
+            style={s.searchInput}
             placeholder="ابحث عن عقار، حي، مدينة..."
-            placeholderTextColor="rgba(255,255,255,0.4)"
+            placeholderTextColor="rgba(255,255,255,0.35)"
             value={search}
             onChangeText={(v) => { setSearch(v); setPage(1); }}
             textAlign="right"
@@ -102,61 +104,61 @@ export default function ListingsScreen() {
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch('')} hitSlop={8}>
-              <Feather name="x" size={16} color="rgba(255,255,255,0.6)" />
+              <Feather name="x" size={15} color="rgba(255,255,255,0.6)" />
             </Pressable>
           )}
         </View>
 
-        {/* Type Filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+        {/* Type chips */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.typeRow}>
           {TYPES.map((t) => (
             <Pressable
               key={t.key}
-              style={[styles.chip, listingType === t.key && styles.chipActive]}
+              style={[s.typeChip, listingType === t.key && s.typeChipActive]}
               onPress={() => { setListingType(t.key); setPage(1); }}
             >
-              <Text style={[styles.chipText, listingType === t.key && styles.chipTextActive]}>
+              <Text style={[s.typeChipText, listingType === t.key && s.typeChipTextActive]}>
                 {t.label}
               </Text>
             </Pressable>
           ))}
         </ScrollView>
 
-        {/* Active filter chips */}
+        {/* Active filter tags */}
         {(propertyType || region || city) && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFilters}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.activeTags}>
             {propertyType && (
-              <Pressable style={styles.activeChip} onPress={() => setPropertyType('')}>
-                <Text style={styles.activeChipText}>{propertyType}</Text>
-                <Feather name="x" size={11} color={Colors.white} />
+              <Pressable style={s.activeTag} onPress={() => setPropertyType('')}>
+                <Text style={s.activeTagText}>{propertyType}</Text>
+                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
               </Pressable>
             )}
             {region && (
-              <Pressable style={styles.activeChip} onPress={() => setRegion('')}>
-                <Text style={styles.activeChipText}>{region}</Text>
-                <Feather name="x" size={11} color={Colors.white} />
+              <Pressable style={s.activeTag} onPress={() => setRegion('')}>
+                <Text style={s.activeTagText}>{region}</Text>
+                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
               </Pressable>
             )}
             {city && (
-              <Pressable style={styles.activeChip} onPress={() => setCity('')}>
-                <Text style={styles.activeChipText}>{city}</Text>
-                <Feather name="x" size={11} color={Colors.white} />
+              <Pressable style={s.activeTag} onPress={() => setCity('')}>
+                <Text style={s.activeTagText}>{city}</Text>
+                <Feather name="x" size={10} color="#fff" style={{ marginRight: 3 }} />
               </Pressable>
             )}
-            <Pressable style={styles.clearChip} onPress={clearFilters}>
-              <Text style={styles.clearChipText}>مسح الكل</Text>
+            <Pressable style={s.clearTag} onPress={clearFilters}>
+              <Text style={s.clearTagText}>مسح الكل</Text>
             </Pressable>
           </ScrollView>
         )}
 
         {data && (
-          <Text style={styles.count}>{data.total} عقار {isFetching && '...'}</Text>
+          <Text style={s.countText}>{data.total} عقار{isFetching ? ' ...' : ''}</Text>
         )}
       </LinearGradient>
 
-      {/* List */}
+      {/* ══ LIST ══ */}
       {isLoading ? (
-        <View style={styles.gridWrap}>
+        <View style={s.skeletonGrid}>
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </View>
       ) : (
@@ -164,95 +166,91 @@ export default function ListingsScreen() {
           data={listings}
           keyExtractor={(item) => String(item.id)}
           numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={[styles.listContent, { paddingBottom: botPad + 20 }]}
+          columnWrapperStyle={s.row}
+          contentContainerStyle={[s.listContent, { paddingBottom: botPad + 24 }]}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <ListingCard
-              listing={item}
-              onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
-            />
+            <View style={s.cardWrap}>
+              <ListingCard
+                listing={item}
+                onPress={() => router.push({ pathname: '/listing/[id]', params: { id: String(item.id) } })}
+              />
+            </View>
           )}
+          ItemSeparatorComponent={() => <View style={s.itemSep} />}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <View style={styles.emptyIcon}>
-                <Feather name="home" size={38} color={Colors.teal} />
+            <View style={s.empty}>
+              <View style={s.emptyIcon}>
+                <Feather name="home" size={36} color={Colors.teal} />
               </View>
-              <Text style={styles.emptyTitle}>لا توجد عقارات</Text>
-              <Text style={styles.emptyText}>جرّب تغيير الفلتر أو مصطلح البحث</Text>
+              <Text style={s.emptyTitle}>لا توجد عقارات</Text>
+              <Text style={s.emptyText}>جرّب تغيير الفلتر أو مصطلح البحث</Text>
               {activeFiltersCount > 0 && (
-                <Pressable style={styles.clearBtn} onPress={clearFilters}>
-                  <Text style={styles.clearBtnText}>مسح الفلاتر</Text>
+                <Pressable style={s.clearBtn} onPress={clearFilters}>
+                  <Text style={s.clearBtnText}>مسح الفلاتر</Text>
                 </Pressable>
               )}
             </View>
           }
           onEndReached={() => {
-            if (data && page < data.totalPages) setPage((p) => p + 1);
+            if (data && page < Math.ceil(data.total / 20)) setPage((p) => p + 1);
           }}
-          onEndReachedThreshold={0.4}
+          onEndReachedThreshold={0.5}
         />
       )}
 
-      {/* Filters Modal */}
+      {/* ══ FILTERS MODAL ══ */}
       <Modal
         visible={showFilters}
         animationType="slide"
         transparent
         onRequestClose={() => setShowFilters(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowFilters(false)}>
-          <Pressable style={[styles.modalSheet, { paddingBottom: botPad + 20 }]} onPress={() => {}}>
-            <View style={styles.modalHandle} />
-            <View style={styles.modalHeader}>
+        <Pressable style={s.overlay} onPress={() => setShowFilters(false)}>
+          <Pressable style={[s.sheet, { paddingBottom: botPad + 20 }]} onPress={() => {}}>
+            <View style={s.sheetHandle} />
+            <View style={s.sheetHeader}>
               <Pressable onPress={clearFilters}>
-                <Text style={styles.modalClear}>مسح الكل</Text>
+                <Text style={s.sheetClear}>مسح الكل</Text>
               </Pressable>
-              <Text style={styles.modalTitle}>تصفية النتائج</Text>
+              <Text style={s.sheetTitle}>تصفية النتائج</Text>
               <Pressable onPress={() => setShowFilters(false)}>
                 <Feather name="x" size={22} color={Colors.text} />
               </Pressable>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Property Type */}
-              <Text style={styles.filterLabel}>نوع العقار</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterPillRow}>
+              <Text style={s.filterLabel}>نوع العقار</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pillRow}>
                 {[{ key: '', label: 'الكل' }, ...PROPERTY_TYPES.map((k) => ({ key: k, label: k }))].map((t) => (
                   <Pressable
                     key={t.key}
-                    style={[styles.filterPill, propertyType === t.key && styles.filterPillActive]}
+                    style={[s.pill, propertyType === t.key && s.pillActive]}
                     onPress={() => setPropertyType(t.key)}
                   >
-                    <Text style={[styles.filterPillText, propertyType === t.key && styles.filterPillTextActive]}>
-                      {t.label}
-                    </Text>
+                    <Text style={[s.pillText, propertyType === t.key && s.pillTextActive]}>{t.label}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
 
-              {/* Region */}
-              <Text style={styles.filterLabel}>المنطقة</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterPillRow}>
+              <Text style={s.filterLabel}>المنطقة</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.pillRow}>
                 {[{ key: '', label: 'كل المناطق' }, ...SAUDI_REGIONS.map((r) => ({ key: r, label: r }))].map((r) => (
                   <Pressable
                     key={r.key}
-                    style={[styles.filterPill, region === r.key && styles.filterPillActive]}
+                    style={[s.pill, region === r.key && s.pillActive]}
                     onPress={() => { setRegion(r.key); setCity(''); }}
                   >
-                    <Text style={[styles.filterPillText, region === r.key && styles.filterPillTextActive]}>
-                      {r.label}
-                    </Text>
+                    <Text style={[s.pillText, region === r.key && s.pillTextActive]}>{r.label}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
 
-              {/* City */}
-              <Text style={styles.filterLabel}>المدينة</Text>
-              <View style={styles.cityInput}>
+              <Text style={s.filterLabel}>المدينة</Text>
+              <View style={s.cityRow}>
                 <Feather name="map-pin" size={14} color={Colors.textMuted} />
                 <TextInput
-                  style={styles.cityInputField}
+                  style={s.cityInput}
                   placeholder="اكتب اسم المدينة..."
                   placeholderTextColor={Colors.textMuted}
                   value={city}
@@ -260,22 +258,21 @@ export default function ListingsScreen() {
                   textAlign="right"
                 />
                 {city.length > 0 && (
-                  <Pressable onPress={() => setCity('')}>
+                  <Pressable onPress={() => setCity('')} hitSlop={8}>
                     <Feather name="x" size={14} color={Colors.textMuted} />
                   </Pressable>
                 )}
               </View>
 
-              {/* Listing Type (in modal too) */}
-              <Text style={styles.filterLabel}>نوع الإعلان</Text>
-              <View style={styles.listingTypeRow}>
+              <Text style={s.filterLabel}>نوع الإعلان</Text>
+              <View style={s.typeToggle}>
                 {TYPES.map((t) => (
                   <Pressable
                     key={t.key}
-                    style={[styles.typeBtn, listingType === t.key && styles.typeBtnActive]}
+                    style={[s.typeToggleBtn, listingType === t.key && s.typeToggleBtnActive]}
                     onPress={() => setListingType(t.key)}
                   >
-                    <Text style={[styles.typeBtnText, listingType === t.key && styles.typeBtnTextActive]}>
+                    <Text style={[s.typeToggleText, listingType === t.key && s.typeToggleTextActive]}>
                       {t.label}
                     </Text>
                   </Pressable>
@@ -283,15 +280,14 @@ export default function ListingsScreen() {
               </View>
             </ScrollView>
 
-            {/* Apply */}
             <Pressable
-              style={styles.applyBtn}
+              style={s.applyBtn}
               onPress={() => { setPage(1); setShowFilters(false); }}
             >
-              <Text style={styles.applyBtnText}>تطبيق الفلاتر</Text>
+              <Text style={s.applyBtnText}>تطبيق الفلاتر</Text>
               {activeFiltersCount > 0 && (
-                <View style={styles.applyBadge}>
-                  <Text style={styles.applyBadgeText}>{activeFiltersCount}</Text>
+                <View style={s.applyBadge}>
+                  <Text style={s.applyBadgeText}>{activeFiltersCount}</Text>
                 </View>
               )}
             </Pressable>
@@ -302,119 +298,156 @@ export default function ListingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const HORIZ_PAD = 16;
+const COL_GAP = 12;
+
+const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+
+  /* Header */
+  header: { paddingHorizontal: HORIZ_PAD, paddingBottom: 12 },
+  headerTop: {
+    flexDirection: 'row-reverse', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 12,
   },
-  headerTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  headerTitle: { fontSize: 22, fontWeight: '900', color: Colors.white },
-  filterIconBtn: {
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#fff' },
+  filterBtn: {
     width: 42, height: 42, borderRadius: 13,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
-    position: 'relative',
   },
-  filterIconBtnActive: { backgroundColor: 'rgba(15,123,160,0.25)', borderColor: Colors.teal },
-  filterBadge: {
+  filterBtnActive: { backgroundColor: 'rgba(15,123,160,0.25)' },
+  filterDot: {
     position: 'absolute', top: -4, right: -4,
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: Colors.teal, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.teal,
+    alignItems: 'center', justifyContent: 'center',
+    zIndex: 1,
   },
-  filterBadgeText: { fontSize: 10, fontWeight: '800', color: Colors.white },
-  searchWrap: {
+  filterDotText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+
+  searchRow: {
     flexDirection: 'row-reverse', alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14,
-    paddingHorizontal: 12, height: 46, marginBottom: 10, gap: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 12, height: 46, marginBottom: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
   },
-  searchInput: { flex: 1, fontSize: 14, color: Colors.white, padding: 0 },
-  filterRow: { gap: 8, flexDirection: 'row-reverse', marginBottom: 6 },
-  chip: {
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(255,255,255,0.08)',
+  searchInput: { flex: 1, fontSize: 14, color: '#fff', marginRight: 8 },
+
+  typeRow: { paddingBottom: 4 },
+  typeChip: {
+    paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.08)', marginLeft: 8,
   },
-  chipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
-  chipText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
-  chipTextActive: { color: Colors.white },
-  activeFilters: { gap: 8, flexDirection: 'row-reverse', marginBottom: 6 },
-  activeChip: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 4,
-    backgroundColor: Colors.teal, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+  typeChipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
+  typeChipText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  typeChipTextActive: { color: '#fff' },
+
+  activeTags: { paddingTop: 8, paddingBottom: 2 },
+  activeTag: {
+    flexDirection: 'row-reverse', alignItems: 'center',
+    backgroundColor: Colors.teal, paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 12, marginLeft: 6,
   },
-  activeChipText: { fontSize: 11, fontWeight: '700', color: Colors.white },
-  clearChip: {
+  activeTagText: { fontSize: 11, fontWeight: '700', color: '#fff', marginLeft: 4 },
+  clearTag: {
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
-    backgroundColor: Colors.skeleton,
+    backgroundColor: 'rgba(255,255,255,0.12)', marginLeft: 6,
   },
-  clearChipText: { fontSize: 11, fontWeight: '600', color: Colors.textSub },
-  count: { fontSize: 12, color: 'rgba(255,255,255,0.55)', textAlign: 'right' },
-  gridWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12, padding: 16 },
-  listContent: { padding: 16, gap: 12 },
-  row: { flexDirection: 'row-reverse', gap: 12 },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 12 },
+  clearTagText: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.75)' },
+
+  countText: { fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: 8 },
+
+  /* Skeleton grid */
+  skeletonGrid: {
+    flexDirection: 'row-reverse',
+    flexWrap: 'wrap',
+    padding: HORIZ_PAD,
+  },
+
+  /* FlatList */
+  listContent: { paddingHorizontal: HORIZ_PAD, paddingTop: 14 },
+  row: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+  },
+  cardWrap: { width: CARD_WIDTH },
+  itemSep: { height: COL_GAP },
+
+  /* Empty */
+  empty: { alignItems: 'center', paddingVertical: 60 },
   emptyIcon: {
-    width: 90, height: 90, borderRadius: 28,
+    width: 88, height: 88, borderRadius: 26,
     backgroundColor: 'rgba(15,123,160,0.1)',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
-  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
-  emptyText: { fontSize: 13, color: Colors.textMuted, textAlign: 'center' },
+  emptyTitle: { fontSize: 17, fontWeight: '800', color: Colors.text, marginBottom: 6 },
+  emptyText: { fontSize: 13, color: Colors.textMuted, textAlign: 'center', marginBottom: 16 },
   clearBtn: {
-    marginTop: 4, backgroundColor: Colors.teal,
-    paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
+    backgroundColor: Colors.teal, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
   },
-  clearBtnText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalSheet: {
-    backgroundColor: Colors.white, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-    paddingHorizontal: 20, paddingTop: 12, maxHeight: '85%',
+  clearBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+
+  /* Modal */
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    paddingHorizontal: 20, paddingTop: 12, maxHeight: '88%',
   },
-  modalHandle: {
+  sheetHandle: {
     width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border,
     alignSelf: 'center', marginBottom: 16,
   },
-  modalHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  modalTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
-  modalClear: { fontSize: 13, color: Colors.teal, fontWeight: '600' },
-  filterLabel: { fontSize: 13, fontWeight: '700', color: Colors.text, textAlign: 'right', marginBottom: 10, marginTop: 16 },
-  filterPillRow: { gap: 8, flexDirection: 'row-reverse', paddingBottom: 4 },
-  filterPill: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: Colors.background, borderWidth: 1.5, borderColor: Colors.border,
+  sheetHeader: {
+    flexDirection: 'row-reverse', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 20,
   },
-  filterPillActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  filterPillText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
-  filterPillTextActive: { color: Colors.white },
-  cityInput: {
+  sheetTitle: { fontSize: 17, fontWeight: '800', color: Colors.text },
+  sheetClear: { fontSize: 13, color: Colors.teal, fontWeight: '600' },
+
+  filterLabel: {
+    fontSize: 13, fontWeight: '700', color: Colors.text,
+    textAlign: 'right', marginBottom: 10, marginTop: 16,
+  },
+  pillRow: { paddingBottom: 4 },
+  pill: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
+    backgroundColor: Colors.background,
+    borderWidth: 1.5, borderColor: Colors.border, marginLeft: 8,
+  },
+  pillActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
+  pillText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
+  pillTextActive: { color: '#fff' },
+
+  cityRow: {
     flexDirection: 'row-reverse', alignItems: 'center',
     backgroundColor: Colors.background, borderRadius: 14,
-    paddingHorizontal: 14, height: 46, gap: 8,
+    paddingHorizontal: 14, height: 46,
     borderWidth: 1, borderColor: Colors.border,
   },
-  cityInputField: { flex: 1, fontSize: 14, color: Colors.text, padding: 0 },
-  listingTypeRow: { flexDirection: 'row-reverse', gap: 10 },
-  typeBtn: {
+  cityInput: { flex: 1, fontSize: 14, color: Colors.text, marginRight: 8 },
+
+  typeToggle: { flexDirection: 'row-reverse' },
+  typeToggleBtn: {
     flex: 1, paddingVertical: 11, borderRadius: 14,
     backgroundColor: Colors.background, alignItems: 'center',
-    borderWidth: 1.5, borderColor: Colors.border,
+    borderWidth: 1.5, borderColor: Colors.border, marginLeft: 8,
   },
-  typeBtnActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
-  typeBtnText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
-  typeBtnTextActive: { color: Colors.white },
+  typeToggleBtnActive: { backgroundColor: Colors.navy, borderColor: Colors.navy },
+  typeToggleText: { fontSize: 13, fontWeight: '600', color: Colors.textSub },
+  typeToggleTextActive: { color: '#fff' },
+
   applyBtn: {
     marginTop: 20, backgroundColor: Colors.teal, borderRadius: 16,
     paddingVertical: 16, flexDirection: 'row-reverse',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
-  },
-  applyBtnText: { color: Colors.white, fontWeight: '800', fontSize: 16 },
-  applyBadge: {
-    width: 22, height: 22, borderRadius: 11,
-    backgroundColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center', justifyContent: 'center',
   },
-  applyBadgeText: { fontSize: 11, fontWeight: '800', color: Colors.white },
+  applyBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  applyBadge: {
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center', justifyContent: 'center', marginRight: 8,
+  },
+  applyBadgeText: { fontSize: 11, fontWeight: '800', color: '#fff' },
 });
