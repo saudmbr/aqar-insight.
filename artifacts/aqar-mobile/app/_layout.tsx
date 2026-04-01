@@ -22,7 +22,12 @@ if (Platform.OS !== 'web') {
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 1000 * 60 * 2, retry: 1 },
+    queries: {
+      staleTime: 1000 * 30,
+      retry: 1,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+    },
   },
 });
 
@@ -39,7 +44,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError && Platform.OS !== 'web') return null;
 
   return (
     <SafeAreaProvider>
