@@ -85,18 +85,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(async (regData: RegisterData) => {
-    await apiFetch<Record<string, any>>(endpoints.register, {
-      method: 'POST',
-      body: JSON.stringify({
-        fullName: regData.fullName,
+    let signupData: Record<string, any> = {};
+    try {
+      signupData = await apiFetch<Record<string, any>>(endpoints.register, {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: regData.fullName,
+          username: regData.username,
+          email: regData.email,
+          password: regData.password,
+          userType: regData.userType,
+        }),
+      });
+    } catch (error: any) {
+      const message = String(error?.message ?? '');
+      const createdButSessionFailed =
+        message.includes('تم إنشاء الحساب') || message.toLowerCase().includes('created');
+
+      if (!createdButSessionFailed) {
+        throw error;
+      }
+
+      // If account creation succeeded but session bootstrap failed, continue with explicit login.
+      await apiFetch<Record<string, any>>(endpoints.login, {
+        method: 'POST',
+        body: JSON.stringify({ identifier: regData.username, password: regData.password }),
+      });
+      signupData = {
+        userId: 0,
         username: regData.username,
+        fullName: regData.fullName,
         email: regData.email,
-        password: regData.password,
-        userType: regData.userType,
-      }),
-    });
-    const meData = await apiFetch<Record<string, any>>(endpoints.me);
-    const u = parseServerUser(meData?.isAuthenticated ? meData : { username: regData.username, role: 'user' });
+        role: regData.userType ?? 'user',
+      };
+    }
+
+    let meData: Record<string, any> | null = null;
+    try {
+      meData = await apiFetch<Record<string, any>>(endpoints.me);
+    } catch {
+      meData = null;
+    }
+
+    const baseUser =
+      signupData && (signupData.userId || signupData.username)
+        ? signupData
+        : {
+            userId: 0,
+            username: regData.username,
+            fullName: regData.fullName,
+            email: regData.email,
+            role: regData.userType ?? 'user',
+          };
+
+    const u = parseServerUser(meData?.isAuthenticated ? meData : baseUser);
     setUser(u);
     await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
   }, []);
