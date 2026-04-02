@@ -40,6 +40,9 @@ export const endpoints = {
   favoriteStatus: (id: number) => `${API_BASE}/api/favorites/${id}/status`,
   requestUploadUrl: `${API_BASE}/api/storage/uploads/request-url`,
   userReports: `${API_BASE}/api/user-reports`,
+  adminUsers: `${API_BASE}/api/admin/users`,
+  adminUserRole: (id: number) => `${API_BASE}/api/admin/users/${id}/role`,
+  adminReports: `${API_BASE}/api/admin/reports`,
   districtComparison: `${API_BASE}/api/districts/comparison`,
   districtCities: `${API_BASE}/api/districts/cities`,
 };
@@ -80,6 +83,29 @@ export interface User {
   fullName?: string;
   role: string;
   phone?: string;
+}
+
+export interface AdminUser {
+  id: number;
+  fullName?: string | null;
+  username: string;
+  email?: string | null;
+  role: string;
+  createdAt: string;
+}
+
+export interface UserReport {
+  id: number;
+  reporterId: number | null;
+  targetType: string;
+  targetId: number;
+  targetTitle?: string | null;
+  reason: string;
+  details?: string | null;
+  status: string;
+  adminNote?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
 }
 
 export interface Marketer {
@@ -171,6 +197,63 @@ export interface AnalyticsInsights {
   smartInsights?: string[];
   marketScore?: { score: number; label: string; components: Record<string, number>; explanation?: string };
   supplyDemand?: { activityRatio: number; marketBalance: number; marketBalanceLabel: string };
+}
+
+export interface AdminReportsResponse {
+  period: string;
+  overview: {
+    totalUsers: number;
+    totalListings: number;
+    activeListings: number;
+    archivedListings: number;
+    totalRequests: number;
+    totalServices: number;
+    totalMarketers: number;
+    totalFavorites: number;
+    newUsers: number;
+    newListings: number;
+    newRequests: number;
+    newServices: number;
+  };
+  users: {
+    byRole: Array<{ role: string; count: number }>;
+  };
+  listings: {
+    byStatus: Array<{ status: string; count: number }>;
+    byCity: Array<{ city: string; count: number }>;
+    byType: Array<{ type: string; count: number }>;
+    byListingType: Array<{ type: string; count: number }>;
+    priceStats: {
+      avg_price?: number;
+      min_price?: number;
+      max_price?: number;
+      avg_psm?: number;
+    };
+    featuredCount: number;
+    verifiedCount: number;
+    topByViews: Array<{ id: number; title: string; city?: string; views: number }>;
+  };
+  requests: {
+    byStatus: Array<{ status: string; count: number }>;
+    byType: Array<{ type: string; count: number }>;
+    byCity: Array<{ city: string; count: number }>;
+  };
+  services: {
+    byCategory: Array<{ category: string; count: number }>;
+    byCity: Array<{ city: string; count: number }>;
+  };
+  market: {
+    byCities: Array<{ city: string; avg_price: number; avg_psm: number; count: number }>;
+    byDistricts: Array<{ district: string; city?: string; avg_price: number; avg_psm: number; count: number }>;
+  };
+  operational: {
+    activeSessions: number;
+  };
+  alerts: Array<{
+    type: string;
+    message: string;
+    severity: 'high' | 'medium' | 'low';
+  }>;
 }
 
 export interface ListingsApiResponse {

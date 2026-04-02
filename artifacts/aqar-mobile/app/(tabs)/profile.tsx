@@ -173,6 +173,18 @@ export default function ProfileScreen() {
         </View>
       )}
 
+      {user?.role === 'admin' && (
+        <View style={styles.menuSection}>
+          <Text style={styles.menuSectionTitle}>أدوات الإدارة</Text>
+          <View style={styles.menuGroup}>
+            <MenuItem icon="shield" label="لوحة الإدارة" onPress={() => router.push('/admin')} color={Colors.danger} />
+            <MenuItem icon="users" label="إدارة المستخدمين" onPress={() => router.push('/admin/users')} color={Colors.teal} />
+            <MenuItem icon="bar-chart-2" label="تقارير الإدارة" onPress={() => router.push('/admin/reports')} color={Colors.navy} />
+            <MenuItem icon="flag" label="بلاغات المستخدمين" onPress={() => router.push('/admin/user-reports')} color={Colors.gold} />
+          </View>
+        </View>
+      )}
+
       {/* Explore */}
       <View style={styles.menuSection}>
         <Text style={styles.menuSectionTitle}>استكشف المنصة</Text>
