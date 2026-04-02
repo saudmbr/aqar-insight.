@@ -438,9 +438,16 @@ export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T
     });
     return res.data;
   } catch (err: any) {
+    const responseData = err?.response?.data;
+    const htmlResponse =
+      typeof responseData === 'string' &&
+      responseData.trim().startsWith('<');
     const msg =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
+      (typeof responseData === 'object' ? responseData?.message : undefined) ||
+      (typeof responseData === 'object' ? responseData?.error : undefined) ||
+      (htmlResponse
+        ? 'The API returned HTML instead of JSON. Make sure the backend is running and the mobile app is using the correct API base.'
+        : undefined) ||
       err?.message ||
       'حدث خطأ في الاتصال';
     throw new Error(msg);

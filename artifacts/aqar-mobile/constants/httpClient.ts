@@ -26,6 +26,7 @@ if (__DEV__ && Platform.OS !== 'web' && !API_BASE) {
 }
 
 const COOKIE_KEY = 'aqar_session_cookie';
+const AUTH_TOKEN_KEY = 'aqar_auth_token';
 
 async function getStoredCookie(): Promise<string | null> {
   try {
@@ -33,6 +34,24 @@ async function getStoredCookie(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+async function getStoredAuthToken(): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export async function setAuthToken(token: string | null): Promise<void> {
+  try {
+    if (token) {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+  } catch {}
 }
 
 async function storeCookie(cookieHeader: string): Promise<void> {
@@ -58,6 +77,11 @@ const client: AxiosInstance = axios.create({
 });
 
 client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  const authToken = await getStoredAuthToken();
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
+  }
+
   if (Platform.OS !== 'web') {
     const cookie = await getStoredCookie();
     if (cookie) {

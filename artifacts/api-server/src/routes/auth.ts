@@ -12,12 +12,37 @@ import {
 } from "@workspace/db";
 import { sendPasswordResetEmail } from "../lib/email.js";
 import { sendSmsOtp, isSmsProviderConfigured } from "../lib/sms.js";
+import { createMobileAuthToken } from "../lib/mobile-auth.js";
 
 const authRouter = Router();
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "AqarInsight2025";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "";
+
+function buildAuthResponse(input: {
+  userId: number | null;
+  username: string;
+  fullName: string;
+  role: "admin" | "user" | "real_estate_marketer" | "service_provider";
+  email?: string | null;
+}) {
+  return {
+    success: true,
+    userId: input.userId,
+    username: input.username,
+    fullName: input.fullName,
+    email: input.email ?? null,
+    role: input.role,
+    authToken: createMobileAuthToken({
+      userId: input.userId,
+      username: input.username,
+      fullName: input.fullName,
+      role: input.role,
+      isAdmin: input.role === "admin",
+    }),
+  };
+}
 
 /* ─── Saudi phone normalizer ────────────────────────────────────────────────── */
 function normalizeSaudiPhone(raw: string): string | null {
@@ -78,14 +103,15 @@ authRouter.post("/login", async (req: Request, res: Response) => {
         res.status(500).json({ message: "حدث خطأ في الخادم، يرجى المحاولة مجدداً" });
         return;
       }
-      res.json({
-        success: true,
-        userId: null,
-        username: ADMIN_USERNAME,
-        fullName: "المدير",
-        email: ADMIN_EMAIL || null,
-        role: "admin",
-      });
+      res.json(
+        buildAuthResponse({
+          userId: null,
+          username: ADMIN_USERNAME,
+          fullName: "المدير",
+          email: ADMIN_EMAIL || null,
+          role: "admin",
+        }),
+      );
     });
     return;
   }
@@ -137,13 +163,15 @@ authRouter.post("/login", async (req: Request, res: Response) => {
         res.status(500).json({ message: "حدث خطأ في الخادم، يرجى المحاولة مجدداً" });
         return;
       }
-      res.json({
-        success: true,
-        userId: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        role,
-      });
+      res.json(
+        buildAuthResponse({
+          userId: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          role,
+        }),
+      );
     });
   } catch {
     res.status(500).json({ message: "حدث خطأ في الخادم، يرجى المحاولة مجدداً" });
@@ -411,13 +439,15 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
         res.status(500).json({ message: "تم إنشاء الحساب ولكن حدث خطأ في تسجيل الدخول" });
         return;
       }
-      res.status(201).json({
-        success: true,
-        userId: newUser.id,
-        username: newUser.username,
-        fullName: newUser.fullName,
-        role: assignedRole,
-      });
+      res.status(201).json(
+        buildAuthResponse({
+          userId: newUser.id,
+          username: newUser.username,
+          fullName: newUser.fullName,
+          email: newUser.email,
+          role: assignedRole,
+        }),
+      );
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "";
@@ -451,6 +481,13 @@ authRouter.get("/me", (req: Request, res: Response) => {
       username: req.session.username,
       fullName: req.session.fullName,
       role: req.session.role,
+      authToken: createMobileAuthToken({
+        userId: req.session.userId ?? null,
+        username: req.session.username ?? "",
+        fullName: req.session.fullName ?? "",
+        role: req.session.role ?? "user",
+        isAdmin: req.session.isAdmin ?? false,
+      }),
     });
   } else {
     res.status(401).json({ isAuthenticated: false });

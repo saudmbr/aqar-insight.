@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { User, apiFetch, endpoints } from '@/constants/api';
-import { clearCookie } from '@/constants/httpClient';
+import { clearCookie, setAuthToken } from '@/constants/httpClient';
 
 interface AuthState {
   user: User | null;
@@ -31,6 +31,10 @@ function parseServerUser(data: Record<string, any>): User {
   };
 }
 
+function getAuthToken(data: Record<string, any> | null | undefined): string | null {
+  return typeof data?.authToken === 'string' && data.authToken.trim() ? data.authToken : null;
+}
+
 const AuthContext = createContext<AuthState>({
   user: null,
   isLoading: true,
@@ -57,28 +61,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const serverData = await apiFetch<Record<string, any>>(endpoints.me);
       if (serverData?.isAuthenticated) {
+        const authToken = getAuthToken(serverData);
+        if (authToken) {
+          await setAuthToken(authToken);
+        }
         const u = parseServerUser(serverData);
         setUser(u);
         await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
       } else {
         setUser(null);
         await AsyncStorage.removeItem('aqar_user');
+        await setAuthToken(null);
         await clearCookie();
       }
     } catch {
       setUser(null);
       await AsyncStorage.removeItem('aqar_user');
+      await setAuthToken(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = useCallback(async (identifier: string, password: string) => {
-    await apiFetch<Record<string, any>>(endpoints.login, {
+    const loginData = await apiFetch<Record<string, any>>(endpoints.login, {
       method: 'POST',
       body: JSON.stringify({ identifier, password }),
     });
+    const loginToken = getAuthToken(loginData);
+    if (loginToken) {
+      await setAuthToken(loginToken);
+    }
     const meData = await apiFetch<Record<string, any>>(endpoints.me);
+    const meToken = getAuthToken(meData);
+    if (meToken) {
+      await setAuthToken(meToken);
+    }
     const u = parseServerUser(meData?.isAuthenticated ? meData : { username: identifier, role: 'user' });
     setUser(u);
     await AsyncStorage.setItem('aqar_user', JSON.stringify(u));
@@ -97,6 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userType: regData.userType,
         }),
       });
+      const signupToken = getAuthToken(signupData);
+      if (signupToken) {
+        await setAuthToken(signupToken);
+      }
     } catch (error: any) {
       const message = String(error?.message ?? '');
       const createdButSessionFailed =
@@ -123,6 +145,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let meData: Record<string, any> | null = null;
     try {
       meData = await apiFetch<Record<string, any>>(endpoints.me);
+      const meToken = getAuthToken(meData);
+      if (meToken) {
+        await setAuthToken(meToken);
+      }
     } catch {
       meData = null;
     }
@@ -149,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
     setUser(null);
     await AsyncStorage.removeItem('aqar_user');
+    await setAuthToken(null);
     await clearCookie();
   }, []);
 

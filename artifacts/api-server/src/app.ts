@@ -10,6 +10,7 @@ import connectPgSimple from "connect-pg-simple";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { verifyMobileAuthToken } from "./lib/mobile-auth";
 
 const PgStore = connectPgSimple(session);
 
@@ -99,6 +100,34 @@ app.use(
     },
   }),
 );
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  if (req.session.isAuthenticated) {
+    next();
+    return;
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+
+  const token = authHeader.slice("Bearer ".length).trim();
+  const payload = verifyMobileAuthToken(token);
+  if (!payload) {
+    next();
+    return;
+  }
+
+  req.session.isAuthenticated = true;
+  req.session.isAdmin = payload.isAdmin;
+  req.session.userId = payload.userId;
+  req.session.username = payload.username;
+  req.session.fullName = payload.fullName;
+  req.session.role = payload.role;
+  next();
+});
 
 app.use("/api", router);
 
