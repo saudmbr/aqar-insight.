@@ -1,4 +1,9 @@
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -96,5 +101,46 @@ app.use(
 );
 
 app.use("/api", router);
+
+// Ensure unknown API paths always return JSON (never HTML).
+app.use("/api", (_req: Request, res: Response) => {
+  res.status(404).json({
+    message: "API endpoint not found",
+  });
+});
+
+// Ensure API errors are returned as JSON to prevent frontend JSON parse crashes.
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  logger.error({ err, path: req.path, method: req.method }, "Unhandled API error");
+
+  const statusCode =
+    typeof err === "object" &&
+    err !== null &&
+    "status" in err &&
+    typeof (err as { status?: unknown }).status === "number"
+      ? (err as { status: number }).status
+      : typeof err === "object" &&
+          err !== null &&
+          "statusCode" in err &&
+          typeof (err as { statusCode?: unknown }).statusCode === "number"
+        ? (err as { statusCode: number }).statusCode
+        : 500;
+
+  const message =
+    typeof err === "object" &&
+    err !== null &&
+    "message" in err &&
+    typeof (err as { message?: unknown }).message === "string"
+      ? (err as { message: string }).message
+      : "Internal server error";
+
+  // Body parser syntax errors should return a clear 400 JSON response.
+  if (statusCode === 400 && /json/i.test(message)) {
+    res.status(400).json({ message: "Invalid JSON body" });
+    return;
+  }
+
+  res.status(statusCode).json({ message });
+});
 
 export default app;

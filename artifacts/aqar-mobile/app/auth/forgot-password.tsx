@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
-import { API_BASE } from '@/constants/api';
+import { apiFetch, endpoints } from '@/constants/api';
 
 export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
@@ -31,13 +31,12 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     setError('');
     try {
-      await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      await apiFetch(endpoints.forgotPassword, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: email.trim() }),
       });
       setSent(true);
-    } catch {
+    } catch (err: unknown) {
       setError('حدث خطأ، حاول مرة أخرى');
     } finally {
       setLoading(false);

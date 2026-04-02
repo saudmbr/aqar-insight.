@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
-import { API_BASE } from '@/constants/api';
+import { apiFetch, endpoints } from '@/constants/api';
 
 const FEATURES = [
   { icon: 'bar-chart-2', color: Colors.teal, title: 'تحليلات ذكية', body: 'بيانات حية لمتوسطات الأسعار والمناطق والأنواع' },
@@ -41,10 +41,8 @@ export default function AboutScreen() {
   const handleRate = async (star: number) => {
     setUserRating(star);
     try {
-      await fetch(`${API_BASE}/api/platform-rating`, {
+      await apiFetch(endpoints.platformRating, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ rating: star }),
       });
     } catch {}

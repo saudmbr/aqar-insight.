@@ -1,8 +1,12 @@
 export function apiPath(path: string): string {
-  if (!path.startsWith("/")) {
-    return `/${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const configuredBase = (import.meta.env.VITE_API_BASE as string | undefined)?.trim();
+
+  if (configuredBase) {
+    return `${configuredBase.replace(/\/+$/, "")}${normalizedPath}`;
   }
-  return path;
+
+  return normalizedPath;
 }
 
 function looksLikeJson(text: string): boolean {
