@@ -136,8 +136,10 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
 
   console.log("Starting Metro...");
   console.log(`Setting EXPO_PUBLIC_DOMAIN=${expoPublicDomain}`);
+  console.log(`Setting EXPO_PUBLIC_API_BASE=https://${expoPublicDomain}`);
   const env = {
     ...process.env,
+    EXPO_PUBLIC_API_BASE: `https://${expoPublicDomain}`,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
     EXPO_PUBLIC_REPL_ID: expoPublicReplId,
   };

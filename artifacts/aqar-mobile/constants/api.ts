@@ -38,6 +38,7 @@ export const endpoints = {
   favorites: `${API_BASE}/api/favorites`,
   toggleFavorite: (id: number) => `${API_BASE}/api/favorites/${id}/toggle`,
   favoriteStatus: (id: number) => `${API_BASE}/api/favorites/${id}/status`,
+  requestUploadUrl: `${API_BASE}/api/storage/uploads/request-url`,
   userReports: `${API_BASE}/api/user-reports`,
   districtComparison: `${API_BASE}/api/districts/comparison`,
   districtCities: `${API_BASE}/api/districts/cities`,
@@ -58,7 +59,7 @@ export interface Listing {
   bedrooms?: number;
   bathrooms?: number;
   floors?: number;
-  images?: string[] | null;
+  images?: string[] | string | null;
   sellerName?: string;
   marketerName?: string;
   marketerPhone?: string;
@@ -89,11 +90,11 @@ export interface Marketer {
   officeName?: string;
   bio?: string;
   city?: string;
-  servedAreas?: string[];
-  specialties?: string[];
+  servedAreas?: string[] | string | null;
+  specialties?: string[] | string | null;
   yearsExperience?: number;
-  photo?: string;
-  coverImage?: string;
+  photo?: string | null;
+  coverImage?: string | null;
   whatsapp?: string;
   phone?: string;
   verified?: boolean;
@@ -108,9 +109,9 @@ export interface ServiceProvider {
   city?: string;
   description?: string;
   startingPrice?: number;
-  portfolioImages?: string[] | null;
-  coverImage?: string;
-  profileImage?: string;
+  portfolioImages?: string[] | string | null;
+  coverImage?: string | null;
+  profileImage?: string | null;
   verified?: boolean;
   ratingAvg?: number;
   ratingCount?: number;
@@ -237,6 +238,63 @@ export function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}م`;
   if (n >= 1000) return `${(n / 1000).toFixed(0)}ك`;
   return n.toLocaleString();
+}
+
+export function resolveMediaUrl(path?: string | null): string | null {
+  if (!path) return null;
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/objects/')) return `${API_BASE}/api/storage${trimmed}`;
+  if (trimmed.startsWith('/')) return `${API_BASE}${trimmed}`;
+  return trimmed;
+}
+
+export function parseMediaList(raw: unknown): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item ?? '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item ?? '').trim()).filter(Boolean);
+      }
+    } catch {}
+    return trimmed
+      .split(/\r?\n|،|,/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+export function resolveMediaList(raw: unknown): string[] {
+  return parseMediaList(raw)
+    .map((path) => resolveMediaUrl(path))
+    .filter((path): path is string => Boolean(path));
+}
+
+export function parseStringList(raw: unknown): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item ?? '').trim()).filter(Boolean);
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item ?? '').trim()).filter(Boolean);
+      }
+    } catch {}
+    return trimmed.split(/[،,]/).map((item) => item.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 export async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {

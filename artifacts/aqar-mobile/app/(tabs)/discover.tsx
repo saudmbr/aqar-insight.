@@ -25,6 +25,7 @@ import {
   formatPrice,
   formatNumber,
   REQUEST_TYPE_LABELS,
+  resolveMediaUrl,
 } from '@/constants/api';
 
 const { width } = Dimensions.get('window');
@@ -191,8 +192,8 @@ export default function DiscoverScreen() {
                 style={styles.marketerCard}
                 onPress={() => router.push({ pathname: '/marketers/[id]', params: { id: String(m.id) } })}
               >
-                {m.photo ? (
-                  <Image source={{ uri: m.photo }} style={styles.marketerPhoto} />
+                {resolveMediaUrl(m.photo) ? (
+                  <Image source={{ uri: resolveMediaUrl(m.photo)! }} style={styles.marketerPhoto} />
                 ) : (
                   <View style={[styles.marketerPhoto, styles.marketerPhotoPlaceholder]}>
                     <Text style={styles.marketerInitial}>

@@ -1,9 +1,12 @@
 import { Feather } from '@expo/vector-icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,7 +19,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-import { Listing, apiFetch, endpoints, formatPrice, SAUDI_REGIONS } from '@/constants/api';
+import { Listing, Marketer, apiFetch, endpoints, formatPrice, parseStringList, resolveMediaUrl } from '@/constants/api';
+import { ensureMediaLibraryPermission, uploadImageAsset } from '@/constants/mediaUpload';
 import { SkeletonCard } from '@/components/SkeletonCard';
 
 type Tab = 'profile' | 'listings';
@@ -46,10 +50,13 @@ export default function MarketerDashboardScreen() {
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
+  const [photo, setPhoto] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [uploadingField, setUploadingField] = useState<'photo' | 'coverImage' | null>(null);
 
-  const { data: profile, isLoading: profileLoading } = useQuery<any>({
+  const { data: profile, isLoading: profileLoading } = useQuery<Marketer & Record<string, any>>({
     queryKey: ['my-marketer-profile'],
-    queryFn: () => apiFetch<any>(`${endpoints.marketers}/my/profile`),
+    queryFn: () => apiFetch<Marketer & Record<string, any>>(endpoints.myMarketerProfile),
     enabled: !!user && user.role === 'real_estate_marketer',
     retry: false,
   });
@@ -65,8 +72,8 @@ export default function MarketerDashboardScreen() {
       setOfficeName(profile.officeName ?? '');
       setBio(profile.bio ?? '');
       setCity(profile.city ?? '');
-      setServedAreas(Array.isArray(profile.servedAreas) ? profile.servedAreas.join('، ') : (profile.servedAreas ?? ''));
-      setSpecialties(Array.isArray(profile.specialties) ? profile.specialties : []);
+      setServedAreas(parseStringList(profile.servedAreas).join('، '));
+      setSpecialties(parseStringList(profile.specialties));
       setYearsExp(profile.yearsExperience ? String(profile.yearsExperience) : '');
       setLicenseNumber(profile.licenseNumber ?? '');
       setPhone(profile.phone ?? '');
@@ -75,8 +82,76 @@ export default function MarketerDashboardScreen() {
       setWebsiteUrl(profile.websiteUrl ?? '');
       setTwitterUrl(profile.twitterUrl ?? '');
       setInstagramUrl(profile.instagramUrl ?? '');
+      setPhoto(profile.photo ?? '');
+      setCoverImage(profile.coverImage ?? '');
     }
   }, [profile]);
+
+  const uploadPickedImage = async (asset: ImagePicker.ImagePickerAsset) => {
+    const blobResponse = await fetch(asset.uri);
+    const blob = await blobResponse.blob();
+    const contentType = asset.mimeType ?? blob.type ?? 'image/jpeg';
+    const fileName =
+      asset.fileName ??
+      `marketer-${Date.now()}.${contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg'}`;
+
+    const { uploadURL, objectPath } = await apiFetch<{ uploadURL: string; objectPath: string }>(
+      endpoints.requestUploadUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          name: fileName,
+          size: asset.fileSize ?? blob.size ?? 0,
+          contentType,
+        }),
+      }
+    );
+
+    const putRes = await fetch(uploadURL, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: blob,
+    });
+
+    if (!putRes.ok) {
+      throw new Error('فشل رفع الصورة، حاول مرة أخرى');
+    }
+
+    return objectPath;
+  };
+
+  const pickImage = async (field: 'photo' | 'coverImage') => {
+    try {
+      if (Platform.OS !== 'web') {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert('صلاحية مطلوبة', 'اسمح للتطبيق بالوصول إلى الصور لإضافة صورة الحساب');
+          return;
+        }
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: field === 'photo' ? [1, 1] : [16, 9],
+        quality: 0.85,
+      });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      setUploadingField(field);
+      const objectPath = await uploadPickedImage(result.assets[0]);
+      if (field === 'photo') {
+        setPhoto(objectPath);
+      } else {
+        setCoverImage(objectPath);
+      }
+    } catch (e: any) {
+      Alert.alert('خطأ', e?.message ?? 'فشل اختيار الصورة أو رفعها');
+    } finally {
+      setUploadingField(null);
+    }
+  };
 
   const totalViews = listings.reduce((s, l: any) => s + (l.views ?? 0), 0);
   const activeCount = listings.filter((l: any) => l.status === 'active').length;
@@ -84,17 +159,14 @@ export default function MarketerDashboardScreen() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const marketerId = profile?.id;
-      const method = marketerId ? 'PUT' : 'POST';
-      const url = marketerId ? endpoints.marketer(marketerId) : endpoints.marketers;
-      await apiFetch(url, {
-        method,
+      await apiFetch(endpoints.myMarketerProfile, {
+        method: 'PUT',
         body: JSON.stringify({
           officeName,
           bio,
           city,
-          servedAreas: servedAreas.split('،').map(s => s.trim()).filter(Boolean),
-          specialties,
+          servedAreas: JSON.stringify(parseStringList(servedAreas)),
+          specialties: JSON.stringify(specialties),
           yearsExperience: yearsExp ? Number(yearsExp) : null,
           licenseNumber,
           phone,
@@ -103,9 +175,12 @@ export default function MarketerDashboardScreen() {
           websiteUrl,
           twitterUrl,
           instagramUrl,
+          photo: photo || null,
+          coverImage: coverImage || null,
         }),
       });
       qc.invalidateQueries({ queryKey: ['my-marketer-profile'] });
+      qc.invalidateQueries({ queryKey: ['marketers-list'] });
       Alert.alert('✅ تم الحفظ', 'تم تحديث ملف المسوّق بنجاح');
     } catch (e: any) {
       Alert.alert('خطأ', e.message ?? 'فشل حفظ البيانات');
@@ -205,6 +280,78 @@ export default function MarketerDashboardScreen() {
                   </View>
                 </View>
 
+                <View style={styles.formCard}>
+                  <Text style={styles.formCardTitle}>الصور الشخصية</Text>
+
+                  <View style={styles.mediaCard}>
+                    <Text style={styles.mediaLabel}>الصورة الشخصية</Text>
+                    <View style={styles.mediaPreviewWrap}>
+                      {resolveMediaUrl(photo) ? (
+                        <Image source={{ uri: resolveMediaUrl(photo)! }} style={styles.avatarPreview} />
+                      ) : (
+                        <View style={[styles.avatarPreview, styles.avatarPreviewPlaceholder]}>
+                          <Feather name="user" size={28} color={Colors.textMuted} />
+                        </View>
+                      )}
+                      <View style={styles.mediaActions}>
+                        <Pressable
+                          style={[styles.mediaBtn, uploadingField === 'photo' && styles.mediaBtnDisabled]}
+                          onPress={() => void pickImage('photo')}
+                          disabled={uploadingField !== null}
+                        >
+                          {uploadingField === 'photo' ? (
+                            <ActivityIndicator size="small" color={Colors.white} />
+                          ) : (
+                            <>
+                              <Feather name="image" size={16} color={Colors.white} />
+                              <Text style={styles.mediaBtnText}>{photo ? 'تغيير الصورة' : 'إضافة صورة'}</Text>
+                            </>
+                          )}
+                        </Pressable>
+                        {photo ? (
+                          <Pressable style={styles.mediaBtnSecondary} onPress={() => setPhoto('')}>
+                            <Feather name="trash-2" size={14} color={Colors.danger} />
+                            <Text style={styles.mediaBtnSecondaryText}>حذف</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={[styles.mediaCard, styles.mediaCardLast]}>
+                    <Text style={styles.mediaLabel}>صورة الغلاف</Text>
+                    {resolveMediaUrl(coverImage) ? (
+                      <Image source={{ uri: resolveMediaUrl(coverImage)! }} style={styles.coverPreview} />
+                    ) : (
+                      <View style={[styles.coverPreview, styles.coverPreviewPlaceholder]}>
+                        <Feather name="image" size={28} color={Colors.textMuted} />
+                      </View>
+                    )}
+                    <View style={styles.mediaActions}>
+                      <Pressable
+                        style={[styles.mediaBtn, uploadingField === 'coverImage' && styles.mediaBtnDisabled]}
+                        onPress={() => void pickImage('coverImage')}
+                        disabled={uploadingField !== null}
+                      >
+                        {uploadingField === 'coverImage' ? (
+                          <ActivityIndicator size="small" color={Colors.white} />
+                        ) : (
+                          <>
+                            <Feather name="image" size={16} color={Colors.white} />
+                            <Text style={styles.mediaBtnText}>{coverImage ? 'تغيير الغلاف' : 'إضافة غلاف'}</Text>
+                          </>
+                        )}
+                      </Pressable>
+                      {coverImage ? (
+                        <Pressable style={styles.mediaBtnSecondary} onPress={() => setCoverImage('')}>
+                          <Feather name="trash-2" size={14} color={Colors.danger} />
+                          <Text style={styles.mediaBtnSecondaryText}>حذف</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
+
                 {/* Location */}
                 <View style={styles.formCard}>
                   <Text style={styles.formCardTitle}>الموقع</Text>
@@ -256,9 +403,9 @@ export default function MarketerDashboardScreen() {
                   ))}
                 </View>
 
-                <Pressable style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
+                <Pressable style={[styles.saveBtn, (saving || uploadingField) && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving || uploadingField !== null}>
                   <Feather name="save" size={18} color={Colors.white} />
-                  <Text style={styles.saveBtnText}>{saving ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}</Text>
+                  <Text style={styles.saveBtnText}>{saving ? 'جارٍ الحفظ...' : uploadingField ? 'انتظر اكتمال رفع الصورة...' : 'حفظ التغييرات'}</Text>
                 </Pressable>
               </>
             )}
@@ -324,6 +471,40 @@ const styles = StyleSheet.create({
   inputLabel: { fontSize: 12, fontWeight: '600', color: Colors.textSub, textAlign: 'right' },
   input: { backgroundColor: Colors.background, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: Colors.text, borderWidth: 1, borderColor: Colors.border },
   textArea: { height: 100, textAlignVertical: 'top', paddingTop: 10 },
+  mediaCard: { padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.borderLight, gap: 12 },
+  mediaCardLast: { borderBottomWidth: 0 },
+  mediaLabel: { fontSize: 12, fontWeight: '700', color: Colors.text, textAlign: 'right' },
+  mediaPreviewWrap: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
+  avatarPreview: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: Colors.border },
+  avatarPreviewPlaceholder: { backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center' },
+  coverPreview: { width: '100%', height: 140, borderRadius: 14, backgroundColor: Colors.background },
+  coverPreviewPlaceholder: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
+  mediaActions: { flex: 1, gap: 8 },
+  mediaBtn: {
+    backgroundColor: Colors.teal,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  mediaBtnDisabled: { opacity: 0.6 },
+  mediaBtnText: { color: Colors.white, fontSize: 13, fontWeight: '700' },
+  mediaBtnSecondary: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(239,68,68,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.18)',
+  },
+  mediaBtnSecondaryText: { color: Colors.danger, fontSize: 12, fontWeight: '700' },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: Colors.background, borderWidth: 1, borderColor: Colors.border },
   chipActive: { backgroundColor: Colors.teal, borderColor: Colors.teal },
   chipText: { fontSize: 12, fontWeight: '600', color: Colors.textSub },

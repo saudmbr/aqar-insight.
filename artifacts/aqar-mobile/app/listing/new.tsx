@@ -1,10 +1,12 @@
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,7 +18,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { apiFetch, endpoints, SAUDI_REGIONS, PROPERTY_TYPES } from '@/constants/api';
+import { apiFetch, endpoints, resolveMediaUrl } from '@/constants/api';
+import { ensureMediaLibraryPermission, uploadImageAssets } from '@/constants/mediaUpload';
 
 const LISTING_TYPES = [
   { value: 'sale', label: 'للبيع' },
@@ -214,6 +217,8 @@ export default function NewListingScreen() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
+  const [listingImages, setListingImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (key: keyof FormState, value: any) => {
@@ -254,8 +259,47 @@ export default function NewListingScreen() {
     if (step > 1) setStep(s => s - 1);
   };
 
+  const removeListingImage = (index: number) => {
+    setListingImages((prev) => prev.filter((_, currentIndex) => currentIndex !== index));
+  };
+
+  const pickListingImages = async () => {
+    const remainingSlots = 10 - listingImages.length;
+    if (remainingSlots <= 0) {
+      Alert.alert('الحد الأقصى', 'يمكنك رفع 10 صور كحد أقصى لهذا الإعلان');
+      return;
+    }
+
+    try {
+      if (Platform.OS !== 'web') {
+        await ensureMediaLibraryPermission();
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.85,
+        selectionLimit: remainingSlots,
+      });
+
+      if (result.canceled || !result.assets?.length) return;
+
+      setUploadingImages(true);
+      const uploadedPaths = await uploadImageAssets(result.assets.slice(0, remainingSlots));
+      setListingImages((prev) => [...prev, ...uploadedPaths].slice(0, 10));
+    } catch (e: any) {
+      Alert.alert('خطأ', e?.message ?? 'فشل اختيار الصور أو رفعها');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateStep()) return;
+    if (uploadingImages) {
+      Alert.alert('انتظر قليلًا', 'لا يزال رفع الصور جاريًا، يرجى الانتظار حتى يكتمل');
+      return;
+    }
     setLoading(true);
     try {
       const body = {
@@ -274,6 +318,7 @@ export default function NewListingScreen() {
         floors: form.floors ? Number(form.floors) : undefined,
         furnishingStatus: form.furnishingStatus,
         negotiable: form.negotiable,
+        images: listingImages.length ? listingImages.join('\n') : undefined,
         ...form.amenities,
         ...form.nearby,
       };
@@ -517,6 +562,58 @@ export default function NewListingScreen() {
                 multiline
               />
 
+              <Text style={[s.stepSectionTitle, { marginTop: 20 }]}>صور العقار</Text>
+              <View style={s.mediaPanel}>
+                <Pressable
+                  style={[s.mediaUploadBtn, uploadingImages && s.mediaUploadBtnDisabled]}
+                  onPress={() => void pickListingImages()}
+                  disabled={uploadingImages}
+                >
+                  {uploadingImages ? (
+                    <ActivityIndicator size="small" color={Colors.white} />
+                  ) : (
+                    <>
+                      <Feather name="image" size={16} color={Colors.white} />
+                      <Text style={s.mediaUploadBtnText}>
+                        {listingImages.length > 0 ? 'إضافة صور أخرى' : 'اختيار صور العقار'}
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+                <Text style={s.mediaHint}>
+                  يمكنك رفع حتى 10 صور. الصورة الأولى ستظهر كصورة رئيسية للإعلان.
+                </Text>
+                <Text style={s.mediaCount}>{listingImages.length} / 10 صور</Text>
+
+                {listingImages.length > 0 && (
+                  <View style={s.mediaGrid}>
+                    {listingImages.map((imagePath, index) => {
+                      const imageUri = resolveMediaUrl(imagePath);
+
+                      return (
+                        <View key={`${imagePath}-${index}`} style={s.mediaThumbWrap}>
+                          {imageUri ? (
+                            <Image source={{ uri: imageUri }} style={s.mediaThumb} />
+                          ) : (
+                            <View style={[s.mediaThumb, s.mediaThumbPlaceholder]}>
+                              <Feather name="image" size={22} color="rgba(255,255,255,0.5)" />
+                            </View>
+                          )}
+                          {index === 0 && (
+                            <View style={s.mediaPrimaryBadge}>
+                              <Text style={s.mediaPrimaryBadgeText}>رئيسية</Text>
+                            </View>
+                          )}
+                          <Pressable style={s.mediaRemoveBtn} onPress={() => removeListingImage(index)}>
+                            <Feather name="x" size={14} color={Colors.white} />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+
               {/* Summary card */}
               <View style={s.summaryCard}>
                 <Text style={s.summaryTitle}>ملخص الإعلان</Text>
@@ -577,11 +674,11 @@ export default function NewListingScreen() {
           </Pressable>
         ) : (
           <Pressable
-            style={[s.nextBtn, s.submitBtn, loading && { opacity: 0.7 }]}
+            style={[s.nextBtn, s.submitBtn, (loading || uploadingImages) && { opacity: 0.7 }]}
             onPress={handleSubmit}
-            disabled={loading}
+            disabled={loading || uploadingImages}
           >
-            {loading ? (
+            {loading || uploadingImages ? (
               <ActivityIndicator size="small" color={Colors.white} />
             ) : (
               <>
@@ -700,6 +797,81 @@ const s = StyleSheet.create({
 
   fieldLabel: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '600', marginBottom: 8, textAlign: 'right' },
   err: { color: '#ef4444', fontSize: 11, textAlign: 'right', marginTop: 4, marginBottom: 4 },
+
+  /* Media */
+  mediaPanel: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 18,
+  },
+  mediaUploadBtn: {
+    backgroundColor: Colors.teal,
+    borderRadius: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  mediaUploadBtnDisabled: { opacity: 0.65 },
+  mediaUploadBtnText: { color: Colors.white, fontSize: 13, fontWeight: '700' },
+  mediaHint: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    textAlign: 'right',
+    lineHeight: 18,
+    marginTop: 10,
+  },
+  mediaCount: {
+    color: Colors.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'right',
+    marginTop: 6,
+  },
+  mediaGrid: {
+    flexDirection: 'row-reverse',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 12,
+  },
+  mediaThumbWrap: {
+    width: '31%',
+    aspectRatio: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  mediaThumb: { width: '100%', height: '100%' },
+  mediaThumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  mediaPrimaryBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: Colors.gold,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  mediaPrimaryBadgeText: { color: Colors.navyDark, fontSize: 10, fontWeight: '800' },
+  mediaRemoveBtn: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   /* Negotiable */
   negotiableRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginTop: 14 },

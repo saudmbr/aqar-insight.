@@ -1,9 +1,12 @@
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,7 +19,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch, endpoints } from '@/constants/api';
+import { apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
+import { ensureMediaLibraryPermission, uploadImageAssets } from '@/constants/mediaUpload';
 import { SkeletonCard } from '@/components/SkeletonCard';
 
 type Tab = 'profile' | 'portfolio';
@@ -55,6 +59,10 @@ export default function ServiceDashboardScreen() {
   const [whatsapp, setWhatsapp] = useState('');
   const [workingHours, setWorkingHours] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [uploadingField, setUploadingField] = useState<'profileImage' | 'coverImage' | 'portfolioImages' | null>(null);
 
   const { data: profile, isLoading } = useQuery<any>({
     queryKey: ['my-service-profile'],
@@ -77,8 +85,61 @@ export default function ServiceDashboardScreen() {
       setWhatsapp(profile.whatsapp ?? '');
       setWorkingHours(profile.workingHours ?? '');
       setWebsiteUrl(profile.websiteUrl ?? '');
+      setProfileImage(profile.profileImage ?? '');
+      setCoverImage(profile.coverImage ?? '');
+      setPortfolioImages(parseMediaList(profile.portfolioImages));
     }
   }, [profile]);
+
+  const uploadServiceImages = async (
+    field: 'profileImage' | 'coverImage' | 'portfolioImages',
+    options?: { multiple?: boolean; limit?: number; aspect?: [number, number] },
+  ) => {
+    const currentCount = field === 'portfolioImages' ? portfolioImages.length : 0;
+    const maxItems = options?.limit ?? 1;
+    const remainingSlots = maxItems - currentCount;
+
+    if (remainingSlots <= 0) {
+      Alert.alert('الحد الأقصى', 'تم الوصول إلى الحد الأقصى للصور في هذا القسم');
+      return;
+    }
+
+    try {
+      if (Platform.OS !== 'web') {
+        await ensureMediaLibraryPermission();
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: !options?.multiple,
+        allowsMultipleSelection: options?.multiple ?? false,
+        aspect: options?.aspect,
+        quality: 0.85,
+        selectionLimit: remainingSlots,
+      });
+
+      if (result.canceled || !result.assets?.length) return;
+
+      setUploadingField(field);
+      const uploadedPaths = await uploadImageAssets(result.assets.slice(0, remainingSlots));
+
+      if (field === 'profileImage') {
+        setProfileImage(uploadedPaths[0] ?? '');
+      } else if (field === 'coverImage') {
+        setCoverImage(uploadedPaths[0] ?? '');
+      } else {
+        setPortfolioImages((prev) => [...prev, ...uploadedPaths].slice(0, maxItems));
+      }
+    } catch (e: any) {
+      Alert.alert('خطأ', e?.message ?? 'فشل اختيار الصور أو رفعها');
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const removePortfolioImage = (index: number) => {
+    setPortfolioImages((prev) => prev.filter((_, currentIndex) => currentIndex !== index));
+  };
 
   const handleSave = async () => {
     if (!businessName.trim() || !category) {
@@ -105,6 +166,9 @@ export default function ServiceDashboardScreen() {
           whatsapp,
           workingHours,
           websiteUrl,
+          profileImage: profileImage || null,
+          coverImage: coverImage || null,
+          portfolioImages: portfolioImages.length ? portfolioImages.join('\n') : null,
         }),
       });
       qc.invalidateQueries({ queryKey: ['my-service-profile'] });
@@ -234,7 +298,7 @@ export default function ServiceDashboardScreen() {
                   ))}
                 </View>
 
-                <Pressable style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
+                <Pressable style={[styles.saveBtn, (saving || uploadingField) && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving || uploadingField !== null}>
                   <Feather name="save" size={18} color={Colors.white} />
                   <Text style={styles.saveBtnText}>{saving ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}</Text>
                 </Pressable>

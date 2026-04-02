@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { Marketer, Listing, apiFetch, endpoints, listingTypeLabel, formatPrice } from '@/constants/api';
+import { Marketer, Listing, apiFetch, endpoints, parseStringList, resolveMediaUrl } from '@/constants/api';
 import { ListingCard } from '@/components/ListingCard';
 
 const { width } = Dimensions.get('window');
@@ -74,16 +74,16 @@ export default function MarketerProfileScreen() {
       </View>
 
       {/* Cover */}
-      {marketer.coverImage ? (
-        <Image source={{ uri: marketer.coverImage }} style={styles.cover} />
+      {resolveMediaUrl(marketer.coverImage) ? (
+        <Image source={{ uri: resolveMediaUrl(marketer.coverImage)! }} style={styles.cover} />
       ) : (
         <View style={styles.coverPlaceholder} />
       )}
 
       {/* Profile Card */}
       <View style={styles.profileCard}>
-        {marketer.photo ? (
-          <Image source={{ uri: marketer.photo }} style={styles.avatar} />
+        {resolveMediaUrl(marketer.photo) ? (
+          <Image source={{ uri: resolveMediaUrl(marketer.photo)! }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
             <Text style={styles.avatarInitial}>
@@ -137,11 +137,11 @@ export default function MarketerProfileScreen() {
       )}
 
       {/* Specialties */}
-      {marketer.specialties && marketer.specialties.length > 0 && (
+      {parseStringList(marketer.specialties).length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>التخصصات</Text>
           <View style={styles.tagsRow}>
-            {marketer.specialties.map((s, i) => (
+            {parseStringList(marketer.specialties).map((s, i) => (
               <View key={i} style={styles.tag}>
                 <Text style={styles.tagText}>{s}</Text>
               </View>
@@ -151,11 +151,11 @@ export default function MarketerProfileScreen() {
       )}
 
       {/* Served Areas */}
-      {marketer.servedAreas && marketer.servedAreas.length > 0 && (
+      {parseStringList(marketer.servedAreas).length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>المناطق المخدومة</Text>
           <View style={styles.tagsRow}>
-            {marketer.servedAreas.map((a, i) => (
+            {parseStringList(marketer.servedAreas).map((a, i) => (
               <View key={i} style={[styles.tag, styles.areaTag]}>
                 <Feather name="map-pin" size={10} color={Colors.teal} />
                 <Text style={[styles.tagText, { color: Colors.teal }]}>{a}</Text>

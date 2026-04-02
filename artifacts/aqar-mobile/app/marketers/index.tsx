@@ -15,17 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { Marketer, apiFetch, endpoints, SAUDI_REGIONS } from '@/constants/api';
-
-function parseArr(raw: any): string[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw.filter(Boolean);
-  if (typeof raw === 'string') {
-    try { const p = JSON.parse(raw); return Array.isArray(p) ? p.filter(Boolean) : []; }
-    catch { return []; }
-  }
-  return [];
-}
+import { Marketer, apiFetch, endpoints, parseStringList, resolveMediaUrl } from '@/constants/api';
 
 export default function MarketersScreen() {
   const insets = useSafeAreaInsets();
@@ -129,7 +119,7 @@ export default function MarketersScreen() {
             >
               <View style={styles.cardLeft}>
                 {m.photo ? (
-                  <Image source={{ uri: m.photo }} style={styles.photo} />
+                  <Image source={{ uri: resolveMediaUrl(m.photo)! }} style={styles.photo} />
                 ) : (
                   <View style={[styles.photo, styles.photoPlaceholder]}>
                     <Text style={styles.photoInitial}>{(m.officeName ?? m.fullName ?? 'م')[0]}</Text>
@@ -176,9 +166,9 @@ export default function MarketersScreen() {
                     </View>
                   )}
                 </View>
-                {parseArr(m.specialties).length > 0 && (
+                {parseStringList(m.specialties).length > 0 && (
                   <View style={styles.tagsRow}>
-                    {parseArr(m.specialties).slice(0, 3).map((s, i) => (
+                    {parseStringList(m.specialties).slice(0, 3).map((s, i) => (
                       <View key={i} style={styles.tag}>
                         <Text style={styles.tagText}>{s}</Text>
                       </View>

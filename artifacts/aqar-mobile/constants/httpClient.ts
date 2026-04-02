@@ -2,12 +2,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { Platform } from 'react-native';
 
+function normalizeApiBase(value?: string): string {
+  const trimmed = value?.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed.replace(/\/+$/, '');
+  return `https://${trimmed.replace(/\/+$/, '')}`;
+}
+
+const API_BASE_FROM_ENV = normalizeApiBase(process.env.EXPO_PUBLIC_API_BASE);
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
-export const API_BASE = DOMAIN
-  ? `https://${DOMAIN}`
+export const API_BASE = API_BASE_FROM_ENV
+  ? API_BASE_FROM_ENV
+  : DOMAIN
+  ? normalizeApiBase(DOMAIN)
   : Platform.OS === 'web'
   ? ''
-  : 'https://24f6cca2-97a5-4cb7-90fe-09117eb86dda-00-2llx3yzs7zv0w.picard.replit.dev';
+  : '';
+
+if (__DEV__ && Platform.OS !== 'web' && !API_BASE) {
+  console.warn(
+    'API base is missing. Set EXPO_PUBLIC_API_BASE or EXPO_PUBLIC_DOMAIN so the mobile app talks to the same Replit backend as the web app.',
+  );
+}
 
 const COOKIE_KEY = 'aqar_session_cookie';
 
