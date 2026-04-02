@@ -58,6 +58,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const isProduction = process.env.NODE_ENV === "production";
+const usePgSessionStore = isProduction && Boolean(process.env.DATABASE_URL);
+const sessionStore = usePgSessionStore
+  ? new PgStore({
+      conString: process.env.DATABASE_URL,
+      tableName: "session",
+      createTableIfMissing: true,
+      ttl: 7 * 24 * 60 * 60,
+      pruneSessionInterval: 60 * 15,
+    })
+  : undefined;
 
 app.use(
   session({
@@ -67,17 +77,10 @@ app.use(
       "aqar-insight-secret-key-2025-change-in-production",
     resave: false,
     saveUninitialized: false,
-    // Store sessions in PostgreSQL so they survive across process restarts
-    // and are shared between multiple worker processes in production
-    store: new PgStore({
-      conString: process.env.DATABASE_URL,
-      tableName: "session",
-      // Auto-create session table in fresh environments (e.g. new Replit deployments)
-      // so auth login/signup do not fail when the session table is not pre-provisioned.
-      createTableIfMissing: true,
-      ttl: 7 * 24 * 60 * 60, // 7 days in seconds
-      pruneSessionInterval: 60 * 15, // prune expired sessions every 15 minutes
-    }),
+    // In production, persist sessions in PostgreSQL.
+    // In development/Replit preview, fallback to in-memory store to avoid
+    // auth failures when session table/connection is not ready.
+    ...(sessionStore ? { store: sessionStore } : {}),
     cookie: {
       httpOnly: true,
       // In production behind Replit's HTTPS proxy, mark cookie as secure.
