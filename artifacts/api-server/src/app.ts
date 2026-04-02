@@ -72,7 +72,9 @@ app.use(
     store: new PgStore({
       conString: process.env.DATABASE_URL,
       tableName: "session",
-      createTableIfMissing: false,
+      // Auto-create session table in fresh environments (e.g. new Replit deployments)
+      // so auth login/signup do not fail when the session table is not pre-provisioned.
+      createTableIfMissing: true,
       ttl: 7 * 24 * 60 * 60, // 7 days in seconds
       pruneSessionInterval: 60 * 15, // prune expired sessions every 15 minutes
     }),
