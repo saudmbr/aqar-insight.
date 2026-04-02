@@ -107,11 +107,18 @@ export interface ServiceProvider {
   businessName: string;
   category: string;
   city?: string;
+  region?: string;
+  district?: string;
   description?: string;
   startingPrice?: number;
   portfolioImages?: string[] | string | null;
   coverImage?: string | null;
   profileImage?: string | null;
+  coveredAreas?: string[] | string | null;
+  contactPhone?: string | null;
+  whatsapp?: string | null;
+  workingHours?: string | null;
+  status?: string | null;
   verified?: boolean;
   ratingAvg?: number;
   ratingCount?: number;

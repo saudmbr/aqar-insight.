@@ -19,7 +19,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
+import { apiFetch, endpoints, parseMediaList, parseStringList, resolveMediaUrl } from '@/constants/api';
 import { ensureMediaLibraryPermission, uploadImageAssets } from '@/constants/mediaUpload';
 import { SkeletonCard } from '@/components/SkeletonCard';
 
@@ -159,7 +159,7 @@ export default function ServiceDashboardScreen() {
           city,
           region,
           district,
-          coveredAreas: coveredAreas.split('،').map(s => s.trim()).filter(Boolean),
+          coveredAreas: parseStringList(coveredAreas),
           description,
           startingPrice: startingPrice ? Number(startingPrice) : null,
           contactPhone,

@@ -60,6 +60,30 @@ const QUICK_ACTIONS = [
   { icon: 'zap', label: 'المستقبل', path: '/future', color: '#ec4899', bg: 'rgba(236,72,153,0.12)' },
 ];
 
+const RIYADH_HERO_IMAGES = [
+  {
+    id: 'kafd',
+    title: 'واجهة الرياض العقارية',
+    subtitle: 'مشاهد مختارة من أفق الرياض وأحيائها الحديثة',
+    stat: 'الرياض',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'skyline',
+    title: 'اكتشف فرص الرياض',
+    subtitle: 'فلل وشقق وأراضٍ في شمال الرياض ووسطها وشرقها',
+    stat: 'أحياء مميزة',
+    image: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f66?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'boulevard',
+    title: 'نبض السوق في العاصمة',
+    subtitle: 'تنقّل بين العروض الأقرب لأسلوب حياتك في مدينة الرياض',
+    stat: 'عروض يومية',
+    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+  },
+];
+
 const WHY_CARDS = [
   { id: 1, icon: 'shield', color: '#10b981', bg: 'rgba(16,185,129,0.12)', title: 'بيانات موثّقة', desc: 'إعلانات مراجعة ومعلومات شفافة عن كل عقار' },
   { id: 2, icon: 'map-pin', color: Colors.teal, bg: 'rgba(15,123,160,0.12)', title: 'خريطة تفاعلية', desc: 'تصفح العقارات على خريطة حية مع تفاصيل دقيقة' },
@@ -84,6 +108,7 @@ export default function HomeScreen() {
   const [search, setSearch] = useState('');
   const [dealType, setDealType] = useState('');
   const [propType, setPropType] = useState('');
+  const [heroIndex, setHeroIndex] = useState(0);
 
   /* ── Data ── */
   const { data: featData, isLoading: featLoading, refetch, isRefetching } = useQuery<ListingsResponse>({
@@ -107,6 +132,7 @@ export default function HomeScreen() {
   const kpis = analytics?.kpis;
   const marketScore = analytics?.marketScore?.score;
   const insight = getMarketLabel(marketScore);
+  const activeHero = RIYADH_HERO_IMAGES[heroIndex] ?? RIYADH_HERO_IMAGES[0];
 
   const handleSearch = () => {
     const params: Record<string, string> = {};
@@ -127,7 +153,7 @@ export default function HomeScreen() {
       <View style={styles.heroWrap}>
         {/* Background image */}
         <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80' }}
+          source={{ uri: activeHero.image }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
         />
@@ -161,6 +187,35 @@ export default function HomeScreen() {
         </View>
 
         {/* ── SEARCH PANEL ── */}
+        <View style={styles.heroOverlayBlock}>
+          <View style={styles.heroPill}>
+            <Feather name="map-pin" size={12} color={Colors.white} />
+            <Text style={styles.heroPillText}>{activeHero.stat}</Text>
+          </View>
+          <Text style={styles.heroOverlaySuper}>سوق عقاري حي من قلب الرياض</Text>
+          <Text style={styles.heroOverlayTitle}>{activeHero.title}</Text>
+          <Text style={styles.heroOverlaySub}>{activeHero.subtitle}</Text>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.heroThumbsRow}
+          style={styles.heroThumbsScroll}
+        >
+          {RIYADH_HERO_IMAGES.map((item, index) => (
+            <Pressable
+              key={item.id}
+              style={[styles.heroThumbCard, heroIndex === index && styles.heroThumbCardActive]}
+              onPress={() => setHeroIndex(index)}
+            >
+              <Image source={{ uri: item.image }} style={styles.heroThumbImage} contentFit="cover" />
+              <LinearGradient colors={['transparent', 'rgba(11,22,40,0.92)']} style={styles.heroThumbOverlay} />
+              <Text style={styles.heroThumbTitle} numberOfLines={1}>{item.title}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
         <View style={styles.searchPanel}>
           {/* Deal type tabs */}
           <View style={styles.dealTabs}>
@@ -453,10 +508,50 @@ const styles = StyleSheet.create({
   hBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
   brandRow: { flexDirection: 'row', alignItems: 'center' },
   brandTitle: { color: Colors.white, fontSize: 17, fontWeight: 'bold', marginLeft: 4 },
-  heroContent: { paddingHorizontal: 22, paddingTop: 24, paddingBottom: 20 },
-  heroSuper: { color: Colors.teal, fontSize: 13, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
-  heroTitle: { color: Colors.white, fontSize: 34, fontWeight: 'bold', lineHeight: 44, marginBottom: 10 },
-  heroSub: { color: 'rgba(255,255,255,0.65)', fontSize: 14, lineHeight: 22 },
+  heroContent: { paddingHorizontal: 22, paddingTop: 24, paddingBottom: 0, opacity: 0, height: 0 },
+  heroSuper: { color: 'transparent', fontSize: 0, fontWeight: '600', marginBottom: 0, letterSpacing: 0 },
+  heroTitle: { color: 'transparent', fontSize: 0, fontWeight: 'bold', lineHeight: 0, marginBottom: 0 },
+  heroSub: { color: 'transparent', fontSize: 0, lineHeight: 0 },
+  heroOverlayBlock: { paddingHorizontal: 22, paddingTop: 8, paddingBottom: 14 },
+  heroPill: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+  },
+  heroPillText: { color: Colors.white, fontSize: 11, fontWeight: '700' },
+  heroOverlaySuper: { color: Colors.teal, fontSize: 13, fontWeight: '700', marginBottom: 8, letterSpacing: 0.4 },
+  heroOverlayTitle: { color: Colors.white, fontSize: 31, fontWeight: 'bold', lineHeight: 40, marginBottom: 10 },
+  heroOverlaySub: { color: 'rgba(255,255,255,0.72)', fontSize: 14, lineHeight: 22, maxWidth: '88%' },
+  heroThumbsScroll: { marginBottom: 18 },
+  heroThumbsRow: { paddingHorizontal: 16, gap: 10 },
+  heroThumbCard: {
+    width: 132,
+    height: 84,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  heroThumbCardActive: { borderColor: Colors.gold, transform: [{ scale: 1.02 }] },
+  heroThumbImage: { width: '100%', height: '100%' },
+  heroThumbOverlay: { ...StyleSheet.absoluteFillObject },
+  heroThumbTitle: {
+    position: 'absolute',
+    right: 10,
+    left: 10,
+    bottom: 10,
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
 
   /* ── SEARCH PANEL ── */
   searchPanel: {

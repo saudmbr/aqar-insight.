@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { ServiceProvider, apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
+import { ServiceProvider, apiFetch, endpoints, parseMediaList, parseStringList, resolveMediaUrl } from '@/constants/api';
 
 export default function ServiceProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,7 +29,12 @@ export default function ServiceProfileScreen() {
     enabled: !!id,
   });
 
-  const callPhone = (phone?: string) => phone && Linking.openURL(`tel:${phone}`);
+  const callPhone = (phone?: string | null) => phone && Linking.openURL(`tel:${phone}`);
+  const openWhatsapp = (phone?: string | null) => {
+    if (!phone) return;
+    const normalized = phone.replace(/\D/g, '');
+    return Linking.openURL(`https://wa.me/${normalized}`);
+  };
   const openWebsite = (url?: string) => url && Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
 
   if (isLoading) {
@@ -55,6 +60,7 @@ export default function ServiceProfileScreen() {
     .filter((img): img is string => Boolean(img));
   const coverImage = resolveMediaUrl(service.coverImage) ?? portfolio[0] ?? null;
   const profileImage = resolveMediaUrl(service.profileImage);
+  const coveredAreas = parseStringList(service.coveredAreas);
 
   return (
     <ScrollView
@@ -131,6 +137,38 @@ export default function ServiceProfileScreen() {
         </View>
       )}
 
+      {(service.region || service.district || coveredAreas.length > 0 || service.workingHours) && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>تفاصيل الخدمة</Text>
+          <View style={styles.detailsWrap}>
+            {service.region ? (
+              <View style={styles.detailCard}>
+                <Text style={styles.detailLabel}>المنطقة</Text>
+                <Text style={styles.detailValue}>{service.region}</Text>
+              </View>
+            ) : null}
+            {service.district ? (
+              <View style={styles.detailCard}>
+                <Text style={styles.detailLabel}>الحي</Text>
+                <Text style={styles.detailValue}>{service.district}</Text>
+              </View>
+            ) : null}
+            {service.workingHours ? (
+              <View style={styles.detailWideCard}>
+                <Text style={styles.detailLabel}>أوقات العمل</Text>
+                <Text style={styles.detailValue}>{service.workingHours}</Text>
+              </View>
+            ) : null}
+            {coveredAreas.length > 0 ? (
+              <View style={styles.detailWideCard}>
+                <Text style={styles.detailLabel}>المناطق المغطاة</Text>
+                <Text style={styles.detailValue}>{coveredAreas.join('، ')}</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      )}
+
       {/* Portfolio */}
       {portfolio.length > 1 && (
         <View style={styles.section}>
@@ -151,7 +189,13 @@ export default function ServiceProfileScreen() {
             <Text style={styles.ctaBtnText}>الموقع</Text>
           </Pressable>
         )}
-        <Pressable style={[styles.ctaBtn, styles.callBtn]} onPress={() => callPhone()}>
+        {service.whatsapp && (
+          <Pressable style={[styles.ctaBtn, styles.whatsappBtn]} onPress={() => openWhatsapp(service.whatsapp)}>
+            <Feather name="message-circle" size={18} color={Colors.white} />
+            <Text style={styles.ctaBtnText}>واتساب</Text>
+          </Pressable>
+        )}
+        <Pressable style={[styles.ctaBtn, styles.callBtn]} onPress={() => callPhone(service.contactPhone)}>
           <Feather name="phone" size={18} color={Colors.white} />
           <Text style={styles.ctaBtnText}>تواصل</Text>
         </Pressable>
@@ -200,6 +244,11 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: 16, marginBottom: 18 },
   sectionTitle: { fontSize: 15, fontWeight: '800', color: Colors.text, textAlign: 'right', marginBottom: 10 },
   descText: { fontSize: 14, color: Colors.textSub, textAlign: 'right', lineHeight: 22 },
+  detailsWrap: { gap: 10 },
+  detailCard: { backgroundColor: Colors.card, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: Colors.border },
+  detailWideCard: { backgroundColor: Colors.card, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: Colors.border },
+  detailLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'right', marginBottom: 4 },
+  detailValue: { fontSize: 13, color: Colors.text, textAlign: 'right', fontWeight: '600' },
   portfolioScroll: { gap: 10, flexDirection: 'row-reverse' },
   portfolioImg: { width: 140, height: 100, borderRadius: 12 },
   ctaRow: { flexDirection: 'row-reverse', gap: 12, paddingHorizontal: 16, marginBottom: 20 },
@@ -209,5 +258,6 @@ const styles = StyleSheet.create({
   },
   callBtn: { backgroundColor: Colors.teal },
   webBtn: { backgroundColor: Colors.navy },
+  whatsappBtn: { backgroundColor: '#25D366' },
   ctaBtnText: { color: Colors.white, fontWeight: '700', fontSize: 15 },
 });

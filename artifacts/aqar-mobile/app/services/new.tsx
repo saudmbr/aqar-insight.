@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-import { apiFetch, endpoints } from '@/constants/api';
+import { apiFetch, endpoints, parseStringList } from '@/constants/api';
 
 const CATEGORIES = [
   { value: 'construction', label: 'إنشاء وبناء' },
@@ -67,7 +67,7 @@ export default function NewServiceScreen() {
           city,
           region,
           district,
-          coveredAreas: coveredAreas.split('،').map(s => s.trim()).filter(Boolean),
+          coveredAreas: parseStringList(coveredAreas),
           description,
           startingPrice: startingPrice ? Number(startingPrice) : null,
           contactPhone,
