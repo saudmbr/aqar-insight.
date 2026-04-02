@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
 import { API_BASE } from '@/constants/api';
 
@@ -51,9 +52,7 @@ export default function ForgotPasswordScreen() {
         </Pressable>
 
         <View style={styles.logoArea}>
-          <View style={styles.logoIcon}>
-            <Feather name={sent ? 'check-circle' : 'lock'} size={32} color={sent ? '#10b981' : Colors.teal} />
-          </View>
+          <AppLogo size={76} />
           <Text style={styles.title}>{sent ? 'تم الإرسال!' : 'نسيت كلمة المرور؟'}</Text>
           <Text style={styles.subtitle}>
             {sent
@@ -135,12 +134,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
   },
   logoArea: { alignItems: 'center', marginBottom: 28, gap: 10 },
-  logoIcon: {
-    width: 72, height: 72, borderRadius: 22,
-    backgroundColor: 'rgba(15,123,160,0.2)',
-    borderWidth: 1, borderColor: 'rgba(15,123,160,0.4)',
-    alignItems: 'center', justifyContent: 'center',
-  },
   title: { fontSize: 22, fontWeight: '800', color: Colors.white },
   subtitle: { fontSize: 13, color: 'rgba(255,255,255,0.55)', textAlign: 'center', lineHeight: 20 },
   form: { backgroundColor: Colors.white, borderRadius: 24, padding: 24, gap: 14 },

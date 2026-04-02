@@ -677,7 +677,7 @@ export default function Districts() {
   const { data: filterOpts } = useQuery<FilterOptions>({
     queryKey: ["dist-filter-opts"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-filter-options`);
+      const res = await fetch(`/api/analytics/listings-filter-options`);
       if (!res.ok) throw new Error();
       return res.json() as Promise<FilterOptions>;
     },
@@ -687,7 +687,7 @@ export default function Districts() {
   const { data: insights, isLoading: loadingInsights } = useQuery<{ byDistrict: InsightsDistrict[]; kpis: { avgPricePerSqm: number } }>({
     queryKey: ["dist-insights", qs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-insights${qs ? `?${qs}` : ""}`);
+      const res = await fetch(`/api/analytics/listings-insights${qs ? `?${qs}` : ""}`);
       if (!res.ok) throw new Error();
       return res.json();
     },
@@ -697,7 +697,7 @@ export default function Districts() {
   const { data: mapData, isLoading: loadingMap } = useQuery<DistrictMapData[]>({
     queryKey: ["dist-map", qs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-districts-map${qs ? `?${qs}` : ""}`);
+      const res = await fetch(`/api/analytics/listings-districts-map${qs ? `?${qs}` : ""}`);
       if (!res.ok) throw new Error();
       return res.json() as Promise<DistrictMapData[]>;
     },
@@ -1079,3 +1079,4 @@ export default function Districts() {
     </Layout>
   );
 }
+

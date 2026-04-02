@@ -3,9 +3,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Platform,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
@@ -13,11 +15,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { ListingCard } from '@/components/ListingCard';
+import { useAuth } from '@/context/AuthContext';
 import { useFavorites } from '@/context/FavoritesContext';
 
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
-  const { favorites } = useFavorites();
+  const { user } = useAuth();
+  const { favorites, isLoading, refreshFavorites } = useFavorites();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const botPad = Platform.OS === 'web' ? 34 : insets.bottom;
 
@@ -39,8 +43,38 @@ export default function FavoritesScreen() {
         </View>
       </LinearGradient>
 
-      {/* Empty State */}
-      {favorites.length === 0 ? (
+      {!user ? (
+        <View style={styles.empty}>
+          <View style={styles.emptyIllustration}>
+            <View style={styles.emptyCircleOuter}>
+              <View style={styles.emptyCircleInner}>
+                <Feather name="lock" size={42} color={Colors.teal} />
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.emptyTitle}>سجّل الدخول لعرض المفضلة</Text>
+          <Text style={styles.emptyBody}>ستظهر هنا العقارات التي حفظتها في الويب والجوال بنفس البيانات.</Text>
+
+          <Pressable
+            style={({ pressed }) => [styles.emptyBtn, pressed && styles.pressed]}
+            onPress={() => router.push('/auth/login')}
+          >
+            <LinearGradient
+              colors={[Colors.teal, Colors.tealDim]}
+              style={styles.emptyBtnGrad}
+            >
+              <Feather name="log-in" size={16} color={Colors.white} />
+              <Text style={styles.emptyBtnText}>تسجيل الدخول</Text>
+            </LinearGradient>
+          </Pressable>
+        </View>
+      ) : isLoading && favorites.length === 0 ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color={Colors.teal} />
+          <Text style={styles.loadingText}>جارٍ تحميل المفضلة...</Text>
+        </View>
+      ) : favorites.length === 0 ? (
         <View style={styles.empty}>
           {/* Illustration */}
           <View style={styles.emptyIllustration}>
@@ -90,6 +124,9 @@ export default function FavoritesScreen() {
           columnWrapperStyle={styles.row}
           contentContainerStyle={[styles.listContent, { paddingBottom: botPad + 20 }]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={() => void refreshFavorites()} tintColor={Colors.teal} />
+          }
           ListHeaderComponent={
             <View style={styles.listHeader}>
               <Text style={styles.listHeaderText}>{favorites.length} عقار محفوظ</Text>
@@ -143,6 +180,7 @@ const styles = StyleSheet.create({
 
   emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.text, textAlign: 'center' },
   emptyBody: { fontSize: 14, color: Colors.textMuted, textAlign: 'center', lineHeight: 22 },
+  heartInline: { color: Colors.danger, fontWeight: '700' },
 
   emptyBtn: { width: '100%', borderRadius: 16, overflow: 'hidden', shadowColor: Colors.teal, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 5 },
   emptyBtnGrad: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, paddingHorizontal: 28 },
@@ -157,4 +195,6 @@ const styles = StyleSheet.create({
   listHeader: { marginBottom: 4 },
   listHeaderText: { fontSize: 13, color: Colors.textMuted, textAlign: 'right', fontWeight: '600' },
   row: { flexDirection: 'row-reverse', gap: 12, marginBottom: 0 },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  loadingText: { fontSize: 14, color: Colors.textMuted, textAlign: 'center' },
 });

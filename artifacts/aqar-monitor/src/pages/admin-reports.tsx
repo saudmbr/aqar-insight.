@@ -193,7 +193,7 @@ export default function AdminReports() {
   const { data, isLoading, error } = useQuery<ReportData>({
     queryKey: ["admin-reports", period],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/admin/reports?period=${period}`);
+      const res = await fetch(`/api/admin/reports?period=${period}`);
       if (!res.ok) throw new Error();
       return res.json();
     },
@@ -613,3 +613,4 @@ export default function AdminReports() {
     </Layout>
   );
 }
+

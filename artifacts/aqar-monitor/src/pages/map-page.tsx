@@ -189,7 +189,7 @@ export default function MapPage() {
     setError(null);
     try {
       const q = buildQuery();
-      const res = await fetch(`${BASE()}/api/listings/map-pins${q ? `?${q}` : ""}`);
+      const res = await fetch(`/api/listings/map-pins${q ? `?${q}` : ""}`);
       if (!res.ok) throw new Error("فشل تحميل البيانات");
       const json = await res.json();
       const data: MapPinType[] = (json.pins ?? []).map((p: any) => ({
@@ -549,3 +549,4 @@ export default function MapPage() {
     </Layout>
   );
 }
+

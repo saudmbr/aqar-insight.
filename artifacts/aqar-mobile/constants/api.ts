@@ -76,6 +76,45 @@ export interface Listing {
   pricePerSqm?: number;
 }
 
+export interface FavoriteRecord {
+  favoriteId: number;
+  createdAt?: string;
+  listing: Listing;
+}
+
+export interface ListingBenchmarkResponse {
+  listing: {
+    id: number;
+    price: number;
+    pricePerSqm: number;
+    areaSqm?: number | null;
+    city?: string | null;
+    district?: string | null;
+    propertyType?: string | null;
+  };
+  districtBenchmark: {
+    count: number;
+    avgPrice: number;
+    avgPricePerSqm: number;
+  } | null;
+  cityBenchmark: {
+    count: number;
+    avgPrice: number;
+    avgPricePerSqm: number;
+  };
+  typeBenchmark: {
+    count: number;
+    avgPrice: number;
+    avgPricePerSqm: number;
+  } | null;
+  position: {
+    vsDistrict: { pct: number; label: string; usedPsm: boolean } | null;
+    vsCity: { pct: number; label: string; usedPsm: boolean } | null;
+    vsType: { pct: number; label: string; usedPsm: boolean } | null;
+  };
+  hasSufficientData: boolean;
+}
+
 export interface User {
   id: number;
   username: string;

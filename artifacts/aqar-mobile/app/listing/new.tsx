@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,9 +16,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { apiFetch, endpoints, resolveMediaUrl } from '@/constants/api';
+import { SAUDI_REGIONS, apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
 import { ensureMediaLibraryPermission, uploadImageAssets } from '@/constants/mediaUpload';
 
 const LISTING_TYPES = [
@@ -106,6 +107,27 @@ interface FormState {
   amenities: Record<string, boolean>;
   nearby: Record<string, boolean>;
 }
+
+type EditableListing = {
+  id: number;
+  title?: string;
+  description?: string;
+  propertyType?: string;
+  listingType?: string;
+  listingPurpose?: string;
+  region?: string;
+  city?: string;
+  district?: string;
+  price?: number | null;
+  areaSqm?: number | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  floors?: number | null;
+  furnishingStatus?: string;
+  negotiable?: boolean;
+  images?: string[] | string | null;
+  [key: string]: unknown;
+};
 
 const INITIAL: FormState = {
   title: '', description: '', propertyType: '', listingType: 'sale',
@@ -210,13 +232,18 @@ function AmenityToggle({ label, icon, checked, onToggle }: { label: string; icon
 }
 
 export default function NewListingScreen() {
+  const params = useLocalSearchParams<{ id?: string }>();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const botPad = Platform.OS === 'web' ? 34 : insets.bottom;
+  const editingId = params.id ? Number(params.id) : null;
+  const isEditMode = Boolean(editingId);
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [loading, setLoading] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(isEditMode);
   const [listingImages, setListingImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -231,6 +258,63 @@ export default function NewListingScreen() {
 
   const toggleNearby = (key: string) =>
     setForm(p => ({ ...p, nearby: { ...p.nearby, [key]: !p.nearby[key] } }));
+
+  useEffect(() => {
+    if (!isEditMode || !editingId) {
+      setIsBootstrapping(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const loadListing = async () => {
+      try {
+        const listing = await apiFetch<EditableListing>(endpoints.listing(editingId));
+        if (!mounted) return;
+
+        setForm({
+          ...INITIAL,
+          title: listing.title ?? '',
+          description: listing.description ?? '',
+          propertyType: listing.propertyType ?? '',
+          listingType: listing.listingType ?? 'sale',
+          listingPurpose: listing.listingPurpose ?? 'سكني',
+          region: listing.region ?? '',
+          city: listing.city ?? '',
+          district: listing.district ?? '',
+          price: listing.price ? String(listing.price) : '',
+          areaSqm: listing.areaSqm ? String(listing.areaSqm) : '',
+          bedrooms: listing.bedrooms ? String(listing.bedrooms) : '',
+          bathrooms: listing.bathrooms ? String(listing.bathrooms) : '',
+          floors: listing.floors ? String(listing.floors) : '',
+          furnishingStatus: listing.furnishingStatus ?? 'غير مفروش',
+          negotiable: Boolean(listing.negotiable),
+          amenities: {
+            ...INITIAL.amenities,
+            ...Object.fromEntries(AMENITIES.map((item) => [item.key, Boolean(listing[item.key])])),
+          },
+          nearby: {
+            ...INITIAL.nearby,
+            ...Object.fromEntries(NEARBY.map((item) => [item.key, Boolean(listing[item.key])])),
+          },
+        });
+        setListingImages(parseMediaList(listing.images));
+      } catch (error: any) {
+        Alert.alert('تعذر تحميل العقار', error?.message ?? 'حدث خطأ أثناء تحميل بيانات العقار');
+        router.back();
+      } finally {
+        if (mounted) {
+          setIsBootstrapping(false);
+        }
+      }
+    };
+
+    void loadListing();
+
+    return () => {
+      mounted = false;
+    };
+  }, [editingId, isEditMode]);
 
   const validateStep = (): boolean => {
     const errs: Record<string, string> = {};
@@ -322,7 +406,29 @@ export default function NewListingScreen() {
         ...form.amenities,
         ...form.nearby,
       };
-      await apiFetch(endpoints.listings, { method: 'POST', body: JSON.stringify(body) });
+      const targetEndpoint = isEditMode && editingId ? endpoints.listing(editingId) : endpoints.listings;
+      const method = isEditMode ? 'PUT' : 'POST';
+      const response = await apiFetch<{ id?: number } | EditableListing>(targetEndpoint, {
+        method,
+        body: JSON.stringify(body),
+      });
+      const savedId = (response as { id?: number })?.id ?? editingId ?? undefined;
+      await queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+      await queryClient.invalidateQueries({ queryKey: ['listings-v2'] });
+      await queryClient.invalidateQueries({ queryKey: ['map-listings-v2'] });
+      if (savedId) {
+        await queryClient.invalidateQueries({ queryKey: ['listing', String(savedId)] });
+      }
+      if (isEditMode && savedId) {
+        Alert.alert('تم التحديث', 'تم تحديث بيانات العقار بنجاح.', [
+          { text: 'عقاراتي', onPress: () => router.replace('/my-listings') },
+          {
+            text: 'عرض العقار',
+            onPress: () => router.replace({ pathname: '/listing/[id]', params: { id: String(savedId) } }),
+          },
+        ]);
+        return;
+      }
       Alert.alert('تم النشر! 🎉', 'تم نشر إعلانك بنجاح وسيظهر في القائمة قريباً', [
         { text: 'إعلاناتي', onPress: () => router.replace('/my-listings') },
         { text: 'حسناً', onPress: () => router.replace('/(tabs)/listings') },
@@ -333,6 +439,15 @@ export default function NewListingScreen() {
       setLoading(false);
     }
   };
+
+  if (isBootstrapping) {
+    return (
+      <View style={s.bootstrapScreen}>
+        <ActivityIndicator size="large" color={Colors.teal} />
+        <Text style={s.bootstrapText}>جارٍ تحميل بيانات العقار...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.navyDark }}>
@@ -694,6 +809,20 @@ export default function NewListingScreen() {
 }
 
 const s = StyleSheet.create({
+  bootstrapScreen: {
+    flex: 1,
+    backgroundColor: Colors.navyDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 24,
+  },
+  bootstrapText: {
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   header: { paddingHorizontal: 18, paddingBottom: 18 },
   headerRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20,

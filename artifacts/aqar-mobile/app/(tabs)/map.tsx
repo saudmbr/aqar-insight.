@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   Platform,
@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   Dimensions,
 } from 'react-native';
@@ -44,16 +45,26 @@ export default function MapScreen() {
   const [city, setCity] = useState('');
   const [listingType, setListingType] = useState('');
   const [propertyType, setPropertyType] = useState('');
+  const [district, setDistrict] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minArea, setMinArea] = useState('');
+  const [maxArea, setMaxArea] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
   const { data, isLoading } = useQuery<ListingsResponse>({
-    queryKey: ['map-listings-v2', city, listingType, propertyType],
+    queryKey: ['map-listings-v2', city, listingType, propertyType, district, minPrice, maxPrice, minArea, maxArea],
     queryFn: () => {
       const p = new URLSearchParams({ limit: '100' });
       if (city) p.set('city', city);
       if (listingType) p.set('listingType', listingType);
       if (propertyType) p.set('propertyType', propertyType);
+      if (district.trim()) p.set('district', district.trim());
+      if (minPrice) p.set('minPrice', minPrice);
+      if (maxPrice) p.set('maxPrice', maxPrice);
+      if (minArea) p.set('minArea', minArea);
+      if (maxArea) p.set('maxArea', maxArea);
       return fetchListings(p);
     },
     staleTime: 1000 * 60 * 3,
@@ -61,7 +72,7 @@ export default function MapScreen() {
 
   const listings = data?.listings ?? [];
   const mappableListing = listings.filter(l => l.latitude && l.longitude);
-  const activeFilters = [city, listingType, propertyType].filter(Boolean).length;
+  const activeFilters = [city, listingType, propertyType, district, minPrice, maxPrice, minArea, maxArea].filter(Boolean).length;
 
   return (
     <View style={styles.screen}>
@@ -208,7 +219,7 @@ export default function MapScreen() {
           <View style={styles.filterHandle} />
           <View style={styles.filterHeader}>
             <Text style={styles.filterTitle}>فلترة الخريطة</Text>
-            <Pressable onPress={() => { setCity(''); setListingType(''); setPropertyType(''); }}>
+            <Pressable onPress={() => { setCity(''); setListingType(''); setPropertyType(''); setDistrict(''); setMinPrice(''); setMaxPrice(''); setMinArea(''); setMaxArea(''); }}>
               <Text style={styles.filterReset}>إعادة تعيين</Text>
             </Pressable>
           </View>
@@ -260,6 +271,62 @@ export default function MapScreen() {
                   </Text>
                 </Pressable>
               ))}
+            </View>
+
+            <Text style={styles.filterSectionLabel}>الحي / المنطقة</Text>
+            <TextInput
+              style={styles.filterInput}
+              placeholder="اكتب اسم الحي..."
+              placeholderTextColor="rgba(255,255,255,0.25)"
+              value={district}
+              onChangeText={setDistrict}
+              textAlign="right"
+            />
+
+            <Text style={styles.filterSectionLabel}>نطاق السعر</Text>
+            <View style={styles.rangeRow}>
+              <TextInput
+                style={styles.rangeInput}
+                placeholder="الحد الأدنى"
+                placeholderTextColor="rgba(255,255,255,0.25)"
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+              <Text style={styles.rangeSeparator}>—</Text>
+              <TextInput
+                style={styles.rangeInput}
+                placeholder="الحد الأقصى"
+                placeholderTextColor="rgba(255,255,255,0.25)"
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+            </View>
+
+            <Text style={styles.filterSectionLabel}>المساحة</Text>
+            <View style={styles.rangeRow}>
+              <TextInput
+                style={styles.rangeInput}
+                placeholder="الحد الأدنى"
+                placeholderTextColor="rgba(255,255,255,0.25)"
+                value={minArea}
+                onChangeText={setMinArea}
+                keyboardType="numeric"
+                textAlign="right"
+              />
+              <Text style={styles.rangeSeparator}>—</Text>
+              <TextInput
+                style={styles.rangeInput}
+                placeholder="الحد الأقصى"
+                placeholderTextColor="rgba(255,255,255,0.25)"
+                value={maxArea}
+                onChangeText={setMaxArea}
+                keyboardType="numeric"
+                textAlign="right"
+              />
             </View>
           </ScrollView>
 
@@ -424,6 +491,31 @@ const styles = StyleSheet.create({
   filterChipActive: { backgroundColor: 'rgba(15,123,160,0.2)', borderColor: Colors.teal },
   filterChipText: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
   filterChipTextActive: { color: Colors.teal, fontWeight: 'bold' },
+  filterInput: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    color: Colors.white,
+    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    textAlign: 'right',
+  },
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  rangeInput: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    color: Colors.white,
+    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    textAlign: 'right',
+  },
+  rangeSeparator: { color: Colors.textMuted, fontSize: 16 },
   applyBtn: {
     backgroundColor: Colors.teal,
     borderRadius: 12,

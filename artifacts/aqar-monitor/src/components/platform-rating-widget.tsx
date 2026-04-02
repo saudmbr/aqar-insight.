@@ -15,7 +15,7 @@ export function PlatformRatingWidget() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const r = await fetch(`${BASE_URL}/api/platform-rating`);
+      const r = await fetch(`/api/platform-rating`);
       const d = await r.json();
       setAvg(d.avg ?? 0);
       setCount(d.count ?? 0);
@@ -34,7 +34,7 @@ export function PlatformRatingWidget() {
     if (submitted || loading) return;
     setLoading(true);
     try {
-      const r = await fetch(`${BASE_URL}/api/platform-rating`, {
+      const r = await fetch(`/api/platform-rating`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stars }),
@@ -124,3 +124,4 @@ export function PlatformRatingWidget() {
     </AnimatePresence>
   );
 }
+

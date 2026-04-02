@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { apiPath, readApiResponse } from "@/lib/api-client";
 
 export type UserRole = "admin" | "user" | "real_estate_marketer" | "service_provider";
 
@@ -50,14 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((res) => {
-        if (res.ok) return res.json() as Promise<MeResponse>;
-        throw new Error("unauthenticated");
-      })
+    fetch(apiPath("/api/auth/me"), { credentials: "include" })
+      .then((res) => readApiResponse<MeResponse>(res, "Unable to verify the current session."))
       .then((data) => {
         if (data.isAuthenticated) {
           setUser({ id: data.userId, username: data.username, fullName: data.fullName, role: data.role });
+        } else {
+          setUser(null);
         }
       })
       .catch(() => setUser(null))
@@ -65,19 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (identifier: string, password: string): Promise<AuthUser> => {
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch(apiPath("/api/auth/login"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identifier, password }),
     });
 
-    if (!res.ok) {
-      const data = (await res.json()) as { message: string };
-      throw new Error(data.message ?? "خطأ في تسجيل الدخول");
-    }
-
-    const data = (await res.json()) as AuthResponse;
+    const data = await readApiResponse<AuthResponse>(res, "Unable to reach the auth API. Make sure the backend server is running.");
     const authUser: AuthUser = {
       id: data.userId,
       username: data.username,
@@ -96,19 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userType?: string,
     serviceCategory?: string,
   ): Promise<AuthUser> => {
-    const res = await fetch("/api/auth/signup", {
+    const res = await fetch(apiPath("/api/auth/signup"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fullName, username, email, password, userType, serviceCategory }),
     });
 
-    if (!res.ok) {
-      const data = (await res.json()) as { message: string };
-      throw new Error(data.message ?? "خطأ في إنشاء الحساب");
-    }
-
-    const data = (await res.json()) as AuthResponse;
+    const data = await readApiResponse<AuthResponse>(res, "Unable to reach the auth API. Make sure the backend server is running.");
     const authUser: AuthUser = {
       id: data.userId,
       username: data.username,
@@ -120,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    await fetch(apiPath("/api/auth/logout"), { method: "POST", credentials: "include" });
     setUser(null);
   };
 
@@ -139,3 +129,4 @@ export function useAuth(): AuthContextType {
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }
+

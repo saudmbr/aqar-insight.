@@ -49,7 +49,7 @@ export default function Records() {
   const { data: filterOptions } = useQuery<FilterOptions>({
     queryKey: ["listings-filter-options"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-filter-options`);
+      const res = await fetch(`/api/analytics/listings-filter-options`);
       if (!res.ok) throw new Error();
       return res.json();
     },
@@ -70,7 +70,7 @@ export default function Records() {
   const { data, isLoading } = useQuery<ListingsResponse>({
     queryKey: ["records-listings", page, city, propertyType, listingType, status],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/listings?${buildQuery()}`);
+      const res = await fetch(`/api/listings?${buildQuery()}`);
       if (!res.ok) throw new Error();
       return res.json();
     },
@@ -271,3 +271,4 @@ export default function Records() {
     </Layout>
   );
 }
+

@@ -18,7 +18,7 @@ import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { Colors } from '@/constants/colors';
-import { Listing, apiFetch, endpoints, formatPrice, listingTypeLabel, resolveMediaList } from '@/constants/api';
+import { Listing, ListingBenchmarkResponse, apiFetch, endpoints, formatPrice, listingTypeLabel, resolveMediaList } from '@/constants/api';
 import { useFavorites } from '@/context/FavoritesContext';
 import { ListingCard } from '@/components/ListingCard';
 
@@ -95,7 +95,24 @@ export default function ListingDetail() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const { data: benchmark } = useQuery<ListingBenchmarkResponse>({
+    queryKey: ['listing-benchmark', id],
+    queryFn: () => apiFetch<ListingBenchmarkResponse>(endpoints.listingBenchmark(Number(id))),
+    enabled: !!id && !!listing,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const fav = listing ? isFavorite(listing.id) : false;
+
+  const handleToggleFavorite = async () => {
+    if (!listing) return;
+    try {
+      await toggleFavorite(listing);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (error: any) {
+      Alert.alert('المفضلة', error?.message ?? 'تعذر تحديث المفضلة');
+    }
+  };
 
   const handleCall = () => {
     if (listing?.marketerPhone) {
@@ -159,6 +176,30 @@ export default function ListingDetail() {
   const currentImage = images[imgIndex];
   const typeLabel = listingTypeLabel[listing.listingType] ?? listing.listingType;
   const isRent = listing.listingType === 'rent';
+  const benchmarkReference =
+    benchmark?.districtBenchmark?.count && benchmark.districtBenchmark.count > 0
+      ? benchmark.districtBenchmark
+      : benchmark?.cityBenchmark?.count
+        ? benchmark.cityBenchmark
+        : null;
+  const benchmarkPosition = benchmark?.position.vsDistrict ?? benchmark?.position.vsCity ?? null;
+  const benchmarkDelta = benchmarkPosition ? Math.abs(benchmarkPosition.pct) : null;
+  const benchmarkHintColor =
+    benchmarkPosition?.pct != null
+      ? benchmarkPosition.pct <= -8
+        ? '#10b981'
+        : benchmarkPosition.pct >= 8
+          ? Colors.danger
+          : Colors.gold
+      : Colors.textMuted;
+  const benchmarkHintIcon =
+    benchmarkPosition?.pct != null
+      ? benchmarkPosition.pct <= -8
+        ? 'trending-down'
+        : benchmarkPosition.pct >= 8
+          ? 'trending-up'
+          : 'minus'
+      : 'bar-chart-2';
 
   return (
     <View style={styles.screen}>
@@ -180,10 +221,7 @@ export default function ListingDetail() {
             <View style={styles.navRight}>
               <Pressable
                 style={styles.navBtn}
-                onPress={() => {
-                  toggleFavorite(listing);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                }}
+                onPress={() => void handleToggleFavorite()}
               >
                 <Feather name="heart" size={20} color={fav ? '#e11d48' : Colors.white} />
               </Pressable>
@@ -388,7 +426,7 @@ export default function ListingDetail() {
                   <View style={styles.benchmarkMeta}>
                     <Text style={styles.benchmarkLabel}>هذا العقار</Text>
                     <View style={styles.benchmarkBarWrap}>
-                      <View style={[styles.benchmarkBar, { width: '75%', backgroundColor: Colors.teal }]} />
+                      <View style={[styles.benchmarkBar, { width: '76%', backgroundColor: Colors.teal }]} />
                     </View>
                   </View>
                   <Text style={styles.benchmarkVal}>{listing.price.toLocaleString('ar-SA')} ر.س</Text>

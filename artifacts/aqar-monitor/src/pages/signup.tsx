@@ -7,7 +7,6 @@ import {
 import { useAuth } from "@/contexts/auth-context";
 import { LogoBrand } from "@/components/logo-brand";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const CATEGORIES = [
   "بناء وتشييد", "تشطيبات وديكور", "كهرباء ومياه", "تكييف وتبريد", "دهانات", "أرضيات",
@@ -123,7 +122,7 @@ const focusH = {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Signup() {
-  const { signup: _signup } = useAuth();
+  const { signup } = useAuth();
   const [, navigate] = useLocation();
 
   const [fullName,         setFullName]         = useState("");
@@ -163,23 +162,16 @@ export default function Signup() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/auth/signup`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName:        fullName.trim(),
-          username:        username.trim(),
-          email:           email.trim(),
-          password,
-          userType:        accountType,
-          serviceCategory: accountType === "service_provider" ? finalCategory : undefined,
-        }),
-      });
-      const data = await res.json() as { success?: boolean; message?: string; role?: string };
-      if (!res.ok) { setError(data.message ?? "خطأ في إنشاء الحساب"); return; }
-      if (data.role === "real_estate_marketer") navigate("/marketer/dashboard");
-      else if (data.role === "service_provider") navigate("/services/dashboard");
+      const user = await signup(
+        fullName.trim(),
+        username.trim(),
+        email.trim(),
+        password,
+        accountType,
+        accountType === "service_provider" ? finalCategory : undefined,
+      );
+      if (user.role === "real_estate_marketer") navigate("/marketer/dashboard");
+      else if (user.role === "service_provider") navigate("/services/dashboard");
       else navigate("/");
     } catch {
       setError("حدث خطأ في الاتصال، يرجى المحاولة مجدداً");
@@ -541,3 +533,4 @@ export default function Signup() {
     </div>
   );
 }
+

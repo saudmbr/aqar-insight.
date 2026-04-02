@@ -97,7 +97,7 @@ export function useAnalytics(filters: AnalyticsFilters = {}) {
   const { data: insights, isLoading, isError } = useQuery<InsightsData>({
     queryKey: ["analytics-insights", queryStr],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-insights${queryStr ? `?${queryStr}` : ""}`);
+      const res = await fetch(`/api/analytics/listings-insights${queryStr ? `?${queryStr}` : ""}`);
       if (!res.ok) throw new Error("Analytics API failed");
       return res.json();
     },
@@ -128,7 +128,7 @@ export function useAnalyticsTrends(filters: AnalyticsFilters = {}, period = "mon
   return useQuery<TrendPoint[]>({
     queryKey: ["analytics-trends", queryStr],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-trends?${queryStr}`);
+      const res = await fetch(`/api/analytics/listings-trends?${queryStr}`);
       if (!res.ok) throw new Error("Trends API failed");
       return res.json();
     },
@@ -142,7 +142,7 @@ export function useAnalyticsFilterOptions() {
   return useQuery<FilterOptions>({
     queryKey: ["analytics-filter-options"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-filter-options`);
+      const res = await fetch(`/api/analytics/listings-filter-options`);
       if (!res.ok) throw new Error("Filter options API failed");
       return res.json();
     },
@@ -156,7 +156,7 @@ export function useListingBenchmark(listingId: number | null) {
   return useQuery<ListingBenchmark>({
     queryKey: ["listing-benchmark", listingId],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listing-benchmark/${listingId}`);
+      const res = await fetch(`/api/analytics/listing-benchmark/${listingId}`);
       if (!res.ok) throw new Error("Benchmark API failed");
       return res.json();
     },
@@ -194,3 +194,4 @@ export function positionLabelColor(label: string): string {
   if (label === "أعلى من السوق") return "#EF4444";
   return "#0F7BA0";
 }
+

@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 
@@ -57,9 +58,7 @@ export default function LoginScreen() {
 
         {/* Logo */}
         <View style={styles.logoArea}>
-          <View style={styles.logoIcon}>
-            <Feather name="home" size={36} color={Colors.teal} />
-          </View>
+          <AppLogo size={88} />
           <Text style={styles.appName}>عقار إنسايت</Text>
           <Text style={styles.tagline}>منصة ذكية للعقار السعودي</Text>
         </View>
@@ -148,12 +147,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoArea: { alignItems: 'center', marginBottom: 40, gap: 8 },
-  logoIcon: {
-    width: 80, height: 80, borderRadius: 24,
-    backgroundColor: 'rgba(15,123,160,0.2)',
-    borderWidth: 1, borderColor: 'rgba(15,123,160,0.4)',
-    alignItems: 'center', justifyContent: 'center',
-  },
   appName: { fontSize: 26, fontWeight: '900', color: Colors.white, textAlign: 'center' },
   tagline: { fontSize: 13, color: 'rgba(255,255,255,0.55)', textAlign: 'center' },
   form: {

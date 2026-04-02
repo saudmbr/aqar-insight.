@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 
@@ -94,9 +95,7 @@ export default function RegisterScreen() {
         </Pressable>
 
         <View style={styles.logoArea}>
-          <View style={styles.logoIcon}>
-            <Feather name="home" size={32} color={Colors.teal} />
-          </View>
+          <AppLogo size={72} />
           <Text style={styles.appName}>إنشاء حساب جديد</Text>
           <Text style={styles.tagline}>انضم إلى عقار إنسايت مجاناً</Text>
         </View>
@@ -244,12 +243,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 24,
   },
   logoArea: { alignItems: 'center', marginBottom: 28, gap: 6 },
-  logoIcon: {
-    width: 64, height: 64, borderRadius: 20,
-    backgroundColor: 'rgba(15,123,160,0.2)',
-    borderWidth: 1, borderColor: 'rgba(15,123,160,0.4)',
-    alignItems: 'center', justifyContent: 'center',
-  },
   appName: { fontSize: 22, fontWeight: '800', color: Colors.white },
   tagline: { fontSize: 13, color: 'rgba(255,255,255,0.55)', textAlign: 'center' },
   form: { backgroundColor: Colors.white, borderRadius: 24, padding: 24, gap: 14 },

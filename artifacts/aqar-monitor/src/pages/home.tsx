@@ -302,7 +302,7 @@ export default function Home() {
   const { data: insights, isLoading: loadingInsights } = useQuery<InsightsData>({
     queryKey: ["listings-insights", analyticsQs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-insights${analyticsQs ? `?${analyticsQs}` : ""}`);
+      const res = await fetch(`/api/analytics/listings-insights${analyticsQs ? `?${analyticsQs}` : ""}`);
       if (!res.ok) throw new Error("فشل في تحميل البيانات");
       return res.json();
     },
@@ -312,7 +312,7 @@ export default function Home() {
   const { data: trends, isLoading: loadingTrends } = useQuery<TrendPoint[]>({
     queryKey: ["listings-trends", analyticsQs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-trends${analyticsQs ? `?${analyticsQs}` : ""}`);
+      const res = await fetch(`/api/analytics/listings-trends${analyticsQs ? `?${analyticsQs}` : ""}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -322,7 +322,7 @@ export default function Home() {
   const { data: filterOpts } = useQuery<FilterOptions>({
     queryKey: ["listings-filter-options"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/analytics/listings-filter-options`);
+      const res = await fetch(`/api/analytics/listings-filter-options`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -332,7 +332,7 @@ export default function Home() {
   const { data: latestServices } = useQuery<ServiceProvider[]>({
     queryKey: ["home-latest-services"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/service-providers`);
+      const res = await fetch(`/api/service-providers`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -342,7 +342,7 @@ export default function Home() {
   const { data: latestRequests } = useQuery<CustomerRequest[]>({
     queryKey: ["home-latest-requests"],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/customer-requests?status=open`);
+      const res = await fetch(`/api/customer-requests?status=open`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -352,7 +352,7 @@ export default function Home() {
   const { data: listingsData, isLoading: loadingListings } = useQuery<{ data: Listing[]; total: number }>({
     queryKey: ["home-listings", listingsQs],
     queryFn: async () => {
-      const res = await fetch(`${BASE()}/api/listings?${listingsQs}`);
+      const res = await fetch(`/api/listings?${listingsQs}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -382,7 +382,7 @@ export default function Home() {
       if (mapDistrict) p.set("district", mapDistrict);
       if (mapListingType) p.set("listingType", mapListingType);
       if (mapPropertyType) p.set("propertyType", mapPropertyType);
-      const res = await fetch(`${BASE()}/api/listings/map-pins?${p}`);
+      const res = await fetch(`/api/listings/map-pins?${p}`);
       if (!res.ok) throw new Error("فشل");
       return res.json();
     },
@@ -1730,3 +1730,4 @@ export default function Home() {
     </Layout>
   );
 }
+

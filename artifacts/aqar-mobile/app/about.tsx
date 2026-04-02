@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppLogo } from '@/components/AppLogo';
 import { Colors } from '@/constants/colors';
 import { API_BASE } from '@/constants/api';
 
@@ -65,9 +66,7 @@ export default function AboutScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Hero */}
         <View style={styles.hero}>
-          <View style={styles.logoIcon}>
-            <Feather name="home" size={36} color={Colors.teal} />
-          </View>
+          <AppLogo size={88} />
           <Text style={styles.appName}>عقار إنسايت</Text>
           <Text style={styles.appTagline}>منصة العقارات السعودية الذكية</Text>
           <View style={styles.missionBox}>
@@ -154,11 +153,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 18, fontWeight: '800', color: Colors.white },
   hero: { backgroundColor: Colors.navy, alignItems: 'center', paddingHorizontal: 20, paddingBottom: 32, paddingTop: 24, gap: 10 },
-  logoIcon: {
-    width: 80, height: 80, borderRadius: 24,
-    backgroundColor: 'rgba(15,123,160,0.2)', borderWidth: 1.5, borderColor: 'rgba(15,123,160,0.5)',
-    alignItems: 'center', justifyContent: 'center',
-  },
   appName: { fontSize: 26, fontWeight: '800', color: Colors.white },
   appTagline: { fontSize: 13, color: 'rgba(255,255,255,0.6)' },
   missionBox: {

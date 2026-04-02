@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { Link } from "wouter";
 import { Mail, Loader2, ArrowRight, CheckCircle2, Send } from "lucide-react";
 import { LogoBrand } from "@/components/logo-brand";
+import { readApiResponse } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,18 +24,13 @@ export default function ForgotPassword() {
     setError(null);
     setLoading(true);
     try {
-      const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const res = await fetch(`${BASE}/api/auth/forgot-password`, {
+      const res = await fetch(`/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ identifier: identifier.trim() }),
       });
-      const data = (await res.json()) as { success?: boolean; message?: string };
-      if (!res.ok) {
-        setError(data.message ?? "حدث خطأ، يرجى المحاولة مجدداً");
-        return;
-      }
+      await readApiResponse<{ success?: boolean; message?: string }>(res, "Unable to send the reset link.");
       // Always show the generic success screen regardless of whether email was found
       setSent(true);
     } catch {
@@ -165,3 +161,4 @@ export default function ForgotPassword() {
     </div>
   );
 }
+

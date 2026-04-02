@@ -59,13 +59,19 @@ export default function MyListingsScreen() {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-listings'] }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+      queryClient.invalidateQueries({ queryKey: ['listing', String(variables.id)] });
+    },
   });
 
   const deleteListing = useMutation({
     mutationFn: (id: number) =>
       apiFetch(`${endpoints.listing(id)}`, { method: 'DELETE' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-listings'] }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+      queryClient.removeQueries({ queryKey: ['listing', String(id)] });
+    },
   });
 
   const confirmDelete = (id: number, title: string) => {
@@ -212,6 +218,15 @@ export default function MyListingsScreen() {
 
                   {/* Actions */}
                   <View style={styles.listingActions}>
+                    <Pressable
+                      style={[styles.actionBtn, { backgroundColor: 'rgba(15,123,160,0.08)' }]}
+                      onPress={() =>
+                        router.push({ pathname: '/listing/new', params: { id: String(listing.id) } })
+                      }
+                    >
+                      <Feather name="edit-2" size={13} color={Colors.teal} />
+                      <Text style={[styles.actionBtnText, { color: Colors.teal }]}>تعديل</Text>
+                    </Pressable>
                     {listing.status !== 'active' && (
                       <Pressable
                         style={[styles.actionBtn, { backgroundColor: 'rgba(16,185,129,0.1)' }]}

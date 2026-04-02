@@ -27,6 +27,7 @@ import {
   formatPrice,
   PROPERTY_TYPES,
 } from '@/constants/api';
+import { AppLogo } from '@/components/AppLogo';
 import { ListingCard } from '@/components/ListingCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
 import { useAuth } from '@/context/AuthContext';
@@ -66,21 +67,21 @@ const RIYADH_HERO_IMAGES = [
     title: 'واجهة الرياض العقارية',
     subtitle: 'مشاهد مختارة من أفق الرياض وأحيائها الحديثة',
     stat: 'الرياض',
-    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Riyadh%20North%20Skyline%20.jpg',
   },
   {
     id: 'skyline',
     title: 'اكتشف فرص الرياض',
     subtitle: 'فلل وشقق وأراضٍ في شمال الرياض ووسطها وشرقها',
     stat: 'أحياء مميزة',
-    image: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f66?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Riyadh%20from%20kingdom%20tower.jpg',
   },
   {
     id: 'boulevard',
     title: 'نبض السوق في العاصمة',
     subtitle: 'تنقّل بين العروض الأقرب لأسلوب حياتك في مدينة الرياض',
     stat: 'عروض يومية',
-    image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://commons.wikimedia.org/wiki/Special:FilePath/The%20Boulevard%20Riyadh%20-%202021.jpg',
   },
 ];
 
@@ -170,7 +171,7 @@ export default function HomeScreen() {
           </Pressable>
           <View style={styles.brandRow}>
             <Text style={styles.brandTitle}>عقار إنسايت</Text>
-            <Feather name="home" size={16} color={Colors.teal} style={{ marginRight: 6 }} />
+            <AppLogo size={34} style={styles.brandLogoBox} imageStyle={styles.brandLogoImage} />
           </View>
           <Pressable style={styles.hBtn} onPress={() => router.push('/(tabs)/profile')}>
             <Feather name="user" size={20} color={Colors.white} />
@@ -506,8 +507,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   hBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
-  brandRow: { flexDirection: 'row', alignItems: 'center' },
-  brandTitle: { color: Colors.white, fontSize: 17, fontWeight: 'bold', marginLeft: 4 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  brandTitle: { color: Colors.white, fontSize: 17, fontWeight: 'bold' },
+  brandLogoBox: {
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  brandLogoImage: {
+    width: 22,
+    height: 22,
+  },
   heroContent: { position: 'absolute', opacity: 0, width: 1, height: 1, overflow: 'hidden' },
   heroSuper: { color: 'transparent', fontSize: 1, fontWeight: '600', marginBottom: 1, lineHeight: 1, letterSpacing: 0 },
   heroTitle: { color: 'transparent', fontSize: 1, fontWeight: 'bold', lineHeight: 1, marginBottom: 1 },

@@ -5,6 +5,7 @@ import {
   CheckCircle2, AlertTriangle, ShieldCheck
 } from "lucide-react";
 import { LogoBrand } from "@/components/logo-brand";
+import { readApiResponse } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,9 +35,8 @@ export default function ResetPassword() {
   // Validate token on mount
   useEffect(() => {
     if (!token) { setTokenState("invalid"); return; }
-    const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-    fetch(`${BASE}/api/auth/validate-reset-token?token=${encodeURIComponent(token)}`, { credentials: "include" })
-      .then((r) => r.json())
+    fetch(`/api/auth/validate-reset-token?token=${encodeURIComponent(token)}`, { credentials: "include" })
+      .then((r) => readApiResponse<{ valid?: boolean }>(r, "Invalid reset token response"))
       .then((d: { valid?: boolean }) => setTokenState(d.valid ? "valid" : "invalid"))
       .catch(() => setTokenState("invalid"));
   }, [token]);
@@ -54,18 +54,13 @@ export default function ResetPassword() {
     setError(null);
     setLoading(true);
     try {
-      const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const res = await fetch(`${BASE}/api/auth/reset-password`, {
+      const res = await fetch(`/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ token, password }),
       });
-      const data = (await res.json()) as { success?: boolean; message?: string };
-      if (!res.ok) {
-        setError(data.message ?? "حدث خطأ، يرجى المحاولة مجدداً");
-        return;
-      }
+      await readApiResponse<{ success?: boolean; message?: string }>(res, "Unable to reset password.");
       setSuccess(true);
       setTimeout(() => navigate("/login"), 3000);
     } catch {
@@ -286,3 +281,4 @@ function StrengthRow({ met, label }: { met: boolean; label: string }) {
     </div>
   );
 }
+
