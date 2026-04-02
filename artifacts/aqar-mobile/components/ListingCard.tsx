@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Colors } from '@/constants/colors';
-import { Listing, formatPrice, listingTypeLabel } from '@/constants/api';
+import { Listing, formatPrice, listingTypeLabel, resolveMediaList } from '@/constants/api';
 import { useFavorites } from '@/context/FavoritesContext';
 
 const { width } = Dimensions.get('window');
@@ -23,20 +23,10 @@ interface Props {
   variant?: 'grid' | 'horizontal' | 'featured';
 }
 
-function parseImages(raw: any): string[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw.filter(Boolean);
-  if (typeof raw === 'string') {
-    try { const p = JSON.parse(raw); return Array.isArray(p) ? p.filter(Boolean) : []; }
-    catch { return raw.startsWith('http') ? [raw] : []; }
-  }
-  return [];
-}
-
 function ListingCardComponent({ listing, onPress, variant = 'grid' }: Props) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const fav = isFavorite(listing.id);
-  const imgs = parseImages(listing.images);
+  const imgs = resolveMediaList(listing.images);
   const imageUri = imgs[0] || null;
   const typeColor = listing.listingType === 'rent' ? Colors.gold : Colors.teal;
   const typeLabel = listingTypeLabel[listing.listingType] || listing.listingType;

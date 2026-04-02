@@ -314,22 +314,117 @@ export default function ServiceDashboardScreen() {
           <View style={styles.portfolioInfo}>
             <Feather name="image" size={40} color={Colors.textMuted} />
             <Text style={styles.portfolioTitle}>معرض الأعمال</Text>
-            <Text style={styles.portfolioText}>أضف صور مشاريعك المنجزة لتعزيز مصداقيتك مع العملاء</Text>
-            <Text style={styles.portfolioNote}>رفع الصور متاح من خلال موقع الويب حالياً</Text>
+            <Text style={styles.portfolioText}>أضف الصور الرئيسية وأعمالك السابقة من الجوال مباشرة ليظهر ملفك بشكل احترافي.</Text>
+            <Text style={styles.portfolioNote}>الأنواع المدعومة: JPG و PNG و WebP بحد أقصى 5 ميغابايت لكل صورة.</Text>
           </View>
 
-          {profile?.portfolioImages && (
-            <View style={styles.portfolioGrid}>
-              {(Array.isArray(profile.portfolioImages) ? profile.portfolioImages : profile.portfolioImages.split('\n'))
-                .filter(Boolean)
-                .map((img: string, i: number) => (
-                  <View key={i} style={styles.portfolioImgBox}>
-                    <Feather name="image" size={24} color={Colors.textMuted} />
-                    <Text style={styles.portfolioImgLabel} numberOfLines={1}>{img.split('/').pop()}</Text>
-                  </View>
-                ))}
+          <View style={styles.mediaSectionCard}>
+            <View style={styles.mediaSectionHeader}>
+              <Text style={styles.mediaSectionTitle}>الصورة الشخصية</Text>
+              <Pressable
+                style={[styles.mediaActionBtn, uploadingField === 'profileImage' && styles.mediaActionBtnDisabled]}
+                onPress={() => void uploadServiceImages('profileImage', { aspect: [1, 1] })}
+                disabled={uploadingField !== null}
+              >
+                {uploadingField === 'profileImage' ? (
+                  <ActivityIndicator size="small" color={Colors.white} />
+                ) : (
+                  <>
+                    <Feather name="upload" size={14} color={Colors.white} />
+                    <Text style={styles.mediaActionText}>{profileImage ? 'تغيير' : 'رفع'}</Text>
+                  </>
+                )}
+              </Pressable>
             </View>
-          )}
+            {resolveMediaUrl(profileImage) ? (
+              <Image source={{ uri: resolveMediaUrl(profileImage)! }} style={styles.profileMediaPreview} />
+            ) : (
+              <View style={[styles.profileMediaPreview, styles.mediaPlaceholder]}>
+                <Feather name="user" size={28} color={Colors.textMuted} />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.mediaSectionCard}>
+            <View style={styles.mediaSectionHeader}>
+              <Text style={styles.mediaSectionTitle}>صورة الغلاف</Text>
+              <Pressable
+                style={[styles.mediaActionBtn, uploadingField === 'coverImage' && styles.mediaActionBtnDisabled]}
+                onPress={() => void uploadServiceImages('coverImage', { aspect: [16, 9] })}
+                disabled={uploadingField !== null}
+              >
+                {uploadingField === 'coverImage' ? (
+                  <ActivityIndicator size="small" color={Colors.white} />
+                ) : (
+                  <>
+                    <Feather name="upload" size={14} color={Colors.white} />
+                    <Text style={styles.mediaActionText}>{coverImage ? 'تغيير' : 'رفع'}</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+            {resolveMediaUrl(coverImage) ? (
+              <Image source={{ uri: resolveMediaUrl(coverImage)! }} style={styles.coverMediaPreview} />
+            ) : (
+              <View style={[styles.coverMediaPreview, styles.mediaPlaceholder]}>
+                <Feather name="image" size={30} color={Colors.textMuted} />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.mediaSectionCard}>
+            <View style={styles.mediaSectionHeader}>
+              <Text style={styles.mediaSectionTitle}>صور المشاريع</Text>
+              <Pressable
+                style={[styles.mediaActionBtn, uploadingField === 'portfolioImages' && styles.mediaActionBtnDisabled]}
+                onPress={() => void uploadServiceImages('portfolioImages', { multiple: true, limit: 8 })}
+                disabled={uploadingField !== null}
+              >
+                {uploadingField === 'portfolioImages' ? (
+                  <ActivityIndicator size="small" color={Colors.white} />
+                ) : (
+                  <>
+                    <Feather name="plus" size={14} color={Colors.white} />
+                    <Text style={styles.mediaActionText}>إضافة</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+            <Text style={styles.mediaCounter}>{portfolioImages.length} / 8 صور</Text>
+
+            {portfolioImages.length > 0 ? (
+              <View style={styles.portfolioGrid}>
+                {portfolioImages.map((img: string, i: number) => {
+                  const imageUri = resolveMediaUrl(img);
+
+                  return (
+                    <View key={`${img}-${i}`} style={styles.portfolioTile}>
+                      {imageUri ? (
+                        <Image source={{ uri: imageUri }} style={styles.portfolioImage} />
+                      ) : (
+                        <View style={[styles.portfolioImage, styles.mediaPlaceholder]}>
+                          <Feather name="image" size={24} color={Colors.textMuted} />
+                        </View>
+                      )}
+                      <Pressable style={styles.portfolioRemoveBtn} onPress={() => removePortfolioImage(i)}>
+                        <Feather name="x" size={12} color={Colors.white} />
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.emptyPortfolioState}>
+                <Feather name="briefcase" size={28} color={Colors.textMuted} />
+                <Text style={styles.emptyPortfolioText}>أضف أمثلة من أعمالك ليشاهدها العملاء داخل التطبيق.</Text>
+              </View>
+            )}
+          </View>
+
+          <Pressable style={[styles.saveBtn, (saving || uploadingField) && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving || uploadingField !== null}>
+            <Feather name="save" size={18} color={Colors.white} />
+            <Text style={styles.saveBtnText}>{saving ? 'جارٍ الحفظ...' : 'حفظ الصور والتغييرات'}</Text>
+          </Pressable>
         </ScrollView>
       )}
     </View>
@@ -369,7 +464,40 @@ const styles = StyleSheet.create({
   portfolioTitle: { fontSize: 16, fontWeight: '700', color: Colors.navy },
   portfolioText: { fontSize: 13, color: Colors.textMuted, textAlign: 'center', lineHeight: 18 },
   portfolioNote: { fontSize: 12, color: Colors.teal, fontWeight: '600', textAlign: 'center' },
+  mediaSectionCard: { backgroundColor: Colors.card, borderRadius: 16, padding: 14, gap: 12, borderWidth: 1, borderColor: Colors.border },
+  mediaSectionHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  mediaSectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.text, textAlign: 'right', flex: 1 },
+  mediaActionBtn: {
+    backgroundColor: Colors.teal,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minWidth: 82,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  mediaActionBtnDisabled: { opacity: 0.6 },
+  mediaActionText: { color: Colors.white, fontSize: 12, fontWeight: '700' },
+  profileMediaPreview: { width: 92, height: 92, borderRadius: 46, alignSelf: 'center' },
+  coverMediaPreview: { width: '100%', height: 150, borderRadius: 14 },
+  mediaPlaceholder: { backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
+  mediaCounter: { fontSize: 12, color: Colors.textMuted, textAlign: 'right' },
   portfolioGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10 },
-  portfolioImgBox: { width: '47%', backgroundColor: Colors.card, borderRadius: 12, padding: 16, alignItems: 'center', gap: 6, borderWidth: 1, borderColor: Colors.border },
-  portfolioImgLabel: { fontSize: 10, color: Colors.textMuted, textAlign: 'center' },
+  portfolioTile: { width: '47%', aspectRatio: 1, borderRadius: 14, overflow: 'hidden', position: 'relative', backgroundColor: Colors.background, borderWidth: 1, borderColor: Colors.border },
+  portfolioImage: { width: '100%', height: '100%' },
+  portfolioRemoveBtn: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyPortfolioState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 22, gap: 10, backgroundColor: Colors.background, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed' },
+  emptyPortfolioText: { fontSize: 12, color: Colors.textMuted, textAlign: 'center', lineHeight: 18 },
 });

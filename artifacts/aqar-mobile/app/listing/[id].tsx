@@ -18,7 +18,7 @@ import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { Colors } from '@/constants/colors';
-import { Listing, apiFetch, endpoints, formatPrice, listingTypeLabel } from '@/constants/api';
+import { Listing, apiFetch, endpoints, formatPrice, listingTypeLabel, resolveMediaList } from '@/constants/api';
 import { useFavorites } from '@/context/FavoritesContext';
 import { ListingCard } from '@/components/ListingCard';
 
@@ -155,12 +155,7 @@ export default function ListingDetail() {
     );
   }
 
-  const rawImgs = listing.images as any;
-  const images: string[] = Array.isArray(rawImgs)
-    ? rawImgs
-    : typeof rawImgs === 'string'
-      ? (() => { try { return JSON.parse(rawImgs); } catch { return []; } })()
-      : [];
+  const images = resolveMediaList(listing.images);
   const currentImage = images[imgIndex];
   const typeLabel = listingTypeLabel[listing.listingType] ?? listing.listingType;
   const isRent = listing.listingType === 'rent';

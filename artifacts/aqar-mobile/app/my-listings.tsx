@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { Listing, apiFetch, endpoints, formatPrice } from '@/constants/api';
+import { Listing, apiFetch, endpoints, formatPrice, resolveMediaList } from '@/constants/api';
 
 const STATUS_TABS = [
   { key: '', label: 'الكل' },
@@ -161,15 +161,19 @@ export default function MyListingsScreen() {
           </View>
         ) : (
           <View style={styles.listWrap}>
-            {filtered.map((listing) => (
+            {filtered.map((listing) => {
+              const listingImages = resolveMediaList(listing.images);
+              const coverImage = listingImages[0] ?? null;
+
+              return (
               <View key={listing.id} style={styles.listingRow}>
                 {/* Image */}
                 <Pressable
                   style={styles.listingImg}
                   onPress={() => router.push(`/listing/${listing.id}`)}
                 >
-                  {listing.images?.[0] ? (
-                    <Image source={{ uri: listing.images[0] }} style={styles.imgFull} contentFit="cover" />
+                  {coverImage ? (
+                    <Image source={{ uri: coverImage }} style={styles.imgFull} contentFit="cover" />
                   ) : (
                     <View style={styles.imgPlaceholder}>
                       <Feather name="home" size={22} color={Colors.textMuted} />
@@ -241,7 +245,7 @@ export default function MyListingsScreen() {
                   </View>
                 </View>
               </View>
-            ))}
+            )})}
           </View>
         )}
       </ScrollView>

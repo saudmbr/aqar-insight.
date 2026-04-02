@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { ServiceProvider, apiFetch, endpoints } from '@/constants/api';
+import { ServiceProvider, apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
 
 const CATEGORIES = [
   { key: '', label: 'الكل', icon: 'grid' },
@@ -124,15 +124,19 @@ export default function ServicesScreen() {
           keyExtractor={(s) => String(s.id)}
           numColumns={2}
           columnWrapperStyle={styles.row}
-          renderItem={({ item: s }) => (
+          renderItem={({ item: s }) => {
+            const portfolioImages = parseMediaList(s.portfolioImages).map((img) => resolveMediaUrl(img)).filter(Boolean) as string[];
+            const coverImage = resolveMediaUrl(s.coverImage) ?? portfolioImages[0] ?? null;
+
+            return (
             <Pressable
               style={styles.card}
               onPress={() => router.push({ pathname: '/services/[id]', params: { id: String(s.id) } })}
             >
               {/* Cover */}
-              {(Array.isArray(s.portfolioImages) && s.portfolioImages[0]) || s.coverImage ? (
+              {coverImage ? (
                 <Image
-                  source={{ uri: (Array.isArray(s.portfolioImages) ? s.portfolioImages[0] : null) ?? s.coverImage! }}
+                  source={{ uri: coverImage }}
                   style={styles.cardImage}
                 />
               ) : (
@@ -178,7 +182,7 @@ export default function ServicesScreen() {
                 )}
               </View>
             </Pressable>
-          )}
+          )}}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
         />

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
-import { ServiceProvider, apiFetch, endpoints } from '@/constants/api';
+import { ServiceProvider, apiFetch, endpoints, parseMediaList, resolveMediaUrl } from '@/constants/api';
 
 export default function ServiceProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,7 +50,11 @@ export default function ServiceProfileScreen() {
 
   if (!service) return null;
 
-  const portfolio = Array.isArray(service.portfolioImages) ? service.portfolioImages : [];
+  const portfolio = parseMediaList(service.portfolioImages)
+    .map((img) => resolveMediaUrl(img))
+    .filter((img): img is string => Boolean(img));
+  const coverImage = resolveMediaUrl(service.coverImage) ?? portfolio[0] ?? null;
+  const profileImage = resolveMediaUrl(service.profileImage);
 
   return (
     <ScrollView
@@ -67,8 +71,8 @@ export default function ServiceProfileScreen() {
       </View>
 
       {/* Cover */}
-      {service.coverImage ? (
-        <Image source={{ uri: service.coverImage }} style={styles.cover} />
+      {coverImage ? (
+        <Image source={{ uri: coverImage }} style={styles.cover} />
       ) : portfolio[0] ? (
         <Image source={{ uri: portfolio[0] }} style={styles.cover} />
       ) : (
@@ -79,8 +83,8 @@ export default function ServiceProfileScreen() {
 
       {/* Profile Card */}
       <View style={styles.profileCard}>
-        {service.profileImage ? (
-          <Image source={{ uri: service.profileImage }} style={styles.avatar} />
+        {profileImage ? (
+          <Image source={{ uri: profileImage }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
             <Feather name="briefcase" size={28} color={Colors.white} />
